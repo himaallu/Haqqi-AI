@@ -122,20 +122,20 @@ data sent to them for training, which would break the PRD's "no training on user
 
 ## Sprint 1 — Skeleton (PRD Block 1)
 
-- [ ] **1.1 Monorepo layout**: `backend/` (haqqi/api, core, rag, pdf, tests), `frontend/`, `eval/`, `data/law/`,
+- [x] **1.1 Monorepo layout**: `backend/` (haqqi/api, core, rag, pdf, tests), `frontend/`, `eval/`, `data/law/`,
       `.github/workflows/`.
       Check: `tree -L 2` matches the PRD layout. Ports: new.
-- [ ] **1.2 Backend scaffold**: FastAPI app, `pyproject.toml` (Python 3.12, fastapi, pydantic v2, httpx, pytest, ruff, mypy),
+- [x] **1.2 Backend scaffold**: FastAPI app, `pyproject.toml` (Python 3.12, fastapi, pydantic v2, httpx, pytest, ruff, mypy),
       `GET /healthz` returning `{status:"ok", db:"ok|down"}`.
       Check: `curl localhost:8000/healthz` → `{"status":"ok",...}`; `pytest` has 1 passing test. Ports: new.
-- [ ] **1.3 Settings**: `pydantic-settings` config (`K2_API_KEY`, `K2_BASE_URL`, `DATABASE_URL`, …) and `.env.example`.
+- [x] **1.3 Settings**: `pydantic-settings` config (`K2_API_KEY`, `K2_BASE_URL`, `DATABASE_URL`, …) and `.env.example`.
       Check: the app boots with `.env.example` values copied; `git grep -i "sk-\|api_key="` finds no secrets. Ports: `K2 Horizon API` credential.
-- [ ] **1.4 Frontend scaffold**: Next.js App Router + TS + Tailwind + shadcn/ui, managed with **pnpm**
+- [x] **1.4 Frontend scaffold**: Next.js App Router + TS + Tailwind + shadcn/ui, managed with **pnpm**
       (`pnpm-lock.yaml` committed; `packageManager` pinned in `package.json`), with a page that fetches `/healthz`.
       Check: `pnpm install --frozen-lockfile && pnpm build` passes; the page shows "backend: ok". Ports: new.
-- [ ] **1.5 docker-compose**: `db` (pgvector/pgvector:pg16), `backend`, `frontend`.
+- [x] **1.5 docker-compose**: `db` (pgvector/pgvector:pg16), `backend`, `frontend`.
       Check: `make dev` → all 3 healthy; `psql -c "create extension vector"` succeeds. Ports: new.
-- [ ] **1.6 Makefile**: `dev`, `test`, `lint`, `eval` (stub).
+- [x] **1.6 Makefile**: `dev`, `test`, `lint`, `eval` (stub).
       Check: `make test && make lint` exit 0. Ports: new.
 - [ ] **1.7 Deploy hello-world**: frontend to Vercel, backend container to Hugging Face Spaces, DB on Supabase (see 0.1).
       Check: the public frontend URL shows "backend: ok" from the public backend. Ports: new.

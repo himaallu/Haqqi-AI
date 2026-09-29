@@ -1,0 +1,52 @@
+name: CI
+
+on:
+  push:
+  pull_request:
+    branches: [main]
+  workflow_dispatch:
+
+concurrency:
+  group: ci-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  lint-and-test:
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: astral-sh/setup-uv@v6
+        with:
+          python-version: "3.12"
+          enable-cache: true
+          cache-dependency-glob: backend/uv.lock
+
+      - uses: pnpm/action-setup@v4
+        with:
+          package_json_file: frontend/package.json
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+          cache: pnpm
+          cache-dependency-path: frontend/pnpm-lock.yaml
+
+      - name: Install backend
+        working-directory: backend
+        run: uv sync --locked
+
+      - name: Install frontend
+        working-directory: frontend
+        run: pnpm install --frozen-lockfile
+
+      - name: Lint (ruff, mypy, eslint, tsc)
+        run: make lint
+
+      - name: Test (pytest, vitest)
+        run: make test
+
+      - name: Build frontend
+        working-directory: frontend
+        run: pnpm build
