@@ -130,8 +130,9 @@ data sent to them for training, which would break the PRD's "no training on user
       Check: `curl localhost:8000/healthz` → `{"status":"ok",...}`; `pytest` has 1 passing test. Ports: new.
 - [ ] **1.3 Settings**: `pydantic-settings` config (`K2_API_KEY`, `K2_BASE_URL`, `DATABASE_URL`, …) and `.env.example`.
       Check: the app boots with `.env.example` values copied; `git grep -i "sk-\|api_key="` finds no secrets. Ports: `K2 Horizon API` credential.
-- [ ] **1.4 Frontend scaffold**: Next.js App Router + TS + Tailwind + shadcn/ui, page that fetches `/healthz`.
-      Check: `npm run build` passes; the page shows "backend: ok". Ports: new.
+- [ ] **1.4 Frontend scaffold**: Next.js App Router + TS + Tailwind + shadcn/ui, managed with **pnpm**
+      (`pnpm-lock.yaml` committed; `packageManager` pinned in `package.json`), with a page that fetches `/healthz`.
+      Check: `pnpm install --frozen-lockfile && pnpm build` passes; the page shows "backend: ok". Ports: new.
 - [ ] **1.5 docker-compose**: `db` (pgvector/pgvector:pg16), `backend`, `frontend`.
       Check: `make dev` → all 3 healthy; `psql -c "create extension vector"` succeeds. Ports: new.
 - [ ] **1.6 Makefile**: `dev`, `test`, `lint`, `eval` (stub).
