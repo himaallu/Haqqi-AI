@@ -112,7 +112,7 @@ data sent to them for training, which would break the PRD's "no training on user
 | Area | Free choice | Notes |
 | --- | --- | --- |
 | Frontend | Vercel Hobby | Preview deploys per PR |
-| Backend | Hugging Face Spaces (Docker, free CPU) | Enough RAM for local embeddings; sleeps when idle. Fallback: Render free (512 MB, cold starts, no local embeddings) |
+| Backend | Hugging Face Space, **Gradio SDK** (free CPU) | Docker Spaces are now paid, so `backend/app.py` runs our FastAPI app inside a free Gradio Space (Gradio unused). Enough RAM for local embeddings; sleeps when idle. `requirements.txt` is exported from `uv.lock`. The Dockerfile stays for docker-compose |
 | Database | Supabase free (Postgres + pgvector) | Pauses after inactivity; Neon free as alternative |
 | Embeddings | Local open model in the backend | BGE-M3 or multilingual-e5-small; no key; no user data leaves |
 | Speech | Whisper large-v3 via Groq free tier | OpenAI-compatible API |
@@ -137,9 +137,10 @@ data sent to them for training, which would break the PRD's "no training on user
       Check: `make dev` → all 3 healthy; `psql -c "create extension vector"` succeeds. Ports: new.
 - [x] **1.6 Makefile**: `dev`, `test`, `lint`, `eval` (stub).
       Check: `make test && make lint` exit 0. Ports: new.
-- [ ] **1.7 Deploy hello-world**: frontend to Vercel, backend container to Hugging Face Spaces, DB on Supabase (see 0.1).
+- [ ] **1.7 Deploy hello-world**: frontend to Vercel, backend to a Hugging Face Gradio Space, DB on Supabase (see 0.1).
       Check: the public frontend URL shows "backend: ok" from the public backend. Ports: new.
-      *Waiting on accounts:* the backend image and `docs/DEPLOY.md` steps are ready; needs Supabase, HF and Vercel sign-up.
+      *Waiting on accounts:* the Space entry point (`backend/app.py`, verified locally on port 7860 with Gradio 6.29.0 installed)
+      and `docs/DEPLOY.md` steps are ready; needs the Supabase, HF and Vercel set-up.
 - [x] **1.8 Minimal CI**: GitHub Action runs `make lint` and `make test` on PRs.
       Check: a PR shows green checks. Ports: new.
 - [ ] **1.9 LLM key smoke test**: `python -m haqqi.llm.smoke` sends one chat call to K2 and one to Groq. It prints
