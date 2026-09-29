@@ -139,11 +139,13 @@ data sent to them for training, which would break the PRD's "no training on user
       Check: `make test && make lint` exit 0. Ports: new.
 - [ ] **1.7 Deploy hello-world**: frontend to Vercel, backend container to Hugging Face Spaces, DB on Supabase (see 0.1).
       Check: the public frontend URL shows "backend: ok" from the public backend. Ports: new.
-- [ ] **1.8 Minimal CI**: GitHub Action runs `make lint` and `make test` on PRs.
+      *Waiting on accounts:* the backend image and `docs/DEPLOY.md` steps are ready; needs Supabase, HF and Vercel sign-up.
+- [x] **1.8 Minimal CI**: GitHub Action runs `make lint` and `make test` on PRs.
       Check: a PR shows green checks. Ports: new.
 - [ ] **1.9 LLM key smoke test**: `python -m haqqi.llm.smoke` sends one chat call to K2 and one to Groq. It prints
       latency and any rate-limit headers, never the key.
       Check: both return a reply, or the failure is recorded in flag 20 and Groq is made primary. Ports: `K2 Horizon API` credential.
+      *Waiting on keys:* script and unit tests are done; run it once `K2_API_KEY` and `GROQ_API_KEY` are in `.env`.
 
 ## Sprint 2 — Knowledge base (PRD Block 2)
 
