@@ -5,8 +5,8 @@ a calculated claim, and a formal Arabic complaint PDF.
 
 - Full spec: @docs/PRD.md
 - Sprint plan and progress: @docs/IMPLEMENTATION_PLAN.md
-- Hackathon version (n8n): legacy/n8n/Haqqi_main.json and legacy/n8n/Haqqi_Test.json.
-  Port prompts, Law Pack texts, calculator logic and the 12 test cases from here.
+- Hackathon version (n8n): legacy/n8n/Haqqi_main.json and "legacy/n8n/Haqqi Test.json".
+  Use it to understand intent (prompts, Law Pack, calculator, the 22 test cases), not as a technical spec.
 
 ## Stack
 

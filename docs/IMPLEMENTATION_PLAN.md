@@ -1,6 +1,6 @@
 # Haqqi — Implementation Plan
 
-Source of truth: docs/PRD.md. Rules: docs/CLAUDE.md. Legacy: legacy/n8n/Haqqi_main.json (+ "Haqqi Test.json").
+Source of truth: docs/PRD.md. Rules: CLAUDE.md. Legacy: legacy/n8n/Haqqi_main.json (+ "Haqqi Test.json").
 One sprint = one PRD block (~2 h). Tick boxes as tasks land. Each task: **Check** = how you verify it;
 **Ports** = n8n node(s) it replaces ("new" = no n8n equivalent).
 
@@ -54,7 +54,7 @@ Legend: **BLOCKER** = decide before the sprint that needs it; **RISK** = plan ar
 10. **NOTE: Arabic input.** The n8n form and TC-23 accept Arabic stories, but `CaseFacts.language` excludes `ar`.
     Proposal: allow `ar` as an input language (UI still offers the 7 + Arabic).
 11. **NOTE: email and Sheets dropped.** Nodes `Log Stats` (Google Sheets) and `Email Case Pack` (Gmail) have no PRD
-    equivalent. Proposal: stats move to Langfuse + a `cases` row, and email is dropped for v1.
+    equivalent. **RESOLVED:** stats move to Langfuse + a `cases` row, and email is dropped for v1.
 
 ### Data model
 12. **BLOCKER (S3): nullable vs required.** `CaseFacts` makes `start_date` and wages required, but need-info routing
@@ -96,8 +96,8 @@ Legend: **BLOCKER** = decide before the sprint that needs it; **RISK** = plan ar
 21. **NOTE: 7-day auto-delete** isn't in any block. Added to S8 as a scheduled purge.
 22. **NOTE: CI and the network.** `make eval` needs K2, so CI runs only the calculator + retrieval subset offline.
     "Ingest runs in CI" needs the law JSON committed (small) rather than downloading PDFs.
-23. **NOTE: repo facts.** `CLAUDE.md` lives in `docs/`, so Claude Code won't auto-load it. Proposal: move it to the root.
-    It also references `legacy/n8n/Haqqi_Test.json`, but the file is `Haqqi Test.json` (with a space).
+23. **NOTE: repo facts.** **RESOLVED:** `CLAUDE.md` moved from `docs/` to the repo root so Claude Code loads it, and its
+    reference to the test file now uses the real name `Haqqi Test.json`.
     The PRD says "12 hackathon cases", but the harness has **22** (TC-01–12, TC-14–23; no TC-13). Port all 22.
 24. **NOTE: metrics definitions.** "≥ 90% supported" citations and the resume's "faithfulness" need a method
     (LLM-judge vs hand labels). Proposal: hand-label `supported` per expected article in cases.jsonl; LLM-judge is optional.
@@ -123,7 +123,7 @@ data sent to them for training, which would break the PRD's "no training on user
 ## Sprint 1 — Skeleton (PRD Block 1)
 
 - [ ] **1.1 Monorepo layout**: `backend/` (haqqi/api, core, rag, pdf, tests), `frontend/`, `eval/`, `data/law/`,
-      `.github/workflows/`. Move `docs/CLAUDE.md` → `CLAUDE.md` (flag 23).
+      `.github/workflows/`.
       Check: `tree -L 2` matches the PRD layout. Ports: new.
 - [ ] **1.2 Backend scaffold**: FastAPI app, `pyproject.toml` (Python 3.12, fastapi, pydantic v2, httpx, pytest, ruff, mypy),
       `GET /healthz` returning `{status:"ok", db:"ok|down"}`.
