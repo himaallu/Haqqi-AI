@@ -14,29 +14,41 @@ Legend: **BLOCKER** = decide before the sprint that needs it; **RISK** = plan ar
 ### Product / legal
 1. **BLOCKER (S3): free zones.** F2 says "free zone → redirect", Non-goals list only DIFC/ADGM/domestic, `CaseFacts.zone`
    has `free_zone`, and Open Questions says some free zones may follow federal law. n8n marks *every* free zone
-   out of scope (Parse Intake + TC-14 JAFZA). Proposal: keep n8n behaviour for v1 (all free zones → referral).
+   out of scope (Parse Intake + TC-14 JAFZA).
+   **RESOLVED: smart referral.** DIFC and ADGM have their own employment laws and courts. Most other free zones broadly
+   follow the federal law, but disputes go to the free zone authority first, not MOHRE, so the MOHRE complaint doesn't fit.
+   v1 analyses **mainland only**. `zone` = `mainland | free_zone | difc | adgm`, plus `free_zone_name: str | None`.
+   Referral text for DIFC/ADGM: "separate employment law; use the DIFC/ADGM courts". Referral text for other free zones:
+   "federal gratuity rules broadly apply, but file with your free zone authority first". Both include MOHRE 80084.
+   The model is ready to switch on free-zone analysis in v2.
 2. **BLOCKER (S3): notice pay input.** `CaseFacts` has only `notice_given: bool`. n8n uses
    `notice_days_contract − notice_days_given` × total daily wage (Art. 43). Proposal: add `notice_days_contract`
    (default 30, clamp 30–90) and `notice_days_given` (default 0).
    **RESOLVED:** if a worker resigns without serving the contractual notice, show the notice pay they owe the employer
    (Art. 43(3)) as a separate, clearly labelled line. It is not subtracted from the worker's claim total unless decided otherwise.
 3. **BLOCKER (S3): gratuity year convention.** n8n uses `(end−start)/365.25`. This makes *exactly one calendar year*
-   0.9993 years, which is **ineligible**, and that breaks the PRD's "exactly 1 year" edge case. Proposal: service
-   days = (end − start + 1 day) − unpaid absence days; years = days / 365; eligible if days ≥ 365. Hand-worked
-   fixtures depend on this choice.
+   0.9993 years, which is **ineligible**, and that breaks the PRD's "exactly 1 year" edge case.
+   **RESOLVED: count whole days.** Service days = (end − start + 1 day) − unpaid absence days; years = days / 365;
+   eligible if days ≥ 365. Exactly one calendar year qualifies.
 4. **BLOCKER (S3): part-time gratuity.** The PRD requires a part-time test but gives no rule, and `CaseFacts` has no
-   hours field. The Executive Regulations prorate by actual hours. Proposal: add `weekly_hours` and prorate against
-   48 h, or route part-time to "not calculated, ask MOHRE" for v1.
+   hours field.
+   **RESOLVED:** add `weekly_hours`. In S2 we read the Executive Regulations' part-time gratuity article. If its rule is
+   clear, gratuity is prorated by it (with tests). If not, the gratuity line says "not calculated: ask MOHRE".
+   Every other line is calculated normally for part-time workers.
 5. **BLOCKER (S3): deductions and leave.** The PRD calculator table has no deduction rule, yet F4 lists "deductions".
    n8n refunds the *whole* reported deduction. Leave encashment is in the PRD but **not** in the n8n calculator.
-   Should it apply only at end of service? TC-22 (still employed, leave refused) expects total 0.
-   Proposal: refund = reported deductions (flagged "if unlawful under Art. 25"), and pay leave only when the job has ended.
+   TC-22 (still employed, leave refused) expects total 0.
+   **RESOLVED, deductions:** one claim line equal to every deduction the worker reports, citing Art. 25 and labelled
+   "recoverable unless it falls under an allowed case in Art. 25". Deductions above 50% of the wage are flagged.
+   **RESOLVED, leave:** paid out only when the job has ended: unused days × (basic ÷ 30). If the worker doesn't know
+   the number of unused days, the line says "not calculated" rather than guessing. Still employed + leave refused →
+   a violation (Art. 29) with no money line.
 6. **RISK: unpaid absence days** (Art. 51(4)) are in the PRD rule but have no field. Proposal: add
    `unpaid_absence_days: int = 0`.
 7. **RISK: 2-year limitation** (Art. 54(9)) is not in routing. Proposal: warn (not block) when `end_date` is more than 2 years ago.
 8. **BLOCKER (S5): complaint identity fields.** The n8n letter keeps `[name] [labour card] [employer]` placeholders.
-   The PRD says the letter is "ready to submit" but also "store only what the complaint needs". Proposal: collect the
-   three fields at download time, render them into the PDF, never persist or log them.
+   The PRD says the letter is "ready to submit" but also "store only what the complaint needs".
+   **RESOLVED:** ask for the three fields (optional) at download time, print them into the PDF, and never store or log them.
 9. **RISK: "translation alongside"** needs an extra LLM call (Writer output → worker language) or a Writer schema
    change. It is not one of the 4 agents. Proposal: the Writer returns `letter_ar` + `letter_translation` in one call.
 10. **NOTE: Arabic input.** The n8n form and TC-23 accept Arabic stories, but `CaseFacts.language` excludes `ar`.
@@ -46,30 +58,41 @@ Legend: **BLOCKER** = decide before the sprint that needs it; **RISK** = plan ar
 
 ### Data model
 12. **BLOCKER (S3): nullable vs required.** `CaseFacts` makes `start_date` and wages required, but need-info routing
-    needs them nullable. Proposal: `ExtractedFacts` (all optional + `issue_types`, `missing_info`, `facts_summary_en`,
-    `in_scope`, `scope_reason`) → user confirms → strict `CaseFacts`.
+    needs them nullable.
+    **RESOLVED:** `ExtractedFacts` (all optional + `issue_types`, `missing_info`, `facts_summary_en`, `in_scope`,
+    `scope_reason`) → the worker confirms → strict `CaseFacts`.
 13. **NOTE: missing fields.** Models lack `issue_types`, `contract_text`, `deducted_amount_aed`, notice days,
     `not_covered`, `documents_to_gather`, `time_limit_note`, critic verdict / `revised`, Writer output (`headline`,
     `amount_lines`, `checklist`, `arabic_letter`). `Emirate` enum and `Citation` are undefined. Map n8n
     `strength` (strong/moderate/weak) → PRD `confidence` (high/medium/low).
+    **RESOLVED:** `CaseFacts` adds `issue_types`, `notice_days_contract`, `notice_days_given`, `deducted_amount_aed`,
+    `unpaid_absence_days`, `weekly_hours`, `contract_text`, `unused_leave_days: int | None`, `free_zone_name`,
+    and `ar` as an input language. `Analysis` adds `not_covered`, `documents_to_gather`, `time_limit_note`,
+    `critic_verdict`, `revised`, and `worker_owes: list[ClaimLine]` (flag 2). `WriterOutput`, `CriticReport` and `Emirate`
+    are defined in S3.
 14. **BLOCKER (S2): citation id scheme.** n8n cites topic ids (`WAGES` = Art. 22 + 53). The PRD wants article-level
-    `law_id/article_no/clause_no`. Proposal: chunk id `fdl33-2021:art51:cl2`, map Law Pack topics → lists of chunk ids,
-    and re-seed TC-11's bad citation as `fdl33-2021:art54:cl9`.
+    `law_id/article_no/clause_no`.
+    **RESOLVED:** chunk id `fdl33-2021:art51:cl2`; `Citation` = {chunk_id, law_id, article_no, clause_no, quote}. Law Pack
+    topics map to lists of chunk ids. TC-11's bad citation is re-seeded as `fdl33-2021:art54:cl9`.
 
 ### Technical
 15. **RISK: embedding model size.** BGE-M3 is about 2.3 GB and needs about 2 GB RAM. It won't fit free Render/Railway tiers or a
-    fast CI. Proposal: a hosted multilingual embedding API behind an `Embedder` interface, with a local small model only
-    for tests. Needs a key and a decision.
+    fast CI.
+    **RESOLVED (free stack, 0.1):** a local open model inside the backend, behind an `Embedder` interface. Use BGE-M3 if the
+    host's RAM allows, else multilingual-e5-small. No key is needed, and worker text never leaves our server.
+    Law vectors are precomputed at ingest. Tests use a deterministic fake embedder.
 16. **RISK: Arabic full-text search.** "BM25-style" in Postgres is really `ts_rank`. Arabic stemming needs the `arabic`
     text-search config on Supabase/Neon, so verify it in S2. Fallback: `simple` config on normalized Arabic (strip tashkeel).
 17. **RISK: Arabic PDF extraction.** Official Arabic PDFs often extract with broken glyph order. n8n already notes
     Art. 17(1) failed to extract. Budget time and keep a hand-corrected `data/law/*.json` as the canonical source.
     The ingest script reads the JSON, and the PDFs are provenance only.
 18. **RISK: latency < 90 s p95.** There are 4–5 sequential K2 calls, and n8n used 180 s timeouts × 3 retries. Measure in S3
-    and set per-call timeouts (e.g. 40 s, 1 retry) with fallback to the second provider (unnamed in PRD; **decide**).
+    and set per-call timeouts (e.g. 40 s, 1 retry) with fallback to the backup LLM (Groq free tier, see 0.1).
 19. **RISK: streaming through hosting.** SSE for 60–90 s must not pass through a Vercel serverless function, because it would time out.
     The browser should call the backend directly (CORS allow-list), and Render/Fly idle timeouts must be checked.
-20. **RISK: K2 key validity / rate limits** (PRD open question). Confirm before S3. It blocks everything with an LLM.
+20. **RISK: K2 key validity / rate limits** (PRD open question). K2's weights are open, so a self-hosted copy has no central
+    rate limit. We use IFM's *hosted* API (`api.ifm.ai`) with a key, though, and that has its own limits. Self-hosting the 375B model
+    isn't possible for free. Task 1.9 tests the key. If it fails, the Groq backup becomes the primary LLM.
 21. **NOTE: 7-day auto-delete** isn't in any block. Added to S8 as a scheduled purge.
 22. **NOTE: CI and the network.** `make eval` needs K2, so CI runs only the calculator + retrieval subset offline.
     "Ingest runs in CI" needs the law JSON committed (small) rather than downloading PDFs.
@@ -80,6 +103,22 @@ Legend: **BLOCKER** = decide before the sprint that needs it; **RISK** = plan ar
     (LLM-judge vs hand labels). Proposal: hand-label `supported` per expected article in cases.jsonl; LLM-judge is optional.
 25. **RISK: schedule.** 8 × 2 h blocks for this scope is very tight. Follow the PRD cut order. Sprint 3 is the biggest; split
     its agent work into 3a (calculator/routing, no LLM) and 3b (agents) so the deterministic core lands even if K2 is down.
+
+## 0.1 Free stack (replaces the PRD's paid choices)
+
+Everything runs on free tiers. Check each tier's limits **and data-use terms** at signup. Some free tiers may use the
+data sent to them for training, which would break the PRD's "no training on user data". Record the result in `docs/SERVICES.md`.
+
+| Area | Free choice | Notes |
+| --- | --- | --- |
+| Frontend | Vercel Hobby | Preview deploys per PR |
+| Backend | Hugging Face Spaces (Docker, free CPU) | Enough RAM for local embeddings; sleeps when idle. Fallback: Render free (512 MB, cold starts, no local embeddings) |
+| Database | Supabase free (Postgres + pgvector) | Pauses after inactivity; Neon free as alternative |
+| Embeddings | Local open model in the backend | BGE-M3 or multilingual-e5-small; no key; no user data leaves |
+| Speech | Whisper large-v3 via Groq free tier | OpenAI-compatible API |
+| LLM | K2 hosted API (primary) + Groq free tier (backup) | Same OpenAI-compatible client |
+| PDF | WeasyPrint + Noto Naskh Arabic | Open source |
+| Tracing / errors | Langfuse Cloud Hobby / Sentry free | PII redacted before sending |
 
 ## Sprint 1 — Skeleton (PRD Block 1)
 
@@ -97,10 +136,13 @@ Legend: **BLOCKER** = decide before the sprint that needs it; **RISK** = plan ar
       Check: `make dev` → all 3 healthy; `psql -c "create extension vector"` succeeds. Ports: new.
 - [ ] **1.6 Makefile**: `dev`, `test`, `lint`, `eval` (stub).
       Check: `make test && make lint` exit 0. Ports: new.
-- [ ] **1.7 Deploy hello-world**: frontend to Vercel, backend container to Render/Fly, DB on Supabase/Neon.
+- [ ] **1.7 Deploy hello-world**: frontend to Vercel, backend container to Hugging Face Spaces, DB on Supabase (see 0.1).
       Check: the public frontend URL shows "backend: ok" from the public backend. Ports: new.
 - [ ] **1.8 Minimal CI**: GitHub Action runs `make lint` and `make test` on PRs.
       Check: a PR shows green checks. Ports: new.
+- [ ] **1.9 LLM key smoke test**: `python -m haqqi.llm.smoke` sends one chat call to K2 and one to Groq. It prints
+      latency and any rate-limit headers, never the key.
+      Check: both return a reply, or the failure is recorded in flag 20 and Groq is made primary. Ports: `K2 Horizon API` credential.
 
 ## Sprint 2 — Knowledge base (PRD Block 2)
 
@@ -116,8 +158,9 @@ Legend: **BLOCKER** = decide before the sprint that needs it; **RISK** = plan ar
 - [ ] **2.4 Schema + migrations**: `law_chunks(id, law_id, article_no, clause_no, title, topic_tags[], text_en, text_ar,
       source_url, effective_date, embedding vector, tsv_en, tsv_ar)` plus a `cases` table.
       Check: `alembic upgrade head` on a fresh DB; `\d law_chunks` shows the vector + GIN indexes. Ports: new.
-- [ ] **2.5 Embedder interface** (flag 15): the `Embedder` protocol, a hosted implementation, and a deterministic fake for tests.
-      Check: a unit test with the fake embedder; a one-off call to the real API returns the expected dimension. Ports: new.
+- [ ] **2.5 Embedder interface** (flag 15): the `Embedder` protocol, a local open-model implementation, and a deterministic fake for tests.
+      Check: a unit test with the fake embedder; the local model embeds one Hindi and one Arabic sentence with the expected
+      dimension, and memory stays within the host's limit. Ports: new.
 - [ ] **2.6 `python -m haqqi.ingest`**: rebuilds the index from `data/law/*.json` idempotently.
       Check: run it twice → same row count; `select count(*) from law_chunks` ≈ articles × clauses. Ports: new.
 - [ ] **2.7 Hybrid retrieval**: dense (pgvector cosine) + FTS (EN + AR config, flag 16) → RRF (k=60) → top 8, merged
@@ -184,8 +227,8 @@ Legend: **BLOCKER** = decide before the sprint that needs it; **RISK** = plan ar
 - [ ] **4.6 Results page**: verdict + violations with article citations (expandable quote), itemised claim with
       formulas, total, a separate "you may owe your employer" notice line (flag 2), above-50k note, next steps, documents, not-covered notice, disclaimer (EN + worker language + AR, MOHRE 80084).
       Check: TC-02 shows termination + notice with citations; every amount row shows a formula. Ports: `Assemble Case Pack` (page_html).
-- [ ] **4.7 Referral page** for out-of-scope cases (domestic vs free-zone text).
-      Check: TC-08 → domestic-worker referral; TC-14 → free-zone referral. Ports: `Out-of-Scope Reply`.
+- [ ] **4.7 Referral page** for out-of-scope cases, with three texts: domestic worker, DIFC/ADGM, other free zone (flag 1).
+      Check: TC-08 → domestic referral; TC-07 (DIFC) → DIFC/ADGM referral; TC-14 (JAFZA) → free-zone-authority referral. Ports: `Out-of-Scope Reply`.
 - [ ] **4.8 Deploy + phone run**.
       Check: one full case completed on a real phone against the public URL; screenshot saved to `docs/screens/`. Ports: `Show Result`.
 
@@ -208,7 +251,7 @@ Legend: **BLOCKER** = decide before the sprint that needs it; **RISK** = plan ar
 
 ## Sprint 6 — Voice and languages (PRD Block 6)
 
-- [ ] **6.1 `POST /v1/transcribe`** (Whisper API; size and duration limits; audio is not stored).
+- [ ] **6.1 `POST /v1/transcribe`** (Whisper large-v3 via Groq free tier; size and duration limits; audio is not stored).
       Check: `curl -F audio=@tests/fixtures/hi.webm` → `{text, detected_language:"hi"}`. Ports: new (F1 voice).
 - [ ] **6.2 Mic recording in the browser** (MediaRecorder, iOS Safari fallback format).
       Check: record → transcript appears in the story box on Android Chrome and iOS Safari. Ports: new.
