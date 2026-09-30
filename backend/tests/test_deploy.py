@@ -49,7 +49,7 @@ def test_requirements_resolve_alongside_hf_space_gradio(tmp_path: Path) -> None:
             "3.12",
             "--quiet",
             "-o",
-            "/dev/null",
+            str(tmp_path / "resolved.txt"),
             str(BACKEND / "requirements.txt"),
             str(hf_extras),
         ],
