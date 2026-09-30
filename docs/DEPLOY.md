@@ -10,54 +10,40 @@ each host's settings, never into the repo.
 3. Click **Connect** (top of the dashboard) → copy the **Session pooler** URI. This is `DATABASE_URL`:
    `postgresql://postgres.<project-ref>:<password>@aws-0-<region>.pooler.supabase.com:5432/postgres`
    - Do **not** use the "Direct connection" host `db.<project-ref>.supabase.co`: on the free plan it is IPv6-only,
-     and most hosts (including Hugging Face) can't reach it.
+     and most hosts (including Render) can't reach it.
    - Replace `[YOUR-PASSWORD]` including the square brackets.
    - Special characters in the password must be URL-encoded: `@` → `%40`, `#` → `%23`, `/` → `%2F`, `:` → `%3A`.
      Simplest: reset the password to letters and digits only.
 
 Free projects pause after about a week without traffic; open the dashboard to wake one up.
 
-## 2. Backend: Hugging Face Space (Gradio SDK, free)
+## 2. Backend: Render (free web service)
 
-Docker Spaces are paid, so we use a free **Gradio** Space. It installs `backend/requirements.txt` and runs
-`backend/app.py`, which serves our FastAPI app on port 7860; Gradio itself isn't used.
+Render builds `backend/Dockerfile` straight from GitHub. The service is described in `render.yaml` at the repo
+root, so there is nothing to push by hand: every commit touching `backend/` redeploys.
 
-1. Create a new Space: SDK **Gradio**, template **Blank**, hardware **CPU basic (free)**, visibility **Public**.
-   If the Space shows **ZeroGPU** hardware (Settings → Space hardware), switch it to **CPU basic**: ZeroGPU is for
-   GPU Gradio apps and makes the build install torch, which we don't need.
-   The browser has to reach the API, so the Space must be public. The code is already public, and secrets
-   stay private in the Space settings.
-2. Space settings → **Variables and secrets** → add secrets:
-   `DATABASE_URL`, `K2_API_KEY`, `GROQ_API_KEY`, and the variable
-   `CORS_ORIGINS=["https://<your-vercel-app>.vercel.app"]`.
-3. Create a Hugging Face access token (profile → Settings → Access Tokens → **Write** role).
-4. Push the `backend/` folder as the Space's root. Its `README.md` header sets the SDK, Python version and entry
-   point. When git asks for a password, use the access token.
+1. Sign up at render.com with **GitHub** and allow access to the `Haqqi-AI` repository.
+2. **New → Blueprint** → pick `himaallu/Haqqi-AI`. Render reads `render.yaml` and shows one web service,
+   `haqqi-api` (free plan, Frankfurt).
+3. Fill in the three secrets it asks for: `DATABASE_URL` (the Supabase Session pooler URI from step 1),
+   `K2_API_KEY`, `GROQ_API_KEY`. `CORS_ORIGINS` is already set in `render.yaml`.
+4. **Apply**. The first build takes a few minutes; watch it under the service's **Logs**.
+5. Check: `curl https://haqqi-api.onrender.com/healthz` → `{"status":"ok","db":"ok",...}`.
+   Your exact URL is shown at the top of the service page. If the name was taken, it has a suffix.
 
-   ```sh
-   git remote add hf https://huggingface.co/spaces/<user>/<space>
-   git subtree push --prefix backend hf main
-   ```
-
-   The first push replaces the Space's generated files, which may need `git push --force`:
-   `git push hf "$(git subtree split --prefix backend)":main --force`.
-
-   Sprint 8 replaces this with a GitHub Action that deploys on merge to `main`.
-5. Watch the Space's **Logs** tab until it says Running. A build error shows there; the status is also public at
-   `https://huggingface.co/api/spaces/<user>/<space>` (look at `runtime.stage` and `errorMessage`).
-   `tests/test_deploy.py` resolves the same packages the Space installs, so dependency clashes fail in CI first.
-6. Check: `curl https://<user>-<space>.hf.space/healthz` → `{"status":"ok","db":"ok",...}`.
-
-Free Spaces sleep after a period without traffic; the first request after that takes a while to wake it.
+Free services sleep after about 15 minutes without traffic; the first request after that takes about a minute.
+The free plan has 512 MB of RAM (see flag 15 in the plan for what that means for embeddings).
+`render.yaml` deploys the sprint branch for now; change `branch:` to `main` once it's merged.
 
 ## 3. Frontend: Vercel
 
 1. Import the GitHub repo in Vercel; set **Root Directory** to `frontend` (Vercel detects Next.js and pnpm).
-2. Environment variable: `NEXT_PUBLIC_API_URL=https://<user>-<space>.hf.space`.
+2. Environment variable: `NEXT_PUBLIC_API_URL=https://haqqi-api.onrender.com` (your Render URL).
+   Vercel bakes it in at build time, so redeploy after changing it.
 3. Deploy. Check: the Vercel URL shows `backend: ok · db: ok`.
 
-Every pull request gets its own preview URL. Add the preview domain to `CORS_ORIGINS` if you want previews
-to reach the backend.
+Every pull request gets its own preview URL. Add the preview domain to `CORS_ORIGINS` in `render.yaml` if you
+want previews to reach the backend.
 
 ## LLM keys
 

@@ -15,9 +15,9 @@ RUN uv sync --frozen --no-dev --no-install-project
 COPY haqqi ./haqqi
 RUN uv sync --frozen --no-dev
 
-# Hugging Face Spaces expects port 7860; docker-compose overrides PORT to 8000.
-ENV PORT=7860
-EXPOSE 7860
+# Hosts such as Render set PORT; 8000 is the local default.
+ENV PORT=8000
+EXPOSE 8000
 RUN useradd --create-home --uid 1000 app
 USER app
 CMD ["sh", "-c", "uvicorn haqqi.api.main:app --host 0.0.0.0 --port ${PORT}"]
