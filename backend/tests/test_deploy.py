@@ -26,6 +26,40 @@ def test_requirements_txt_matches_lockfile() -> None:
     )
 
 
+@pytest.mark.skipif(shutil.which("uv") is None, reason="uv not installed")
+def test_requirements_resolve_alongside_hf_space_gradio(tmp_path: Path) -> None:
+    # A Gradio-SDK Space pip-installs requirements.txt together with
+    # gradio[oauth,mcp]==<sdk_version>.
+    # Resolving the same set here catches pin clashes (e.g. pydantic) before the Space build fails.
+    readme = (BACKEND / "README.md").read_text()
+    sdk_version = next(
+        line.split(":", 1)[1].strip()
+        for line in readme.splitlines()
+        if line.startswith("sdk_version:")
+    )
+    hf_extras = tmp_path / "hf-space.in"
+    hf_extras.write_text(f"gradio[oauth,mcp]=={sdk_version}\nuvicorn>=0.14.0\nwebsockets>=10.4\n")
+
+    result = subprocess.run(  # noqa: S603
+        [  # noqa: S607
+            "uv",
+            "pip",
+            "compile",
+            "--python-version",
+            "3.12",
+            "--quiet",
+            "-o",
+            "/dev/null",
+            str(BACKEND / "requirements.txt"),
+            str(hf_extras),
+        ],
+        capture_output=True,
+        text=True,
+    )
+
+    assert result.returncode == 0, f"HF Space install would fail:\n{result.stderr}"
+
+
 def test_space_entry_point_exposes_the_api() -> None:
     import app  # backend/app.py, the Hugging Face Spaces entry point
 

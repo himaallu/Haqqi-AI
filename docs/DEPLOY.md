@@ -23,6 +23,8 @@ Docker Spaces are paid, so we use a free **Gradio** Space. It installs `backend/
 `backend/app.py`, which serves our FastAPI app on port 7860; Gradio itself isn't used.
 
 1. Create a new Space: SDK **Gradio**, template **Blank**, hardware **CPU basic (free)**, visibility **Public**.
+   If the Space shows **ZeroGPU** hardware (Settings → Space hardware), switch it to **CPU basic**: ZeroGPU is for
+   GPU Gradio apps and makes the build install torch, which we don't need.
    The browser has to reach the API, so the Space must be public. The code is already public, and secrets
    stay private in the Space settings.
 2. Space settings → **Variables and secrets** → add secrets:
@@ -41,7 +43,10 @@ Docker Spaces are paid, so we use a free **Gradio** Space. It installs `backend/
    `git push hf "$(git subtree split --prefix backend)":main --force`.
 
    Sprint 8 replaces this with a GitHub Action that deploys on merge to `main`.
-5. Check: `curl https://<user>-<space>.hf.space/healthz` → `{"status":"ok","db":"ok",...}`.
+5. Watch the Space's **Logs** tab until it says Running. A build error shows there; the status is also public at
+   `https://huggingface.co/api/spaces/<user>/<space>` (look at `runtime.stage` and `errorMessage`).
+   `tests/test_deploy.py` resolves the same packages the Space installs, so dependency clashes fail in CI first.
+6. Check: `curl https://<user>-<space>.hf.space/healthz` → `{"status":"ok","db":"ok",...}`.
 
 Free Spaces sleep after a period without traffic; the first request after that takes a while to wake it.
 

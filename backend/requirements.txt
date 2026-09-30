@@ -37,12 +37,12 @@ psycopg==3.3.6
     # via haqqi
 psycopg-binary==3.3.6 ; implementation_name != 'pypy'
     # via psycopg
-pydantic==2.13.5
+pydantic==2.12.5
     # via
     #   fastapi
     #   haqqi
     #   pydantic-settings
-pydantic-core==2.46.5
+pydantic-core==2.41.5
     # via pydantic
 pydantic-settings==2.15.0
     # via haqqi
