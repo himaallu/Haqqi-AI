@@ -264,11 +264,14 @@ data sent to them for training, which would break the PRD's "no training on user
       *2 Oct:* the prompts, the message builders (`haqqi/agents/messages.py`) and the Arabic template are written, with 12 snapshot
       and safety tests (one fence per message, the writer sees money only as `[[AMOUNT_n]]`). **Waiting for your review of
       `haqqi/rag/prompts/CHANGES.md`** before ticking.
-- [ ] **3.7 Intake agent** → `ExtractedFacts`.
+- [x] **3.7 Intake agent** → `ExtractedFacts`.
       Check: `pytest -m live tests/agents/test_intake.py` on TC-01 (Hindi) → `unpaid_wages`, wage 1800; TC-18 fills
       dates and wages from the story. Ports: `Build Intake Prompt`, `K2 Intake`, `Parse Intake`.
-- [ ] **3.8 Citation enforcement**: drop article ids that are not in the retrieved ∪ pack set, and move uncited findings to `not_covered`.
+      *Done 2 Oct:* `run_intake` (the form's answers then override the model's). Live K2: TC-01 → unpaid_wages, total 1800,
+      3 months unpaid, still employed; TC-18 → start 2025-05-01, total 2200, basic 1600. About 8 s per call.
+- [x] **3.8 Citation enforcement**: drop article ids that are not in the retrieved ∪ pack set, and move uncited findings to `not_covered`.
       Check: a unit test with a fabricated id → removed and finding moved. Ports: `enforceCitations` in `Parse Analyst`/`Parse Revision`.
+      *Done 2 Oct:* `enforce_citations` + `to_violations` (quotes come from our law text, never the model). 2 unit tests.
 - [ ] **3.9 Analyst → Critic → one revision**, plus a test-only `force_bad_citation` hook (enabled only by an env flag).
       Check: live TC-11 → critic `revise`, `revised=True`, final citation ≠ Art. 54(9). A unit test with mocked LLM
       proves at most one revision. Ports: `Build/K2/Parse Analyst`, `Build/K2/Parse Critic`, `Critic Passed?`, `Build/K2/Parse Revision`.

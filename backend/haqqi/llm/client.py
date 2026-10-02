@@ -13,6 +13,7 @@ import threading
 import time
 from collections.abc import Callable, Sequence
 from dataclasses import dataclass
+from typing import Protocol
 
 import httpx
 from pydantic import BaseModel, SecretStr, ValidationError
@@ -83,6 +84,14 @@ def _short_error(exc: Exception) -> str:
         parts = [f"{'.'.join(str(p) for p in e['loc'])}: {e['msg']}" for e in exc.errors()[:5]]
         return "; ".join(parts)
     return str(exc)[:200]
+
+
+class Completer(Protocol):
+    """What agents need from a client; `LLMClient` in production, a scripted fake in tests."""
+
+    def complete[T: BaseModel](
+        self, stage: str, messages: Sequence[Message], schema: type[T]
+    ) -> T: ...
 
 
 class LLMClient:
