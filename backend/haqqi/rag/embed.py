@@ -58,7 +58,10 @@ class CloudflareEmbedder:
     """
 
     MODEL = "@cf/baai/bge-m3"
+    # A request may hold at most 60k tokens in total; Arabic runs at roughly 1-2 tokens per
+    # character, so batches are capped by size as well as count.
     BATCH = 50  # texts per request
+    BATCH_CHARS = 12_000
 
     def __init__(self, account_id: str, api_token: str, client: httpx.Client | None = None) -> None:
         self._url = (
@@ -73,8 +76,7 @@ class CloudflareEmbedder:
 
     def embed(self, texts: Sequence[str]) -> list[list[float]]:
         vectors: list[list[float]] = []
-        for start in range(0, len(texts), self.BATCH):
-            batch = list(texts[start : start + self.BATCH])
+        for batch in self._batches(texts):
             resp = self._client.post(self._url, headers=self._headers, json={"text": batch})
             body = (
                 resp.json()
@@ -91,6 +93,17 @@ class CloudflareEmbedder:
                 raise RuntimeError("Cloudflare embedding returned an unexpected shape")
             vectors.extend(_normalise([float(x) for x in v]) for v in data)
         return vectors
+
+    def _batches(self, texts: Sequence[str]) -> list[list[str]]:
+        batches: list[list[str]] = []
+        size = 0
+        for text in texts:
+            if not batches or len(batches[-1]) >= self.BATCH or size + len(text) > self.BATCH_CHARS:
+                batches.append([])
+                size = 0
+            batches[-1].append(text)
+            size += len(text)
+        return batches
 
 
 def get_embedder(settings: Settings) -> Embedder:

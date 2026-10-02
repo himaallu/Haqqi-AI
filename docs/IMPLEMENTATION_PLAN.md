@@ -187,7 +187,7 @@ data sent to them for training, which would break the PRD's "no training on user
       Check: `alembic upgrade head` on a fresh DB; `\d law_chunks` shows the vector + GIN indexes. Ports: new.
       *Done 2 Oct:* untyped `vector` column (model-agnostic) and no vector index (exact search over a few hundred rows);
       GIN indexes on `tsv_en`, `tsv_ar` (Postgres `arabic` config works, flag 16) and `topic_tags`. `make db` = migrate + ingest.
-- [ ] **2.5 Embedder interface** (flag 15): the `Embedder` protocol, a local open-model implementation, and a deterministic fake for tests.
+- [x] **2.5 Embedder interface** (flag 15): the `Embedder` protocol, a local open-model implementation, and a deterministic fake for tests.
       Check: a unit test with the fake embedder; the local model embeds one Hindi and one Arabic sentence with the expected
       dimension, and memory stays within the host's limit. Ports: new.
       *2 Oct:* `Embedder` protocol + deterministic `HashEmbedder` done and tested; the real model needs huggingface.co
@@ -195,6 +195,9 @@ data sent to them for training, which would break the PRD's "no training on user
       *2 Oct:* `CloudflareEmbedder` (BGE-M3, 1024-d, batches of 50, normalised) done, with mocked HTTP tests. Dense search
       skips stored vectors of another dimension. Waiting on your Cloudflare account ID + token to run the live
       Hindi/Arabic test (`make test-live`).
+      *Done 2 Oct:* the live test passes: Hindi and Arabic each land closest to the English equivalent, 1024-d. Requests are
+      capped by size as well as count (Cloudflare allows 60k tokens per request). A full ingest of 375 chunks takes about 14 s.
+      Memory is not a concern because the model is hosted.
 - [x] **2.6 `python -m haqqi.ingest`**: rebuilds the index from `data/law/*.json` idempotently.
       Check: run it twice → same row count; `select count(*) from law_chunks` ≈ articles × clauses. Ports: new.
       *Done 2 Oct:* two runs → 44 rows each (provisional data); rebuild is one transaction.
@@ -202,12 +205,16 @@ data sent to them for training, which would break the PRD's "no training on user
       with Law Pack chunks for the intake `issue_types` (+RELATED, +ALWAYS).
       Check: `pytest tests/rag/test_retrieve.py` (a fake-embedder test proves RRF ordering and pack merge). Ports: `Law Pack` (topic selection).
       *Done 2 Oct:* RRF + pack-merge unit tests, plus a live Postgres test (gratuity query → Art. 51 first, Art. 54(9) always included).
-- [ ] **2.8 Eyeball 10 queries**: `python -m haqqi.rag.probe "<query>"` for 10 queries in EN/HI/AR, results saved to
-      `eval/retrieval_probe.md`.
+- [x] **2.8 Eyeball 10 queries**: `python -m haqqi.rag.probe "<query>"` for 10 queries in EN/HI/AR, results saved to
+      `eval/retrieval_probe_<EMBEDDER>.md`.
       Check: at least 8/10 have the expected article in the top 5 (by eye). Ports: new.
       *2 Oct:* `python -m haqqi.rag.probe` (one query, or `--all` → `eval/retrieval_probe_<EMBEDDER>.md`), search only
       with no pack top-up. Keyword-only baseline (hash embedder): **5/10**. Hindi and paraphrased English miss. The BGE-M3
       run follows once the Cloudflare token is set.
+      *Done 2 Oct:* BGE-M3 hybrid scored **7/10**. Full-text search then changed from all-words (AND) to any-word (OR),
+      still ranked by `ts_rank`, which gave **8/10** (`eval/retrieval_probe_cloudflare.md`). Remaining misses: "salary unpaid"
+      in HI/AR should find Art. 22(2), but search alone doesn't reach it. In the real flow the `unpaid_wages` Law Pack adds Art. 22,
+      and Sprint 3 queries with the Intake's English summary.
 
 ## Sprint 3 — Core logic (PRD Block 3)
 *(3a = tasks 3.1–3.4: no LLM, runs even if K2 is down. 3b = tasks 3.5–3.11: agents.)*

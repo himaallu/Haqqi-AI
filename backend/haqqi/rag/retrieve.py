@@ -57,8 +57,12 @@ def fulltext_ranking(conn: psycopg.Connection, query: str, limit: int) -> list[s
     rows = conn.execute(
         """
         SELECT id FROM law_chunks,
-               websearch_to_tsquery('english', %(q)s) AS qe,
-               websearch_to_tsquery('arabic', %(q)s) AS qa
+               -- Any query term may match (OR): a worker's words rarely all appear in one clause;
+               -- ts_rank still puts clauses matching more terms first.
+               (SELECT replace(websearch_to_tsquery('english', %(q)s)::text, '&', '|')::tsquery)
+                   AS e(qe),
+               (SELECT replace(websearch_to_tsquery('arabic', %(q)s)::text, '&', '|')::tsquery)
+                   AS a(qa)
         WHERE tsv_en @@ qe OR tsv_ar @@ qa
         ORDER BY greatest(ts_rank(tsv_en, qe), ts_rank(tsv_ar, qa)) DESC, id
         LIMIT %(limit)s
