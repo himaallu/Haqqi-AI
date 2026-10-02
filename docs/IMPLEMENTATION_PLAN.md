@@ -249,10 +249,14 @@ data sent to them for training, which would break the PRD's "no training on user
       *Done 2 Oct:* `haqqi/api/schemas.py` `CreateCaseRequest` (story 1–8,000 chars, contract ≤ 4,000, wage bounds, no extra
       keys; control/bidi characters stripped). `haqqi/core/untrusted.py` `wrap_worker_data` removes any copy of the delimiters
       from inside the story, so it can't close the fence early.
-- [ ] **3.5 K2 client** `haqqi/llm/client.py`: OpenAI-compatible httpx client that strips `<think>` and fences, parses into a
+- [x] **3.5 K2 client** `haqqi/llm/client.py`: OpenAI-compatible httpx client that strips `<think>` and fences, parses into a
       Pydantic model, retries once on invalid JSON then raises `LLMOutputError`, uses per-call timeouts, and has a fallback-provider
       hook (flag 18).
       Check: unit tests with recorded responses (valid, fenced, think-tag, invalid×2 → error). Ports: `K2 Intake/Analyst/Critic/Revise/Writer` (HTTP) + the `parseK2` function.
+      *Done 2 Oct:* `LLMClient.complete(stage, messages, schema)`. Parsing: strips `<think>` and fences, keeps the outer object,
+      Pydantic. Bad output gets one correction retry, then `LLMOutputError`. Transport: 40 s timeout, one retry on 5xx or
+      timeout, 429 honours Retry-After, next provider, then `LLMUnavailable`. Calls are serialised with a 0.5 s gap
+      (2 req/s) at temperature 0. Logs show only stage, latency and token counts. 10 tests.
 - [ ] **3.6 Prompts** `haqqi/rag/prompts/*.md`: the Intake, Analyst, Critic, Revision and Writer prompts, starting from the n8n
       prompts and rewritten where needed. Each material change is recorded in `haqqi/rag/prompts/CHANGES.md` for review.
       Arabic letter template in `haqqi/pdf/template_ar.txt`.

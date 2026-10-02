@@ -1,7 +1,8 @@
 import httpx
 from pydantic import SecretStr
 
-from haqqi.llm.smoke import Provider, smoke
+from haqqi.llm.client import Provider
+from haqqi.llm.smoke import smoke
 
 KEY = "sk-test-secret-123"
 

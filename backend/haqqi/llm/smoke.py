@@ -9,17 +9,9 @@ import time
 from dataclasses import dataclass, field
 
 import httpx
-from pydantic import SecretStr
 
 from haqqi.config import Settings, get_settings
-
-
-@dataclass
-class Provider:
-    name: str
-    base_url: str
-    model: str
-    api_key: SecretStr | None
+from haqqi.llm.client import Provider
 
 
 @dataclass
