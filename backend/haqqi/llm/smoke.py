@@ -38,14 +38,26 @@ def providers(settings: Settings) -> list[Provider]:
     ]
 
 
+def _error_message(resp: httpx.Response) -> str:
+    """The provider's own error text, shortened. OpenAI-style APIs put it in error.message."""
+    try:
+        body = resp.json()
+        error = body.get("error", body) if isinstance(body, dict) else body
+        text = error.get("message", str(error)) if isinstance(error, dict) else str(error)
+    except ValueError:
+        text = resp.text
+    return " ".join(str(text).split())[:200]
+
+
 def smoke(provider: Provider, client: httpx.Client) -> SmokeResult:
     if provider.api_key is None or not provider.api_key.get_secret_value():
         return SmokeResult(provider.name, ok=False, detail="skipped: no API key set")
 
+    url = f"{provider.base_url.rstrip('/')}/chat/completions"
     started = time.perf_counter()
     try:
         resp = client.post(
-            f"{provider.base_url.rstrip('/')}/chat/completions",
+            url,
             headers={"Authorization": f"Bearer {provider.api_key.get_secret_value()}"},
             json={
                 "model": provider.model,
@@ -59,7 +71,9 @@ def smoke(provider: Provider, client: httpx.Client) -> SmokeResult:
     rate_limits = {k: v for k, v in resp.headers.items() if "ratelimit" in k.lower()}
 
     if resp.status_code != 200:
-        return SmokeResult(provider.name, False, f"HTTP {resp.status_code}", latency, rate_limits)
+        message = _error_message(resp).replace(provider.api_key.get_secret_value(), "***")
+        detail = f"HTTP {resp.status_code} from {url} (model {provider.model}): {message}"
+        return SmokeResult(provider.name, False, detail, latency, rate_limits)
     try:
         reply = resp.json()["choices"][0]["message"]["content"] or ""
     except (ValueError, KeyError, IndexError, TypeError):

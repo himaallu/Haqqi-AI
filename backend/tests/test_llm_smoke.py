@@ -39,7 +39,17 @@ def test_reports_reply_latency_and_rate_limits_without_leaking_key() -> None:
     assert KEY not in repr(result)
 
 
-def test_reports_http_error_status() -> None:
-    result = smoke(provider(), client_returning(401, {"error": "bad key"}))
+def test_reports_http_error_status_with_provider_message() -> None:
+    body = {"error": {"message": "The model `m` does not exist or you do not have access to it."}}
+    result = smoke(provider(), client_returning(404, body))
     assert not result.ok
-    assert result.detail == "HTTP 401"
+    expected_start = "HTTP 404 from https://llm.example/v1/chat/completions (model m)"
+    assert result.detail.startswith(expected_start)
+    assert "does not exist" in result.detail
+
+
+def test_error_message_never_contains_the_key() -> None:
+    result = smoke(provider(), client_returning(401, {"error": f"Invalid API key {KEY}"}))
+    assert not result.ok
+    assert KEY not in result.detail
+    assert "***" in result.detail
