@@ -241,8 +241,11 @@ data sent to them for training, which would break the PRD's "no training on user
       Check: table test with TC-07, 08, 09, 14, 15, 16, 17 → expected route. Ports: `Parse Intake` (override + critical_missing), `Route Case`.
       *Done 2 Oct:* `route_case(extracted, form_zone, form_worker_type)`. The form answer wins over the model in both directions
       ("not sure" falls back to the model). Referral texts for domestic, DIFC/ADGM and free zone include 80084. The table covers TC-01/07/08/09/14/15/16/17.
-- [ ] **3.4 Input normalisation**: a request schema with length limits; the story is wrapped in `<<<WORKER_DATA>>>` delimiters.
+- [x] **3.4 Input normalisation**: a request schema with length limits; the story is wrapped in `<<<WORKER_DATA>>>` delimiters.
       Check: an 8,001-char story → 422; a unit test shows the delimiter wrapping. Ports: `Normalize Input`.
+      *Done 2 Oct:* `haqqi/api/schemas.py` `CreateCaseRequest` (story 1–8,000 chars, contract ≤ 4,000, wage bounds, no extra
+      keys; control/bidi characters stripped). `haqqi/core/untrusted.py` `wrap_worker_data` removes any copy of the delimiters
+      from inside the story, so it can't close the fence early.
 - [ ] **3.5 K2 client** `haqqi/llm/client.py`: OpenAI-compatible httpx client that strips `<think>` and fences, parses into a
       Pydantic model, retries once on invalid JSON then raises `LLMOutputError`, uses per-call timeouts, and has a fallback-provider
       hook (flag 18).
