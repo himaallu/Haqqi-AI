@@ -205,6 +205,9 @@ data sent to them for training, which would break the PRD's "no training on user
 - [ ] **2.8 Eyeball 10 queries**: `python -m haqqi.rag.probe "<query>"` for 10 queries in EN/HI/AR, results saved to
       `eval/retrieval_probe.md`.
       Check: at least 8/10 have the expected article in the top 5 (by eye). Ports: new.
+      *2 Oct:* `python -m haqqi.rag.probe` (one query, or `--all` → `eval/retrieval_probe_<EMBEDDER>.md`), search only
+      with no pack top-up. Keyword-only baseline (hash embedder): **5/10**. Hindi and paraphrased English miss. The BGE-M3
+      run follows once the Cloudflare token is set.
 
 ## Sprint 3 — Core logic (PRD Block 3)
 *(3a = tasks 3.1–3.4: no LLM, runs even if K2 is down. 3b = tasks 3.5–3.11: agents.)*
