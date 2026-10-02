@@ -236,9 +236,11 @@ data sent to them for training, which would break the PRD's "no training on user
       unknown ids. Decisions: flexible contracts → gratuity "not calculated, ask MOHRE"; an under-one-year gratuity shows
       0.00 with the reason. TC-21 is 18,381.37 under the whole-day rule; n8n's `max_total` 18,366 used ÷365.25, so the
       Sprint 7 eval row uses our figure.
-- [ ] **3.3 Routing** `haqqi/core/routing.py`: out_of_scope (free zone/DIFC/ADGM/domestic by form or story), need_info
+- [x] **3.3 Routing** `haqqi/core/routing.py`: out_of_scope (free zone/DIFC/ADGM/domestic by form or story), need_info
       (no wage or no start date), ready. The form overrides the model.
       Check: table test with TC-07, 08, 09, 14, 15, 16, 17 → expected route. Ports: `Parse Intake` (override + critical_missing), `Route Case`.
+      *Done 2 Oct:* `route_case(extracted, form_zone, form_worker_type)`. The form answer wins over the model in both directions
+      ("not sure" falls back to the model). Referral texts for domestic, DIFC/ADGM and free zone include 80084. The table covers TC-01/07/08/09/14/15/16/17.
 - [ ] **3.4 Input normalisation**: a request schema with length limits; the story is wrapped in `<<<WORKER_DATA>>>` delimiters.
       Check: an 8,001-char story → 422; a unit test shows the delimiter wrapping. Ports: `Normalize Input`.
 - [ ] **3.5 K2 client** `haqqi/llm/client.py`: OpenAI-compatible httpx client that strips `<think>` and fences, parses into a
