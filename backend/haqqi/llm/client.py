@@ -12,7 +12,7 @@ import re
 import threading
 import time
 from collections.abc import Callable, Sequence
-from dataclasses import dataclass
+from dataclasses import dataclass, field
 from typing import Protocol
 
 import httpx
@@ -48,6 +48,21 @@ class Provider:
     base_url: str
     model: str
     api_key: SecretStr | None
+    extra: dict[str, object] = field(default_factory=dict)  # provider-specific request fields
+
+
+def providers_from_settings(settings: Settings) -> list[Provider]:
+    """The configured primary provider first, the other as fallback (flag 18)."""
+    gemini = Provider(
+        "gemini",
+        settings.gemini_base_url,
+        settings.gemini_model,
+        settings.gemini_api_key,
+        # Less hidden "thinking" means faster replies; our prompts ask for extraction and JSON.
+        extra={"reasoning_effort": "low"},
+    )
+    k2 = Provider("k2", settings.k2_base_url, settings.k2_model, settings.k2_api_key)
+    return [gemini, k2] if settings.llm_provider == "gemini" else [k2, gemini]
 
 
 @dataclass(frozen=True)
@@ -109,7 +124,7 @@ class LLMClient:
 
     @classmethod
     def from_settings(cls, settings: Settings) -> "LLMClient":
-        return cls([Provider("k2", settings.k2_base_url, settings.k2_model, settings.k2_api_key)])
+        return cls(providers_from_settings(settings))
 
     def complete[T: BaseModel](self, stage: str, messages: Sequence[Message], schema: type[T]) -> T:
         """Chat call parsed into `schema`; one correction retry on bad output."""
@@ -135,7 +150,7 @@ class LLMClient:
 
     def _chat(self, stage: str, messages: Sequence[Message]) -> str:
         if not self._providers:
-            raise LLMUnavailable("no LLM provider configured (K2_API_KEY is empty)")
+            raise LLMUnavailable("no LLM provider configured (set GEMINI_API_KEY or K2_API_KEY)")
         for provider in self._providers:
             for attempt in (1, 2):
                 outcome = self._post(stage, provider, messages)
@@ -163,6 +178,7 @@ class LLMClient:
                     "model": provider.model,
                     "messages": [m.as_dict() for m in messages],
                     "temperature": 0,
+                    **provider.extra,
                 },
                 timeout=TIMEOUT_S,
             )

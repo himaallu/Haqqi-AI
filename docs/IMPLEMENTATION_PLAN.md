@@ -117,6 +117,12 @@ Legend: **BLOCKER** = decide before the sprint that needs it; **RISK** = plan ar
     (LLM-judge vs hand labels). Proposal: hand-label `supported` per expected article in cases.jsonl; LLM-judge is optional.
 25. **RISK: schedule.** 8 × 2 h blocks for this scope is very tight. Follow the PRD cut order. Sprint 3 is the biggest; split
     its agent work into 3a (calculator/routing, no LLM) and 3b (agents) so the deterministic core lands even if K2 is down.
+26. **DECISION (2 Oct): Gemini free tier for the LLM.** You chose free-tier Gemini (with K2 as fallback) to cut latency.
+    Google's terms say free-tier content may be used to improve its products and read by human reviewers. That deviates
+    from the PRD's "no training on user data". Mitigations:
+    - The story screen tells workers not to include names, phone numbers, passport, Emirates ID or labour card numbers (S4, task 4.3).
+    - The results page and disclaimer say the text is processed by Google Gemini (S8, task 8.7).
+    - Billing can be enabled later to move to the paid tier, which doesn't use data for training, without a code change.
 
 ## 0.1 Free stack (replaces the PRD's paid choices)
 
@@ -130,7 +136,7 @@ data sent to them for training, which would break the PRD's "no training on user
 | Database | Supabase free (Postgres + pgvector) | Pauses after inactivity; Neon free as alternative |
 | Embeddings | Cloudflare Workers AI, BGE-M3 (flag 15) | 10k neurons/day free; no training on content; ingest and queries use the same model |
 | Speech | **Decided in Sprint 6** | Groq's free tier gave our key no model access (HTTP 404, 2 Oct); pick a free speech-to-text option in task 6.1 |
-| LLM | K2 hosted API only (v1) | 2 req/s, 10M tokens/day. No backup in v1 (user decision, 2 Oct); the client keeps a provider slot |
+| LLM | Gemini free tier (`gemini-2.5-flash`), K2 as fallback (user decision, 2 Oct) | K2 made one case take 153 s, so Gemini is now primary. Free tier: rate limits, and Google may use the data (flag 26). `LLM_PROVIDER=k2` reverses the order |
 | PDF | WeasyPrint + Noto Naskh Arabic | Open source |
 | Tracing / errors | Langfuse Cloud Hobby / Sentry free | PII redacted before sending |
 

@@ -11,7 +11,13 @@ from pydantic_settings import BaseSettings, NoDecode, SettingsConfigDict
 class Settings(BaseSettings):
     model_config = SettingsConfigDict(env_file=".env", env_file_encoding="utf-8", extra="ignore")
 
-    # Primary LLM: K2 Horizon hosted API (OpenAI-compatible).
+    # LLM: Gemini (free tier, OpenAI-compatible endpoint) first, K2 as fallback; see flag 26.
+    llm_provider: Literal["gemini", "k2"] = "gemini"
+    gemini_api_key: SecretStr | None = None
+    gemini_base_url: str = "https://generativelanguage.googleapis.com/v1beta/openai"
+    gemini_model: str = "gemini-2.5-flash"
+
+    # K2 Horizon hosted API (OpenAI-compatible).
     k2_api_key: SecretStr | None = None
     k2_base_url: str = "https://api.ifm.ai/v1"
     k2_model: str = "IFM/K2-Horizon-375B-A23B"

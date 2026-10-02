@@ -4,6 +4,7 @@ import httpx
 import pytest
 from pydantic import BaseModel, SecretStr
 
+from haqqi.config import Settings
 from haqqi.llm.client import (
     LLMClient,
     LLMOutputError,
@@ -11,6 +12,7 @@ from haqqi.llm.client import (
     Message,
     Provider,
     extract_json,
+    providers_from_settings,
 )
 
 
@@ -123,3 +125,40 @@ def test_no_key_configured_is_unavailable() -> None:
 def test_extract_json_rejects_text_without_an_object() -> None:
     with pytest.raises(ValueError):
         extract_json("I cannot help with that.")
+
+
+def test_settings_put_the_chosen_provider_first_and_send_gemini_extras() -> None:
+    settings = Settings(_env_file=None, gemini_api_key="g", k2_api_key="k")
+    names = [p.name for p in providers_from_settings(settings)]
+    assert names == ["gemini", "k2"]
+
+    k2_first = Settings(_env_file=None, llm_provider="k2", gemini_api_key="g", k2_api_key="k")
+    assert [p.name for p in providers_from_settings(k2_first)] == ["k2", "gemini"]
+
+    seen: list[dict[str, object]] = []
+    client, _ = client_for([reply('{"verdict": "pass", "score": 1}')], seen)
+    gemini = providers_from_settings(settings)[0]
+    client = LLMClient([gemini], http=client._http, sleep=_no_sleep)
+    client.complete("intake", ASK, Verdict)
+    assert seen[0]["reasoning_effort"] == "low"
+    assert seen[0]["model"] == "gemini-2.5-flash"
+
+
+def test_free_tier_quota_falls_back_to_k2() -> None:
+    hosts: list[str] = []
+
+    def handler(request: httpx.Request) -> httpx.Response:
+        hosts.append(request.url.host)
+        if request.url.host == "generativelanguage.googleapis.com":
+            return httpx.Response(429, headers={"retry-after": "1"}, json={})
+        return reply('{"verdict": "pass", "score": 4}')
+
+    settings = Settings(_env_file=None, gemini_api_key="g", k2_api_key="k")
+    client = LLMClient(
+        providers_from_settings(settings),
+        http=httpx.Client(transport=httpx.MockTransport(handler)),
+        sleep=_no_sleep,
+    )
+
+    assert client.complete("intake", ASK, Verdict).score == 4
+    assert hosts == ["generativelanguage.googleapis.com"] * 2 + ["api.ifm.ai"]

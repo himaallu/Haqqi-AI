@@ -29,7 +29,7 @@ root, so there is nothing to push by hand: every commit touching `backend/` rede
 2. **New → Blueprint** → pick `himaallu/Haqqi-AI`. Render reads `render.yaml` and shows one web service,
    `haqqi-api` (free plan, Frankfurt).
 3. Fill in the secrets it asks for: `DATABASE_URL` (the Supabase Session pooler URI from step 1),
-   `K2_API_KEY`, `GROQ_API_KEY`, and `CLOUDFLARE_ACCOUNT_ID` + `CLOUDFLARE_API_TOKEN` (step 2b below).
+   `GEMINI_API_KEY` (step 2c), `K2_API_KEY` (fallback), `GROQ_API_KEY`, and `CLOUDFLARE_ACCOUNT_ID` + `CLOUDFLARE_API_TOKEN` (step 2b below).
    `CORS_ORIGINS` and `EMBEDDER` are already set in `render.yaml`.
 4. **Apply**. The first build takes a few minutes; watch it under the service's **Logs**.
 5. Check: `curl https://haqqi-api.onrender.com/healthz` → `{"status":"ok","db":"ok",...}`.
@@ -56,6 +56,16 @@ about 60k tokens). Cloudflare does not use request content to train models or im
    (law vectors must come from the same embedder as queries).
 `render.yaml` deploys the `main` branch: merging a pull request redeploys the backend.
 
+## 2c. LLM: Gemini free tier (K2 as fallback)
+
+1. Sign in at https://aistudio.google.com/apikey with a Google account and **Create API key** (no billing needed).
+2. Put it in Render as `GEMINI_API_KEY`, in the Claude Code cloud environment's variables, and in your local
+   `backend/.env`. Never paste it in chat.
+3. Check: `cd backend && uv run python -m haqqi.llm.smoke` shows `gemini OK`.
+
+Free tier: requests are rate-limited, and Google may use free-tier content to improve its products (including human
+review). See flag 26 in the plan. `LLM_PROVIDER=k2` switches back to K2 first.
+
 ## 3. Frontend: Vercel
 
 1. Import the GitHub repo in Vercel; set **Root Directory** to `frontend` (Vercel detects Next.js and pnpm).
@@ -72,5 +82,5 @@ Never paste keys or passwords into a chat, issue or commit. Put them in the host
 `.env` (git-ignored), or in the Claude Code cloud environment's environment variables. If a key is exposed,
 revoke it and create a new one.
 
-`uv run python -m haqqi.llm.smoke` (from `backend/`, with keys in `.env`) makes one call to K2 and one to
-Groq and prints latency and rate-limit headers. It never prints the keys.
+`uv run python -m haqqi.llm.smoke` (from `backend/`, with keys in `.env`) makes one call to each LLM
+provider (Gemini, K2, Groq) and prints latency and rate-limit headers. It never prints the keys.
