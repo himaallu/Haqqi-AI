@@ -261,6 +261,9 @@ data sent to them for training, which would break the PRD's "no training on user
       prompts and rewritten where needed. Each material change is recorded in `haqqi/rag/prompts/CHANGES.md` for review.
       Arabic letter template in `haqqi/pdf/template_ar.txt`.
       Check: you review and approve CHANGES.md; prompt snapshot tests pass. Ports: `Build Intake/Analyst/Critic/Revision/Writer Prompt`.
+      *2 Oct:* the prompts, the message builders (`haqqi/agents/messages.py`) and the Arabic template are written, with 12 snapshot
+      and safety tests (one fence per message, the writer sees money only as `[[AMOUNT_n]]`). **Waiting for your review of
+      `haqqi/rag/prompts/CHANGES.md`** before ticking.
 - [ ] **3.7 Intake agent** → `ExtractedFacts`.
       Check: `pytest -m live tests/agents/test_intake.py` on TC-01 (Hindi) → `unpaid_wages`, wage 1800; TC-18 fills
       dates and wages from the story. Ports: `Build Intake Prompt`, `K2 Intake`, `Parse Intake`.

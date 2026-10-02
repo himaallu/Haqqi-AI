@@ -138,9 +138,16 @@ class ClaimLine(_Model):
     note: str = ""
 
 
+class CriticProblem(_Model):
+    where: str
+    problem: str
+    fix: str
+
+
 class CriticReport(_Model):
     verdict: Literal["pass", "revise"]
-    problems: list[str] = []
+    problems: list[CriticProblem] = []
+    missed_issues: list[str] = []
 
 
 class WriterOutput(_Model):
@@ -148,7 +155,7 @@ class WriterOutput(_Model):
 
     headline: str
     explanation: str  # in the worker's language
-    next_steps: list[str]
+    amount_lines: list[str]  # one per claim line, in the worker's language
     checklist: list[str]
     arabic_letter: str
     letter_translation: str  # the letter in the worker's language (flag 9)
