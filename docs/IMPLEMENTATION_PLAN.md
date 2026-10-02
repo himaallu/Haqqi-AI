@@ -36,8 +36,8 @@ Legend: **BLOCKER** = decide before the sprint that needs it; **RISK** = plan ar
    clear, gratuity is prorated by it (with tests). If not, the gratuity line says "not calculated: ask MOHRE".
    Every other line is calculated normally for part-time workers.
    *2 Oct, S2 finding:* CR 1/2022 Art. 30(1) is clear: part-time gratuity = (annual contract hours ÷ annual
-   full-time hours) × the full-time gratuity. So we prorate. **Open for S3:** the full-time base. Proposal: 48 h/week,
-   the FDL Art. 17(1) maximum.
+   full-time hours) × the full-time gratuity. So we prorate. **RESOLVED (2 Oct, your choice):** the
+   full-time base is 48 h/week (FDL Art. 17(1) maximum), so ratio = `weekly_hours ÷ 48`; the formula line states it.
 5. **BLOCKER (S3): deductions and leave.** The PRD calculator table has no deduction rule, yet F4 lists "deductions".
    n8n refunds the *whole* reported deduction. Leave encashment is in the PRD but **not** in the n8n calculator.
    TC-22 (still employed, leave refused) expects total 0.
@@ -91,6 +91,7 @@ Legend: **BLOCKER** = decide before the sprint that needs it; **RISK** = plan ar
     may use free-tier content to improve its products, including human review.
 16. **RISK: Arabic full-text search.** "BM25-style" in Postgres is really `ts_rank`. Arabic stemming needs the `arabic`
     text-search config on Supabase/Neon, so verify it in S2. Fallback: `simple` config on normalized Arabic (strip tashkeel).
+    *2 Oct:* confirmed on Supabase. Migration 0001 builds `tsv_ar` with `to_tsvector('arabic', …)`, and it applied cleanly.
 17. **RISK: Arabic PDF extraction.** Official Arabic PDFs often extract with broken glyph order. n8n already notes
     Art. 17(1) failed to extract. Budget time and keep a hand-corrected `data/law/*.json` as the canonical source.
     The ingest script reads the JSON, and the PDFs are provenance only.
@@ -201,6 +202,8 @@ data sent to them for training, which would break the PRD's "no training on user
 - [x] **2.6 `python -m haqqi.ingest`**: rebuilds the index from `data/law/*.json` idempotently.
       Check: run it twice → same row count; `select count(*) from law_chunks` ≈ articles × clauses. Ports: new.
       *Done 2 Oct:* two runs → 44 rows each (provisional data); rebuild is one transaction.
+      *2 Oct:* Supabase migrated (`0001`) and indexed with `EMBEDDER=cloudflare`: 375 chunks (run from the laptop; this
+      sandbox can't reach Postgres on 5432).
 - [x] **2.7 Hybrid retrieval**: dense (pgvector cosine) + FTS (EN + AR config, flag 16) → RRF (k=60) → top 8, merged
       with Law Pack chunks for the intake `issue_types` (+RELATED, +ALWAYS).
       Check: `pytest tests/rag/test_retrieve.py` (a fake-embedder test proves RRF ordering and pack merge). Ports: `Law Pack` (topic selection).
@@ -219,21 +222,33 @@ data sent to them for training, which would break the PRD's "no training on user
 ## Sprint 3 — Core logic (PRD Block 3)
 *(3a = tasks 3.1–3.4: no LLM, runs even if K2 is down. 3b = tasks 3.5–3.11: agents.)*
 
-- [ ] **3.1 Pydantic models**: `ExtractedFacts`, `CaseFacts`, `Citation`, `Violation`, `ClaimLine`, `Analysis`,
+- [x] **3.1 Pydantic models**: `ExtractedFacts`, `CaseFacts`, `Citation`, `Violation`, `ClaimLine`, `Analysis`,
       `CriticReport`, `WriterOutput`, `Emirate` (flags 12–13). Money fields are `Decimal`.
       Check: `mypy --strict haqqi/core haqqi/models.py`; a round-trip JSON test. Ports: the JSON contracts in `Build * Prompt` nodes.
-- [ ] **3.2 Calculator** `haqqi/core/calculator.py`: gratuity (Art. 51, eligibility, 21/30 days, 2-year cap, unpaid absence),
+      *Done 2 Oct:* `haqqi/models.py`; strict `CaseFacts` validates basic ≤ total, end date vs termination, no extra keys.
+      Added `deducted_monthly_aed` (optional) so the Art. 25(2) 50% check compares like with like; `ClaimLine.amount_aed`
+      is `None` for "not calculated" lines.
+- [x] **3.2 Calculator** `haqqi/core/calculator.py`: gratuity (Art. 51, eligibility, 21/30 days, 2-year cap, unpaid absence),
       unpaid wages, notice pay, notice pay owed *by* a worker who resigned without notice (separate line, flag 2),
       deductions refund, leave encashment, `above_mohre_limit` (50,000), each with `formula` +
       `Citation`. Constants live in one `CONFIG` block and Decimal rounding is ROUND_HALF_UP to 0.01. Rules follow flags 2–6.
       Check: `pytest tests/core/test_calculator.py` → 100%, covering hand-worked TC-01 and TC-03 plus exactly-1-year,
       exactly-5-years, cap-hit (TC-20), part-time, still-employed (no gratuity), and TC-21. Calculations are written out in
       `tests/core/CASES.md`. Ports: `Calculator`.
-- [ ] **3.3 Routing** `haqqi/core/routing.py`: out_of_scope (free zone/DIFC/ADGM/domestic by form or story), need_info
+      *Done 2 Oct:* 23 tests, all matching hand-worked figures in CASES.md. Every line cites a real clause, and `cite()` rejects
+      unknown ids. Decisions: flexible contracts → gratuity "not calculated, ask MOHRE"; an under-one-year gratuity shows
+      0.00 with the reason. TC-21 is 18,381.37 under the whole-day rule; n8n's `max_total` 18,366 used ÷365.25, so the
+      Sprint 7 eval row uses our figure.
+- [x] **3.3 Routing** `haqqi/core/routing.py`: out_of_scope (free zone/DIFC/ADGM/domestic by form or story), need_info
       (no wage or no start date), ready. The form overrides the model.
       Check: table test with TC-07, 08, 09, 14, 15, 16, 17 → expected route. Ports: `Parse Intake` (override + critical_missing), `Route Case`.
-- [ ] **3.4 Input normalisation**: a request schema with length limits; the story is wrapped in `<<<WORKER_DATA>>>` delimiters.
+      *Done 2 Oct:* `route_case(extracted, form_zone, form_worker_type)`. The form answer wins over the model in both directions
+      ("not sure" falls back to the model). Referral texts for domestic, DIFC/ADGM and free zone include 80084. The table covers TC-01/07/08/09/14/15/16/17.
+- [x] **3.4 Input normalisation**: a request schema with length limits; the story is wrapped in `<<<WORKER_DATA>>>` delimiters.
       Check: an 8,001-char story → 422; a unit test shows the delimiter wrapping. Ports: `Normalize Input`.
+      *Done 2 Oct:* `haqqi/api/schemas.py` `CreateCaseRequest` (story 1–8,000 chars, contract ≤ 4,000, wage bounds, no extra
+      keys; control/bidi characters stripped). `haqqi/core/untrusted.py` `wrap_worker_data` removes any copy of the delimiters
+      from inside the story, so it can't close the fence early.
 - [ ] **3.5 K2 client** `haqqi/llm/client.py`: OpenAI-compatible httpx client that strips `<think>` and fences, parses into a
       Pydantic model, retries once on invalid JSON then raises `LLMOutputError`, uses per-call timeouts, and has a fallback-provider
       hook (flag 18).
