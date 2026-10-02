@@ -36,8 +36,8 @@ Legend: **BLOCKER** = decide before the sprint that needs it; **RISK** = plan ar
    clear, gratuity is prorated by it (with tests). If not, the gratuity line says "not calculated: ask MOHRE".
    Every other line is calculated normally for part-time workers.
    *2 Oct, S2 finding:* CR 1/2022 Art. 30(1) is clear: part-time gratuity = (annual contract hours ÷ annual
-   full-time hours) × the full-time gratuity. So we prorate. **Open for S3:** the full-time base. Proposal: 48 h/week,
-   the FDL Art. 17(1) maximum.
+   full-time hours) × the full-time gratuity. So we prorate. **RESOLVED (2 Oct, your choice):** the
+   full-time base is 48 h/week (FDL Art. 17(1) maximum), so ratio = `weekly_hours ÷ 48`; the formula line states it.
 5. **BLOCKER (S3): deductions and leave.** The PRD calculator table has no deduction rule, yet F4 lists "deductions".
    n8n refunds the *whole* reported deduction. Leave encashment is in the PRD but **not** in the n8n calculator.
    TC-22 (still employed, leave refused) expects total 0.
