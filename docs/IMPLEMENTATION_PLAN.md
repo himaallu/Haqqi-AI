@@ -278,9 +278,12 @@ data sent to them for training, which would break the PRD's "no training on user
       *Done 2 Oct:* `run_analysis` enforces citations after every reply. Seeding only happens when the caller passes it, and
       the API passes it only when `HAQQI_TEST_HOOKS=1`. Live TC-11: critic `revise` → one revision → Art. 54(9) gone.
       3 calls took 7 + 11 + 5 s. 3 unit tests use a scripted fake LLM.
-- [ ] **3.10 Writer agent** → `WriterOutput` (worker-language text + Arabic letter + translation, flag 9). Rejects output with no
+- [x] **3.10 Writer agent** → `WriterOutput` (worker-language text + Arabic letter + translation, flag 9). Rejects output with no
       Arabic script, and amounts are injected from the calculator, never the LLM.
       Check: live TC-03 → `arabic_letter` matches `[؀-ۿ]`; every AED figure in the text equals a calculator figure (regex test). Ports: `Build Writer Prompt`, `K2 Writer`, `Parse Writer`.
+      *Done 2 Oct:* `run_writer` fills `[[AMOUNT_n]]`/`[[TOTAL]]` from the calculator. One retry, then an error, if the letter
+      has no Arabic (checked before filling), a token is unknown, or any figure next to AED/درهم (Arabic-Indic digits too)
+      is not a calculator figure. Live TC-03 passed (35 s; 3.8k output tokens). 7 unit tests.
 - [ ] **3.11 Orchestrator + API**: `POST /v1/cases`, `PATCH /v1/cases/{id}`, `POST /v1/cases/{id}/analyze` (SSE events:
       `retrieving`, `calculating`, `analysing`, `critiquing`, `revising`, `writing`, `done`). Case ids are UUIDv4.
       Check: `curl -N` shows ordered stage events, then an `Analysis` JSON; TC-07 returns a referral with no violations. Ports: the `connections` graph; `Assemble Case Pack`; `Out-of-Scope Reply`; `Need-Info Reply`.
