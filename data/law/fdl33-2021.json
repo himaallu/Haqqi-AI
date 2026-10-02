@@ -1,0 +1,447 @@
+{
+  "law_id": "fdl33-2021",
+  "title_en": "Federal Decree-Law No. 33 of 2021 on the Regulation of Labour Relations",
+  "title_ar": "",
+  "source_url": "https://uaelegislation.gov.ae/en/legislations/1541",
+  "effective_date": "2022-02-02",
+  "status": "provisional",
+  "status_note": "Clause texts copied from the hackathon n8n Law Pack (legacy/n8n/Haqqi_main.json), English only. Task 2.3 replaces this file with the full official English and Arabic text.",
+  "articles": [
+    {
+      "article_no": 13,
+      "title_en": "Employer's Obligations",
+      "title_ar": "",
+      "clauses": [
+        {
+          "clause_no": 2,
+          "text_en": "The Employer must: Not withhold the official documents of the Worker or force him to leave the State upon the end of the labor relation.",
+          "text_ar": "",
+          "topic_tags": [
+            "document_retention"
+          ]
+        }
+      ]
+    },
+    {
+      "article_no": 17,
+      "title_en": "Working Hours",
+      "title_ar": "",
+      "clauses": [
+        {
+          "clause_no": 1,
+          "text_en": "The maximum normal working hours for workers shall be (8) eight hours per day or (48) forty-eight hours per week.",
+          "text_ar": "",
+          "topic_tags": [
+            "overtime"
+          ]
+        }
+      ]
+    },
+    {
+      "article_no": 19,
+      "title_en": "Overtime",
+      "title_ar": "",
+      "clauses": [
+        {
+          "clause_no": 2,
+          "text_en": "If circumstances of work require that the Worker works for more than the normal working hours, the extra time shall be considered overtime, for which the Worker shall receive a wage equal to that corresponding to his normal working hours - calculated according to the basic wage - plus an increase of at least twenty-five percent (25%) of such wage.",
+          "text_ar": "",
+          "topic_tags": [
+            "overtime"
+          ]
+        },
+        {
+          "clause_no": 3,
+          "text_en": "If circumstances of work necessitate that the Worker works overtime between 10 pm and 4 am, he shall be entitled to the wage determined for normal working hours - calculated according to the basic wage - plus an increase equal to at least fifty percent (50%) of such wage. Shift Workers shall be excluded from the above.",
+          "text_ar": "",
+          "topic_tags": [
+            "overtime"
+          ]
+        },
+        {
+          "clause_no": 4,
+          "text_en": "If circumstances of work necessitate that the Worker works on the rest day specified in the employment contract or the work organizational regulation, he shall be compensated with another rest day, or with payment of the wage for that day according to the wage established for normal business days, plus an increase not less than fifty percent (50%) of the basic wage for that day.",
+          "text_ar": "",
+          "topic_tags": [
+            "overtime"
+          ]
+        },
+        {
+          "clause_no": 5,
+          "text_en": "The Worker may not be required to work for more than two consecutive rest days, excluding day laborers.",
+          "text_ar": "",
+          "topic_tags": [
+            "overtime"
+          ]
+        }
+      ]
+    },
+    {
+      "article_no": 22,
+      "title_en": "Determining the Amount or Type of Wage and Paying It",
+      "title_ar": "",
+      "clauses": [
+        {
+          "clause_no": 1,
+          "text_en": "The amount or type of wage shall be specified in the employment contract, and if it is not specified therein, the competent court shall determine it as a labor dispute.",
+          "text_ar": "",
+          "topic_tags": [
+            "unpaid_wages"
+          ]
+        },
+        {
+          "clause_no": 2,
+          "text_en": "The Employer is obligated to pay the wages to his Workers on their due dates in accordance with the systems approved in the Ministry and the conditions, controls and procedures specified in the Executive Regulation of this Decree by law.",
+          "text_ar": "",
+          "topic_tags": [
+            "unpaid_wages"
+          ]
+        },
+        {
+          "clause_no": 3,
+          "text_en": "The wages shall be paid in AED, and they can be paid in another currency if it is agreed upon between the parties in the employment contract.",
+          "text_ar": "",
+          "topic_tags": [
+            "unpaid_wages"
+          ]
+        }
+      ]
+    },
+    {
+      "article_no": 25,
+      "title_en": "Cases of Deduction from Worker's Wage",
+      "title_ar": "",
+      "clauses": [
+        {
+          "clause_no": 1,
+          "text_en": "No amount of money shall be deducted from the Worker's wage except in the following cases:\na. Recovering loans granted to the Worker, within the maximum monthly deduction rate from the Worker's wage stipulated in this Article, after obtaining the Worker's written consent, and without any interests.\nb. Recovering the amounts paid to the Worker in excess of his entitlements, provided that the amount deducted shall not exceed twenty percent (20%) of the wage.\nc. Amounts deducted for the purposes of calculating contributions to bonuses, retirement pensions, and insurances, in accordance with the legislation in force in the State.\nd. The Worker's contributions to the Establishment's savings fund or the loans owed to the fund, approved by the Ministry.\ne. Instalments of any welfare scheme or any other benefits or services provided by the Employer and approved by the Ministry, provided that the worker agrees in writing to participate in the scheme.\nf. Amounts deducted from the Worker due to the violations he commits in accordance with the sanction regulation in force in the Establishment and approved by the Ministry, provided that it shall not exceed five percent (5%) of the wage.\ng. Debts owed in implementation of a court judgment, provided that they shall not exceed a quarter of the wage due to the Worker, except for the alimony debt, where more than a quarter of the wage may be deducted. In the event of multiple debts, the amounts required to be paid shall be distributed according to the ranks of the privilege.\nh. Amounts necessary to repair any damages caused by the Worker, as a result of his fault or violation of the Employer's instructions, that lead to the damage, destruction or loss of tools, machines, products or materials owned by the Employer, provided that the amount deducted shall not exceed the wage of (5) five days per month, and no more amounts shall be deducted except upon the approval of the competent court.",
+          "text_ar": "",
+          "topic_tags": [
+            "illegal_deduction"
+          ]
+        },
+        {
+          "clause_no": 2,
+          "text_en": "If there are multiple reasons for deduction from the wage, it is not permissible in all cases for the percentage of deduction to exceed fifty percent (50%) of the wage.",
+          "text_ar": "",
+          "topic_tags": [
+            "illegal_deduction"
+          ]
+        }
+      ]
+    },
+    {
+      "article_no": 29,
+      "title_en": "Annual leave",
+      "title_ar": "",
+      "clauses": [
+        {
+          "clause_no": 1,
+          "text_en": "Without prejudice to the Worker's rights acquired for the period preceding the date of enforcement of the provisions of this Decree by law, the Worker shall be entitled to an annual leave with full pay of not less than:\na. Thirty days for each year of his extended service.\nb. Two days for each month if his service period is more than six months and less than one year.\nc. A leave for parts of the last year he spent at work, in the event that his service ends before using his annual leave balance.",
+          "text_ar": "",
+          "topic_tags": [
+            "leave"
+          ]
+        },
+        {
+          "clause_no": 2,
+          "text_en": "The part-time Worker is entitled to an annual leave according to the actual working hours spent by the Worker with the Employer, the duration of which is specified in the employment contract, in accordance with what is determined by the Executive Regulation of this Decree by law.",
+          "text_ar": "",
+          "topic_tags": [
+            "leave"
+          ]
+        },
+        {
+          "clause_no": 3,
+          "text_en": "The Employer may agree to grant the Worker a leave from the balance of his annual leave during the Probation Period, and the Worker shall retain the right to be compensated for the remainder of his annual leave balance, if he have not passed the Probation Period.",
+          "text_ar": "",
+          "topic_tags": [
+            "leave"
+          ]
+        },
+        {
+          "clause_no": 4,
+          "text_en": "The Worker must enjoy his leave in the year of its entitlement, and the Employer may determine the dates of these leaves in accordance with work requirements and in agreement with the Worker or grant them in rotation among the Establishment's Workers in order to ensure the progress of his work, and he must notify the Worker of the specified date for enjoying his leave at least one month in advance.",
+          "text_ar": "",
+          "topic_tags": [
+            "leave"
+          ]
+        },
+        {
+          "clause_no": 5,
+          "text_en": "The Worker may, upon the approval of the Employer and in accordance with the applicable organizational regulations in the Establishment, carry forward the balance of his annual leave, or days thereof, to the following year.",
+          "text_ar": "",
+          "topic_tags": [
+            "leave"
+          ]
+        },
+        {
+          "clause_no": 6,
+          "text_en": "The Worker is entitled to the wage for the period of his annual leave.",
+          "text_ar": "",
+          "topic_tags": [
+            "leave"
+          ]
+        },
+        {
+          "clause_no": 7,
+          "text_en": "Rest days established by law or by agreement shall be included in the annual leave period if the annual leave enjoyed by the Worker is interrupted by, and is considered, part of it, unless the employment contract or the organizational regulations in force in the Establishment stipulate what is more beneficial to the Worker.",
+          "text_ar": "",
+          "topic_tags": [
+            "leave"
+          ]
+        },
+        {
+          "clause_no": 8,
+          "text_en": "The Employer may not prevent the Worker from benefiting from his entitled annual leave for more than two years, unless the Worker wishes to carry it forward or obtain a cash allowance for it in accordance with the organizational regulations in force in the Establishment, and what is specified by the Executive Regulation of this Decree by law.",
+          "text_ar": "",
+          "topic_tags": [
+            "leave"
+          ]
+        },
+        {
+          "clause_no": 9,
+          "text_en": "The Worker is entitled to receive wages for the days of the entitled rest days if he leaves the work before using it, regardless of their duration, in relation to the period for which he has not obtained his leave.",
+          "text_ar": "",
+          "topic_tags": [
+            "leave"
+          ]
+        },
+        {
+          "clause_no": 10,
+          "text_en": "The Executive Regulation of this Decree by law shall specify the rules and conditions for organizing vacations and compensation for them.",
+          "text_ar": "",
+          "topic_tags": [
+            "leave"
+          ]
+        }
+      ]
+    },
+    {
+      "article_no": 42,
+      "title_en": "Cases of Termination of the Employment Contract",
+      "title_ar": "",
+      "clauses": [
+        {
+          "clause_no": 3,
+          "text_en": "The employment contract shall be terminated in any of the following cases: At the request of one of the parties, provided that the provisions of this Decree by law regarding the termination of the employment contract and the warning period agreed upon in the contract are abided by.",
+          "text_ar": "",
+          "topic_tags": [
+            "termination"
+          ]
+        }
+      ]
+    },
+    {
+      "article_no": 43,
+      "title_en": "Employment Contract Termination Warning",
+      "title_ar": "",
+      "clauses": [
+        {
+          "clause_no": 1,
+          "text_en": "Either party to the employment contract may terminate the contract for any legitimate reason, provided that the other party is notified in writing, and commits to work within the warning period agreed upon in the contract, provided that the period is not less than thirty (30) days, and not more than ninety (90) days.",
+          "text_ar": "",
+          "topic_tags": [
+            "notice_pay"
+          ]
+        },
+        {
+          "clause_no": 2,
+          "text_en": "The employment contract shall remain effective for the duration of the warning period referred to in this Article, and end upon the expiry of the period, and the Worker shall be entitled to his full wage for that period according to the last wage received thereby, and he must work during that period if the Employer asks him to do so. An agreement may be made to exempt from the warning condition or reduce its duration while preserving all the rights of the Worker for the warning period agreed upon in the employment contract. The warning period must be the same for both parties unless it is in the interest of the Worker.",
+          "text_ar": "",
+          "topic_tags": [
+            "notice_pay"
+          ]
+        },
+        {
+          "clause_no": 3,
+          "text_en": "The party who does not abide by the warning period must pay the other party a compensation called a warning allowance, even if the failure to warn does not result in harm to the other party. Such compensation shall be equal to the Worker's wage for the entire warning period or the remaining part of it.",
+          "text_ar": "",
+          "topic_tags": [
+            "notice_pay"
+          ]
+        },
+        {
+          "clause_no": 4,
+          "text_en": "The warning allowance shall be calculated according to the last wage received by the Worker for those who receive their wages by month, week, day or hour, and according to the average daily wage referred to in this Decree by law for those who receive their wages by piece-meal.",
+          "text_ar": "",
+          "topic_tags": [
+            "notice_pay"
+          ]
+        },
+        {
+          "clause_no": 5,
+          "text_en": "If the employment contract is terminated by the Employer, the Worker has the right to be absent during the warning period for one unpaid working day per week, in order to search for another job. The Worker may specify the day of absence provided that he informs the employer thereof at least (3) three days prior to the day of absence.",
+          "text_ar": "",
+          "topic_tags": [
+            "notice_pay"
+          ]
+        }
+      ]
+    },
+    {
+      "article_no": 47,
+      "title_en": "Unlawful Termination of Worker's Service",
+      "title_ar": "",
+      "clauses": [
+        {
+          "clause_no": 1,
+          "text_en": "The termination of the Worker's service by the Employer shall be unlawful if the termination of the Worker's service is due to his filing a serious complaint to the Ministry or filing a case against the Employer that has been proven to be true.",
+          "text_ar": "",
+          "topic_tags": [
+            "termination"
+          ]
+        },
+        {
+          "clause_no": 2,
+          "text_en": "The Employer is obligated to pay a fair compensation to the Worker estimated by the competent court, if it is proven that the dismissal is unlawful in accordance with Clause (1) of this Article. The amount of compensation shall be determined taking into account the kind of work, the amount of damage incurred by the Worker and the duration of his service. In all cases, the amount of compensation must not exceed the wage of the Worker for a period of three (3) months, calculated according to the last wage received thereby.",
+          "text_ar": "",
+          "topic_tags": [
+            "termination"
+          ]
+        },
+        {
+          "clause_no": 3,
+          "text_en": "The provisions of Clause (2) of this Article shall not prejudice the right of the Worker to the warning allowance and the end-of-service gratuity entitled thereto in accordance with the provisions of this Decree by law.",
+          "text_ar": "",
+          "topic_tags": [
+            "termination"
+          ]
+        }
+      ]
+    },
+    {
+      "article_no": 51,
+      "title_en": "End-of-Service Gratuity for Full-Time Workers",
+      "title_ar": "",
+      "clauses": [
+        {
+          "clause_no": 1,
+          "text_en": "The national Worker is entitled to an end-of-service gratuity upon the end of his service, in accordance with the legislation regulating pensions and social security in force in the State.",
+          "text_ar": "",
+          "topic_tags": [
+            "gratuity"
+          ]
+        },
+        {
+          "clause_no": 2,
+          "text_en": "The foreign full-time Worker, who has completed one or more years of continuous service, is entitled to an end-of-service gratuity upon the end of his service, calculated according to the basic wage, as follows:\na. The wage of twenty-one (21) days for each year of the first five years of service.\nb. The wage of thirty (30) days for each year in excess of that.",
+          "text_ar": "",
+          "topic_tags": [
+            "gratuity"
+          ]
+        },
+        {
+          "clause_no": 3,
+          "text_en": "The foreign Worker is entitled to a bonus for parts of the year in proportion to the amount spent in work, provided that he has completed one year of continuous service.",
+          "text_ar": "",
+          "topic_tags": [
+            "gratuity"
+          ]
+        },
+        {
+          "clause_no": 4,
+          "text_en": "The days of absence from work without pay shall not be included in the calculation of the duration of service.",
+          "text_ar": "",
+          "topic_tags": [
+            "gratuity"
+          ]
+        },
+        {
+          "clause_no": 5,
+          "text_en": "Without prejudice to what is decided by legislation regarding the granting of pensions or retirement benefits to Workers in some Establishments, the end-of-service gratuity shall be calculated according to the last basic wage received by the foreign Worker, for those who receive their wages by month, week, or day, and according to the average daily wage stipulated in the provisions of this Decree by law for those who receive their wages by piece-meal.",
+          "text_ar": "",
+          "topic_tags": [
+            "gratuity"
+          ]
+        },
+        {
+          "clause_no": 6,
+          "text_en": "The foregoing is provided that the total end-of-service gratuity for the foreign Worker does not exceed two years' wage.",
+          "text_ar": "",
+          "topic_tags": [
+            "gratuity"
+          ]
+        },
+        {
+          "clause_no": 7,
+          "text_en": "The Employer may deduct from the end-of-service gratuity any amounts that are due by law or by a judgment, in accordance with the conditions and procedures specified by the Executive Regulation of this Decree by law.",
+          "text_ar": "",
+          "topic_tags": [
+            "gratuity"
+          ]
+        },
+        {
+          "clause_no": 8,
+          "text_en": "The Cabinet may, upon the proposal of the Minister and after coordination with the Concerned Authorities, approve other alternative systems for the end-of-service gratuity system, and the decision issued thereby shall specify the conditions, controls and mechanism of contribution to these systems.",
+          "text_ar": "",
+          "topic_tags": [
+            "gratuity"
+          ]
+        }
+      ]
+    },
+    {
+      "article_no": 53,
+      "title_en": "Payment of Worker's Entitlement at the End of the Contract",
+      "title_ar": "",
+      "clauses": [
+        {
+          "clause_no": null,
+          "text_en": "The Employer shall pay the Worker, within fourteen (14) days as of the date of the end of the contract, his wages and all other entitlements stipulated in this Decree by law and the resolutions issued in implementation thereof, the contract or the Establishment's Articles of Association.",
+          "text_ar": "",
+          "topic_tags": [
+            "unpaid_wages"
+          ]
+        }
+      ]
+    },
+    {
+      "article_no": 54,
+      "title_en": "Individual Labor Disputes",
+      "title_ar": "",
+      "clauses": [
+        {
+          "clause_no": 1,
+          "text_en": "If the Employer, Worker or any beneficiary thereof disputes concerning any of the rights entitled to any of them pursuant to the provisions of this Law by Decree, he shall apply to the Ministry that shall examine the application and take whatever is considered necessary for amicable settlement of dispute.",
+          "text_ar": "",
+          "topic_tags": [
+            "complaint_procedure"
+          ]
+        },
+        {
+          "clause_no": 2,
+          "text_en": "The Ministry shall resolve the dispute by a resolution whenever the value of the claim subject to the dispute does not exceed the amount of (50,000) fifty thousand AED, or whenever the dispute concerns the failure of either party to comply with the amicable settlement resolution previously issued on the subject by the Ministry, regardless of the value of the claim. [...]",
+          "text_ar": "",
+          "topic_tags": [
+            "complaint_procedure"
+          ]
+        },
+        {
+          "clause_no": 4,
+          "text_en": "If amicable settlement is not possible within the period specified by the Executive Regulation of this Law by Decree, in cases other than those stipulated in Clause No. (2) of this Article, the Ministry shall refer the dispute to the Competent Court, and the referral shall be accompanied by a memorandum containing a summary of the dispute, the arguments of both parties and the Ministry recommendation.",
+          "text_ar": "",
+          "topic_tags": [
+            "complaint_procedure"
+          ]
+        },
+        {
+          "clause_no": 5,
+          "text_en": "During the course of the dispute, the Ministry may oblige the Employer to continue paying the worker wages for a maximum period of (2) months. If the dispute results in the worker salary being suspended, in accordance with the Executive Regulations of this Law by Decree.",
+          "text_ar": "",
+          "topic_tags": [
+            "complaint_procedure"
+          ]
+        },
+        {
+          "clause_no": 9,
+          "text_en": "The case for any rights entitled under the provisions of this Law by Decree shall not be heard after the lapse of two years as of the date of work relation termination.",
+          "text_ar": "",
+          "topic_tags": [
+            "time_limit"
+          ]
+        }
+      ]
+    }
+  ]
+}

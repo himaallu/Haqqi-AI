@@ -158,23 +158,31 @@ data sent to them for training, which would break the PRD's "no training on user
 - [ ] **2.1 Law Pack → data**: extract the 10 Law Pack entries (English text, refs, topics) into `data/law/law_pack.json`,
       re-keyed to article-level chunk ids (flag 14), plus the `RELATED` and `ALWAYS` topic maps.
       Check: a unit test loads 10 topics; every topic maps to ≥ 1 chunk id; Art. 51 text matches the official source text (n8n text may be wrong). Ports: `Law Pack`.
+      *2 Oct:* `data/law/law_pack.json` (10 topics, related, always) + provisional `data/law/fdl33-2021.json` (44 chunks
+      from the n8n texts). Tests pass; the Art. 51 check against the official text waits for task 2.2's download.
 - [ ] **2.2 Source download + provenance**: fetch FDL 33/2021, CR 1/2022 and FDL 20/2023 (EN + AR) and MOHRE pages;
       record URL + retrieval date in `data/law/SOURCES.md`.
       Check: SOURCES.md lists every file with a URL and date. Ports: `Setup` note, step 3.
 - [ ] **2.3 Article parser**: PDF/HTML → `data/law/<law_id>.json` (one record per article, split by clause, EN/AR side by side),
       with hand fixes committed (flag 17).
       Check: `pytest tests/rag/test_parse.py`; Art. 51 has 8 clauses; Arabic text of Art. 51 is readable (eyeball 3 articles). Ports: new.
-- [ ] **2.4 Schema + migrations**: `law_chunks(id, law_id, article_no, clause_no, title, topic_tags[], text_en, text_ar,
+- [x] **2.4 Schema + migrations**: `law_chunks(id, law_id, article_no, clause_no, title, topic_tags[], text_en, text_ar,
       source_url, effective_date, embedding vector, tsv_en, tsv_ar)` plus a `cases` table.
       Check: `alembic upgrade head` on a fresh DB; `\d law_chunks` shows the vector + GIN indexes. Ports: new.
+      *Done 2 Oct:* untyped `vector` column (model-agnostic) and no vector index (exact search over a few hundred rows);
+      GIN indexes on `tsv_en`, `tsv_ar` (Postgres `arabic` config works, flag 16) and `topic_tags`. `make db` = migrate + ingest.
 - [ ] **2.5 Embedder interface** (flag 15): the `Embedder` protocol, a local open-model implementation, and a deterministic fake for tests.
       Check: a unit test with the fake embedder; the local model embeds one Hindi and one Arabic sentence with the expected
       dimension, and memory stays within the host's limit. Ports: new.
-- [ ] **2.6 `python -m haqqi.ingest`**: rebuilds the index from `data/law/*.json` idempotently.
+      *2 Oct:* `Embedder` protocol + deterministic `HashEmbedder` done and tested; the real model needs huggingface.co
+      (network change requested), then the 512 MB measurement decides flag 15.
+- [x] **2.6 `python -m haqqi.ingest`**: rebuilds the index from `data/law/*.json` idempotently.
       Check: run it twice → same row count; `select count(*) from law_chunks` ≈ articles × clauses. Ports: new.
-- [ ] **2.7 Hybrid retrieval**: dense (pgvector cosine) + FTS (EN + AR config, flag 16) → RRF (k=60) → top 8, merged
+      *Done 2 Oct:* two runs → 44 rows each (provisional data); rebuild is one transaction.
+- [x] **2.7 Hybrid retrieval**: dense (pgvector cosine) + FTS (EN + AR config, flag 16) → RRF (k=60) → top 8, merged
       with Law Pack chunks for the intake `issue_types` (+RELATED, +ALWAYS).
       Check: `pytest tests/rag/test_retrieve.py` (a fake-embedder test proves RRF ordering and pack merge). Ports: `Law Pack` (topic selection).
+      *Done 2 Oct:* RRF + pack-merge unit tests, plus a live Postgres test (gratuity query → Art. 51 first, Art. 54(9) always included).
 - [ ] **2.8 Eyeball 10 queries**: `python -m haqqi.rag.probe "<query>"` for 10 queries in EN/HI/AR, results saved to
       `eval/retrieval_probe.md`.
       Check: at least 8/10 have the expected article in the top 5 (by eye). Ports: new.
