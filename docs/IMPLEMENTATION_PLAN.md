@@ -94,6 +94,9 @@ Legend: **BLOCKER** = decide before the sprint that needs it; **RISK** = plan ar
 20. **RISK: K2 key validity / rate limits** (PRD open question). K2's weights are open, so a self-hosted copy has no central
     rate limit. We use IFM's *hosted* API (`api.ifm.ai`) with a key, though, and that has its own limits. Self-hosting the 375B model
     isn't possible for free. Task 1.9 tests the key. If it fails, the Groq backup becomes the primary LLM.
+    **RESOLVED (2 Oct, task 1.9):** the K2 key works (reply in 1.75 s). Limits from the response headers:
+    **2 requests/second** and **10M tokens per 24 h**. Fine for 4–5 sequential calls per case; the client
+    must not fire calls in parallel and should back off on HTTP 429.
 21. **NOTE: 7-day auto-delete** isn't in any block. Added to S8 as a scheduled purge.
 22. **NOTE: CI and the network.** `make eval` needs K2, so CI runs only the calculator + retrieval subset offline.
     "Ingest runs in CI" needs the law JSON committed (small) rather than downloading PDFs.
@@ -146,7 +149,8 @@ data sent to them for training, which would break the PRD's "no training on user
 - [ ] **1.9 LLM key smoke test**: `python -m haqqi.llm.smoke` sends one chat call to K2 and one to Groq. It prints
       latency and any rate-limit headers, never the key.
       Check: both return a reply, or the failure is recorded in flag 20 and Groq is made primary. Ports: `K2 Horizon API` credential.
-      *Waiting on keys:* script and unit tests are done; run it once `K2_API_KEY` and `GROQ_API_KEY` are in `.env`.
+      *2 Oct:* K2 OK (1.75 s; 2 req/s, 10M tokens/day). Groq returned HTTP 404; the script now prints the
+      provider's error message (key masked) to diagnose it. Tick once Groq answers or its failure is understood.
 
 ## Sprint 2 — Knowledge base (PRD Block 2)
 
