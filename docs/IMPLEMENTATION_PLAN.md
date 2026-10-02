@@ -78,9 +78,10 @@ Legend: **BLOCKER** = decide before the sprint that needs it; **RISK** = plan ar
 ### Technical
 15. **RISK: embedding model size.** BGE-M3 is about 2.3 GB and needs about 2 GB RAM. It won't fit free Render/Railway tiers or a
     fast CI.
-    **RESOLVED (free stack, 0.1):** a local open model inside the backend, behind an `Embedder` interface. Use BGE-M3 if the
-    host's RAM allows, else multilingual-e5-small. No key is needed, and worker text never leaves our server.
-    Law vectors are precomputed at ingest. Tests use a deterministic fake embedder.
+    **REOPENED:** the backend moved to Render's free plan (512 MB), so BGE-M3 can't run there. Law vectors are still
+    precomputed at ingest (any machine), and tests use a deterministic fake embedder. For query embeddings, task 2.5
+    measures a quantised ONNX multilingual-e5-small in the running container. If it doesn't fit, the fallback is a
+    free hosted embedding API, which sends query text off our server: **decision for you in Sprint 2.**
 16. **RISK: Arabic full-text search.** "BM25-style" in Postgres is really `ts_rank`. Arabic stemming needs the `arabic`
     text-search config on Supabase/Neon, so verify it in S2. Fallback: `simple` config on normalized Arabic (strip tashkeel).
 17. **RISK: Arabic PDF extraction.** Official Arabic PDFs often extract with broken glyph order. n8n already notes
@@ -89,7 +90,7 @@ Legend: **BLOCKER** = decide before the sprint that needs it; **RISK** = plan ar
 18. **RISK: latency < 90 s p95.** There are 4–5 sequential K2 calls, and n8n used 180 s timeouts × 3 retries. Measure in S3
     and set per-call timeouts (e.g. 40 s, 1 retry) with fallback to the backup LLM (Groq free tier, see 0.1).
 19. **RISK: streaming through hosting.** SSE for 60–90 s must not pass through a Vercel serverless function, because it would time out.
-    The browser should call the backend directly (CORS allow-list), and Render/Fly idle timeouts must be checked.
+    The browser should call the backend directly (CORS allow-list), and Render's request timeout must be checked.
 20. **RISK: K2 key validity / rate limits** (PRD open question). K2's weights are open, so a self-hosted copy has no central
     rate limit. We use IFM's *hosted* API (`api.ifm.ai`) with a key, though, and that has its own limits. Self-hosting the 375B model
     isn't possible for free. Task 1.9 tests the key. If it fails, the Groq backup becomes the primary LLM.
@@ -112,9 +113,9 @@ data sent to them for training, which would break the PRD's "no training on user
 | Area | Free choice | Notes |
 | --- | --- | --- |
 | Frontend | Vercel Hobby | Preview deploys per PR |
-| Backend | Hugging Face Space, **Gradio SDK** (free CPU) | Docker Spaces are now paid, so `backend/app.py` runs our FastAPI app inside a free Gradio Space (Gradio unused). Enough RAM for local embeddings; sleeps when idle. `requirements.txt` is exported from `uv.lock`. The Dockerfile stays for docker-compose |
+| Backend | Render free web service (Docker) | `render.yaml` Blueprint builds `backend/Dockerfile`; 512 MB RAM; sleeps after ~15 min idle (~1 min cold start). Hugging Face was dropped: free accounts can no longer use CPU-basic Spaces |
 | Database | Supabase free (Postgres + pgvector) | Pauses after inactivity; Neon free as alternative |
-| Embeddings | Local open model in the backend | BGE-M3 or multilingual-e5-small; no key; no user data leaves |
+| Embeddings | Decided in task 2.5 (flag 15) | Law vectors precomputed at ingest; query embedding must fit in 512 MB or use a hosted API |
 | Speech | Whisper large-v3 via Groq free tier | OpenAI-compatible API |
 | LLM | K2 hosted API (primary) + Groq free tier (backup) | Same OpenAI-compatible client |
 | PDF | WeasyPrint + Noto Naskh Arabic | Open source |
@@ -137,10 +138,10 @@ data sent to them for training, which would break the PRD's "no training on user
       Check: `make dev` → all 3 healthy; `psql -c "create extension vector"` succeeds. Ports: new.
 - [x] **1.6 Makefile**: `dev`, `test`, `lint`, `eval` (stub).
       Check: `make test && make lint` exit 0. Ports: new.
-- [ ] **1.7 Deploy hello-world**: frontend to Vercel, backend to a Hugging Face Gradio Space, DB on Supabase (see 0.1).
+- [ ] **1.7 Deploy hello-world**: frontend to Vercel, backend to Render via `render.yaml`, DB on Supabase (see 0.1).
       Check: the public frontend URL shows "backend: ok" from the public backend. Ports: new.
-      *Waiting on accounts:* the Space entry point (`backend/app.py`, verified locally on port 7860 with Gradio 6.29.0 installed)
-      and `docs/DEPLOY.md` steps are ready; needs the Supabase, HF and Vercel set-up.
+      *Waiting on accounts:* `render.yaml` and the Docker image (verified locally on Render's port 10000) and
+      `docs/DEPLOY.md` are ready; needs the Render Blueprint set up and Vercel pointed at the Render URL.
 - [x] **1.8 Minimal CI**: GitHub Action runs `make lint` and `make test` on PRs.
       Check: a PR shows green checks. Ports: new.
 - [ ] **1.9 LLM key smoke test**: `python -m haqqi.llm.smoke` sends one chat call to K2 and one to Groq. It prints

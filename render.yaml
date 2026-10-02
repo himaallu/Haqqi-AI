@@ -1,0 +1,25 @@
+# Render Blueprint for the Haqqi backend (free plan). See docs/DEPLOY.md.
+# In the Render dashboard: New → Blueprint → pick this repo. Render prompts for the `sync: false` secrets.
+services:
+  - type: web
+    name: haqqi-api
+    runtime: docker
+    plan: free
+    region: frankfurt
+    branch: main
+    dockerfilePath: ./backend/Dockerfile
+    dockerContext: ./backend
+    buildFilter:
+      paths:
+        - backend/**
+    healthCheckPath: /healthz
+    envVars:
+      # Render sets PORT itself; the Dockerfile's CMD listens on it.
+      - key: CORS_ORIGINS
+        value: '["https://haqqi-taupe.vercel.app"]'
+      - key: DATABASE_URL
+        sync: false
+      - key: K2_API_KEY
+        sync: false
+      - key: GROQ_API_KEY
+        sync: false

@@ -22,7 +22,7 @@ test-live:
 
 ## ruff, mypy, eslint, tsc
 lint:
-	$(BACKEND) uv run ruff check . && uv run ruff format --check . && uv run mypy haqqi tests app.py
+	$(BACKEND) uv run ruff check . && uv run ruff format --check . && uv run mypy haqqi tests
 	$(FRONTEND) pnpm lint && pnpm typecheck
 
 format:
