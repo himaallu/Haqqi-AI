@@ -85,6 +85,10 @@ Legend: **BLOCKER** = decide before the sprint that needs it; **RISK** = plan ar
     precomputed at ingest (any machine), and tests use a deterministic fake embedder. For query embeddings, task 2.5
     measures a quantised ONNX multilingual-e5-small in the running container. If it doesn't fit, the fallback is a
     free hosted embedding API, which sends query text off our server: **decision for you in Sprint 2.**
+    **RESOLVED (2 Oct):** e5-small (int8 ONNX) peaks at about 520 MB per query batch (the dequantised 250k-token vocabulary),
+    so it doesn't fit. IFM has no embeddings endpoint. You chose a free embeddings API: **BGE-M3 on Cloudflare Workers AI**
+    (10k neurons/day ≈ 9M tokens, and no training on or reuse of content). Gemini's free tier was rejected because Google
+    may use free-tier content to improve its products, including human review.
 16. **RISK: Arabic full-text search.** "BM25-style" in Postgres is really `ts_rank`. Arabic stemming needs the `arabic`
     text-search config on Supabase/Neon, so verify it in S2. Fallback: `simple` config on normalized Arabic (strip tashkeel).
 17. **RISK: Arabic PDF extraction.** Official Arabic PDFs often extract with broken glyph order. n8n already notes
@@ -123,7 +127,7 @@ data sent to them for training, which would break the PRD's "no training on user
 | Frontend | Vercel Hobby | Preview deploys per PR |
 | Backend | Render free web service (Docker) | `render.yaml` Blueprint builds `backend/Dockerfile`; 512 MB RAM; sleeps after ~15 min idle (~1 min cold start). Hugging Face was dropped: free accounts can no longer use CPU-basic Spaces |
 | Database | Supabase free (Postgres + pgvector) | Pauses after inactivity; Neon free as alternative |
-| Embeddings | Decided in task 2.5 (flag 15) | Law vectors precomputed at ingest; query embedding must fit in 512 MB or use a hosted API |
+| Embeddings | Cloudflare Workers AI, BGE-M3 (flag 15) | 10k neurons/day free; no training on content; ingest and queries use the same model |
 | Speech | **Decided in Sprint 6** | Groq's free tier gave our key no model access (HTTP 404, 2 Oct); pick a free speech-to-text option in task 6.1 |
 | LLM | K2 hosted API only (v1) | 2 req/s, 10M tokens/day. No backup in v1 (user decision, 2 Oct); the client keeps a provider slot |
 | PDF | WeasyPrint + Noto Naskh Arabic | Open source |
@@ -188,6 +192,9 @@ data sent to them for training, which would break the PRD's "no training on user
       dimension, and memory stays within the host's limit. Ports: new.
       *2 Oct:* `Embedder` protocol + deterministic `HashEmbedder` done and tested; the real model needs huggingface.co
       (network change requested), then the 512 MB measurement decides flag 15.
+      *2 Oct:* `CloudflareEmbedder` (BGE-M3, 1024-d, batches of 50, normalised) done, with mocked HTTP tests. Dense search
+      skips stored vectors of another dimension. Waiting on your Cloudflare account ID + token to run the live
+      Hindi/Arabic test (`make test-live`).
 - [x] **2.6 `python -m haqqi.ingest`**: rebuilds the index from `data/law/*.json` idempotently.
       Check: run it twice → same row count; `select count(*) from law_chunks` ≈ articles × clauses. Ports: new.
       *Done 2 Oct:* two runs → 44 rows each (provisional data); rebuild is one transaction.

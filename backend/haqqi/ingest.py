@@ -15,7 +15,7 @@ def main() -> int:
         print("DATABASE_URL is not set", file=sys.stderr)
         return 1
     with psycopg.connect(settings.database_url) as conn:
-        count = ingest(conn, get_embedder(settings.embedder))
+        count = ingest(conn, get_embedder(settings))
     print(f"ingested {count} law chunks (embedder: {settings.embedder})")
     return 0
 

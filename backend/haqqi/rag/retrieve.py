@@ -45,9 +45,10 @@ def merge_with_pack(fused: Sequence[str], pack_ids: Sequence[str], top_k: int = 
 
 def dense_ranking(conn: psycopg.Connection, query_vec: Sequence[float], limit: int) -> list[str]:
     rows = conn.execute(
-        "SELECT id FROM law_chunks WHERE embedding IS NOT NULL "
+        # Rows from a different embedder (other dimension) are skipped rather than erroring.
+        "SELECT id FROM law_chunks WHERE vector_dims(embedding) = %s "
         "ORDER BY embedding <=> %s::vector LIMIT %s",
-        (vector_literal(query_vec), limit),
+        (len(query_vec), vector_literal(query_vec), limit),
     ).fetchall()
     return [r[0] for r in rows]
 
