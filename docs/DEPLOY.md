@@ -3,6 +3,9 @@
 Three services, all on free plans (see "0.1 Free stack" in `IMPLEMENTATION_PLAN.md`). Keys and URLs go into
 each host's settings, never into the repo.
 
+Live: frontend https://haqqi-ai.vercel.app · backend https://haqqi-api.onrender.com/healthz.
+If the frontend URL changes, update `CORS_ORIGINS` in `render.yaml`, or the browser blocks calls to the backend.
+
 ## 1. Database: Supabase
 
 1. Create a free project at supabase.com.
