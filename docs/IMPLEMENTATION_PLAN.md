@@ -225,13 +225,17 @@ data sent to them for training, which would break the PRD's "no training on user
       *Done 2 Oct:* `haqqi/models.py`; strict `CaseFacts` validates basic ≤ total, end date vs termination, no extra keys.
       Added `deducted_monthly_aed` (optional) so the Art. 25(2) 50% check compares like with like; `ClaimLine.amount_aed`
       is `None` for "not calculated" lines.
-- [ ] **3.2 Calculator** `haqqi/core/calculator.py`: gratuity (Art. 51, eligibility, 21/30 days, 2-year cap, unpaid absence),
+- [x] **3.2 Calculator** `haqqi/core/calculator.py`: gratuity (Art. 51, eligibility, 21/30 days, 2-year cap, unpaid absence),
       unpaid wages, notice pay, notice pay owed *by* a worker who resigned without notice (separate line, flag 2),
       deductions refund, leave encashment, `above_mohre_limit` (50,000), each with `formula` +
       `Citation`. Constants live in one `CONFIG` block and Decimal rounding is ROUND_HALF_UP to 0.01. Rules follow flags 2–6.
       Check: `pytest tests/core/test_calculator.py` → 100%, covering hand-worked TC-01 and TC-03 plus exactly-1-year,
       exactly-5-years, cap-hit (TC-20), part-time, still-employed (no gratuity), and TC-21. Calculations are written out in
       `tests/core/CASES.md`. Ports: `Calculator`.
+      *Done 2 Oct:* 23 tests, all matching hand-worked figures in CASES.md. Every line cites a real clause, and `cite()` rejects
+      unknown ids. Decisions: flexible contracts → gratuity "not calculated, ask MOHRE"; an under-one-year gratuity shows
+      0.00 with the reason. TC-21 is 18,381.37 under the whole-day rule; n8n's `max_total` 18,366 used ÷365.25, so the
+      Sprint 7 eval row uses our figure.
 - [ ] **3.3 Routing** `haqqi/core/routing.py`: out_of_scope (free zone/DIFC/ADGM/domestic by form or story), need_info
       (no wage or no start date), ready. The form overrides the model.
       Check: table test with TC-07, 08, 09, 14, 15, 16, 17 → expected route. Ports: `Parse Intake` (override + critical_missing), `Route Case`.
