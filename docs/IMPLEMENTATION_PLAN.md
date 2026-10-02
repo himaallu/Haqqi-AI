@@ -88,12 +88,13 @@ Legend: **BLOCKER** = decide before the sprint that needs it; **RISK** = plan ar
     Art. 17(1) failed to extract. Budget time and keep a hand-corrected `data/law/*.json` as the canonical source.
     The ingest script reads the JSON, and the PDFs are provenance only.
 18. **RISK: latency < 90 s p95.** There are 4–5 sequential K2 calls, and n8n used 180 s timeouts × 3 retries. Measure in S3
-    and set per-call timeouts (e.g. 40 s, 1 retry) with fallback to the backup LLM (Groq free tier, see 0.1).
+    and set per-call timeouts (e.g. 40 s, 1 retry). v1 has no backup LLM (see 0.1): the client keeps a provider slot
+    so one can be added later, and a K2 outage shows a clear "try again later" message.
 19. **RISK: streaming through hosting.** SSE for 60–90 s must not pass through a Vercel serverless function, because it would time out.
     The browser should call the backend directly (CORS allow-list), and Render's request timeout must be checked.
 20. **RISK: K2 key validity / rate limits** (PRD open question). K2's weights are open, so a self-hosted copy has no central
     rate limit. We use IFM's *hosted* API (`api.ifm.ai`) with a key, though, and that has its own limits. Self-hosting the 375B model
-    isn't possible for free. Task 1.9 tests the key. If it fails, the Groq backup becomes the primary LLM.
+    isn't possible for free. Task 1.9 tests the key. If it fails, a backup provider is chosen.
     **RESOLVED (2 Oct, task 1.9):** the K2 key works (reply in 1.75 s). Limits from the response headers:
     **2 requests/second** and **10M tokens per 24 h**. Fine for 4–5 sequential calls per case; the client
     must not fire calls in parallel and should back off on HTTP 429.
@@ -119,8 +120,8 @@ data sent to them for training, which would break the PRD's "no training on user
 | Backend | Render free web service (Docker) | `render.yaml` Blueprint builds `backend/Dockerfile`; 512 MB RAM; sleeps after ~15 min idle (~1 min cold start). Hugging Face was dropped: free accounts can no longer use CPU-basic Spaces |
 | Database | Supabase free (Postgres + pgvector) | Pauses after inactivity; Neon free as alternative |
 | Embeddings | Decided in task 2.5 (flag 15) | Law vectors precomputed at ingest; query embedding must fit in 512 MB or use a hosted API |
-| Speech | Whisper large-v3 via Groq free tier | OpenAI-compatible API |
-| LLM | K2 hosted API (primary) + Groq free tier (backup) | Same OpenAI-compatible client |
+| Speech | **Decided in Sprint 6** | Groq's free tier gave our key no model access (HTTP 404, 2 Oct); pick a free speech-to-text option in task 6.1 |
+| LLM | K2 hosted API only (v1) | 2 req/s, 10M tokens/day. No backup in v1 (user decision, 2 Oct); the client keeps a provider slot |
 | PDF | WeasyPrint + Noto Naskh Arabic | Open source |
 | Tracing / errors | Langfuse Cloud Hobby / Sentry free | PII redacted before sending |
 
@@ -146,34 +147,42 @@ data sent to them for training, which would break the PRD's "no training on user
       *Done 2 Oct:* https://haqqi-ai.vercel.app shows `backend: ok · db: ok` from https://haqqi-api.onrender.com.
 - [x] **1.8 Minimal CI**: GitHub Action runs `make lint` and `make test` on PRs.
       Check: a PR shows green checks. Ports: new.
-- [ ] **1.9 LLM key smoke test**: `python -m haqqi.llm.smoke` sends one chat call to K2 and one to Groq. It prints
+- [x] **1.9 LLM key smoke test**: `python -m haqqi.llm.smoke` sends one chat call to K2 and one to Groq. It prints
       latency and any rate-limit headers, never the key.
       Check: both return a reply, or the failure is recorded in flag 20 and Groq is made primary. Ports: `K2 Horizon API` credential.
-      *2 Oct:* K2 OK (1.75 s; 2 req/s, 10M tokens/day). Groq returned HTTP 404; the script now prints the
-      provider's error message (key masked) to diagnose it. Tick once Groq answers or its failure is understood.
+      *Done 2 Oct:* K2 OK (1.0–1.75 s; 2 req/s, 10M tokens/day). Groq: HTTP 404 "model does not exist or you do
+      not have access to it", so the key has no free model access. Decision: K2 only for v1 (flags 18 and 20).
 
 ## Sprint 2 — Knowledge base (PRD Block 2)
 
 - [ ] **2.1 Law Pack → data**: extract the 10 Law Pack entries (English text, refs, topics) into `data/law/law_pack.json`,
       re-keyed to article-level chunk ids (flag 14), plus the `RELATED` and `ALWAYS` topic maps.
       Check: a unit test loads 10 topics; every topic maps to ≥ 1 chunk id; Art. 51 text matches the official source text (n8n text may be wrong). Ports: `Law Pack`.
+      *2 Oct:* `data/law/law_pack.json` (10 topics, related, always) + provisional `data/law/fdl33-2021.json` (44 chunks
+      from the n8n texts). Tests pass; the Art. 51 check against the official text waits for task 2.2's download.
 - [ ] **2.2 Source download + provenance**: fetch FDL 33/2021, CR 1/2022 and FDL 20/2023 (EN + AR) and MOHRE pages;
       record URL + retrieval date in `data/law/SOURCES.md`.
       Check: SOURCES.md lists every file with a URL and date. Ports: `Setup` note, step 3.
 - [ ] **2.3 Article parser**: PDF/HTML → `data/law/<law_id>.json` (one record per article, split by clause, EN/AR side by side),
       with hand fixes committed (flag 17).
       Check: `pytest tests/rag/test_parse.py`; Art. 51 has 8 clauses; Arabic text of Art. 51 is readable (eyeball 3 articles). Ports: new.
-- [ ] **2.4 Schema + migrations**: `law_chunks(id, law_id, article_no, clause_no, title, topic_tags[], text_en, text_ar,
+- [x] **2.4 Schema + migrations**: `law_chunks(id, law_id, article_no, clause_no, title, topic_tags[], text_en, text_ar,
       source_url, effective_date, embedding vector, tsv_en, tsv_ar)` plus a `cases` table.
       Check: `alembic upgrade head` on a fresh DB; `\d law_chunks` shows the vector + GIN indexes. Ports: new.
+      *Done 2 Oct:* untyped `vector` column (model-agnostic) and no vector index (exact search over a few hundred rows);
+      GIN indexes on `tsv_en`, `tsv_ar` (Postgres `arabic` config works, flag 16) and `topic_tags`. `make db` = migrate + ingest.
 - [ ] **2.5 Embedder interface** (flag 15): the `Embedder` protocol, a local open-model implementation, and a deterministic fake for tests.
       Check: a unit test with the fake embedder; the local model embeds one Hindi and one Arabic sentence with the expected
       dimension, and memory stays within the host's limit. Ports: new.
-- [ ] **2.6 `python -m haqqi.ingest`**: rebuilds the index from `data/law/*.json` idempotently.
+      *2 Oct:* `Embedder` protocol + deterministic `HashEmbedder` done and tested; the real model needs huggingface.co
+      (network change requested), then the 512 MB measurement decides flag 15.
+- [x] **2.6 `python -m haqqi.ingest`**: rebuilds the index from `data/law/*.json` idempotently.
       Check: run it twice → same row count; `select count(*) from law_chunks` ≈ articles × clauses. Ports: new.
-- [ ] **2.7 Hybrid retrieval**: dense (pgvector cosine) + FTS (EN + AR config, flag 16) → RRF (k=60) → top 8, merged
+      *Done 2 Oct:* two runs → 44 rows each (provisional data); rebuild is one transaction.
+- [x] **2.7 Hybrid retrieval**: dense (pgvector cosine) + FTS (EN + AR config, flag 16) → RRF (k=60) → top 8, merged
       with Law Pack chunks for the intake `issue_types` (+RELATED, +ALWAYS).
       Check: `pytest tests/rag/test_retrieve.py` (a fake-embedder test proves RRF ordering and pack merge). Ports: `Law Pack` (topic selection).
+      *Done 2 Oct:* RRF + pack-merge unit tests, plus a live Postgres test (gratuity query → Art. 51 first, Art. 54(9) always included).
 - [ ] **2.8 Eyeball 10 queries**: `python -m haqqi.rag.probe "<query>"` for 10 queries in EN/HI/AR, results saved to
       `eval/retrieval_probe.md`.
       Check: at least 8/10 have the expected article in the top 5 (by eye). Ports: new.
@@ -259,7 +268,7 @@ data sent to them for training, which would break the PRD's "no training on user
 
 ## Sprint 6 — Voice and languages (PRD Block 6)
 
-- [ ] **6.1 `POST /v1/transcribe`** (Whisper large-v3 via Groq free tier; size and duration limits; audio is not stored).
+- [ ] **6.1 `POST /v1/transcribe`** (speech-to-text provider chosen here; Groq is unavailable, see 0.1; size and duration limits; audio is not stored).
       Check: `curl -F audio=@tests/fixtures/hi.webm` → `{text, detected_language:"hi"}`. Ports: new (F1 voice).
 - [ ] **6.2 Mic recording in the browser** (MediaRecorder, iOS Safari fallback format).
       Check: record → transcript appears in the story box on Android Chrome and iOS Safari. Ports: new.

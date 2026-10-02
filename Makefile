@@ -1,4 +1,4 @@
-.PHONY: dev down test test-live lint format eval
+.PHONY: dev down test test-live db lint format eval
 
 BACKEND := cd backend &&
 FRONTEND := cd frontend &&
@@ -18,7 +18,12 @@ test:
 
 ## Tests that need running services (database, LLM keys). Run `make dev` first.
 test-live:
-	$(BACKEND) DATABASE_URL=$${DATABASE_URL:-postgresql://haqqi:haqqi@localhost:5432/haqqi} uv run pytest -q -m live
+	$(BACKEND) export DATABASE_URL=$${DATABASE_URL:-postgresql://haqqi:haqqi@localhost:5432/haqqi} && \
+		uv run alembic upgrade head && uv run pytest -q -m live
+
+## Apply database migrations to DATABASE_URL, then rebuild the law search index
+db:
+	$(BACKEND) uv run alembic upgrade head && uv run python -m haqqi.ingest
 
 ## ruff, mypy, eslint, tsc
 lint:

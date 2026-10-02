@@ -1,0 +1,122 @@
+{
+  "description": "Issue-type Law Pack: chunks always added to retrieval for an intake issue type (task 2.7).",
+  "topics": {
+    "unpaid_wages": {
+      "pack_id": "WAGES",
+      "ref": "Art. 22 and Art. 53, FDL 33/2021",
+      "chunk_ids": [
+        "fdl33-2021:art22:cl1",
+        "fdl33-2021:art22:cl2",
+        "fdl33-2021:art22:cl3",
+        "fdl33-2021:art53"
+      ]
+    },
+    "illegal_deduction": {
+      "pack_id": "DEDUCTIONS",
+      "ref": "Art. 25, FDL 33/2021",
+      "chunk_ids": [
+        "fdl33-2021:art25:cl1",
+        "fdl33-2021:art25:cl2"
+      ]
+    },
+    "termination": {
+      "pack_id": "TERMINATION",
+      "ref": "Art. 42(3) and Art. 47, FDL 33/2021",
+      "chunk_ids": [
+        "fdl33-2021:art42:cl3",
+        "fdl33-2021:art47:cl1",
+        "fdl33-2021:art47:cl2",
+        "fdl33-2021:art47:cl3"
+      ]
+    },
+    "notice_pay": {
+      "pack_id": "NOTICE",
+      "ref": "Art. 43, FDL 33/2021",
+      "chunk_ids": [
+        "fdl33-2021:art43:cl1",
+        "fdl33-2021:art43:cl2",
+        "fdl33-2021:art43:cl3",
+        "fdl33-2021:art43:cl4",
+        "fdl33-2021:art43:cl5"
+      ]
+    },
+    "gratuity": {
+      "pack_id": "GRATUITY",
+      "ref": "Art. 51, FDL 33/2021",
+      "chunk_ids": [
+        "fdl33-2021:art51:cl1",
+        "fdl33-2021:art51:cl2",
+        "fdl33-2021:art51:cl3",
+        "fdl33-2021:art51:cl4",
+        "fdl33-2021:art51:cl5",
+        "fdl33-2021:art51:cl6",
+        "fdl33-2021:art51:cl7",
+        "fdl33-2021:art51:cl8"
+      ]
+    },
+    "leave": {
+      "pack_id": "LEAVE",
+      "ref": "Art. 29, FDL 33/2021",
+      "chunk_ids": [
+        "fdl33-2021:art29:cl1",
+        "fdl33-2021:art29:cl2",
+        "fdl33-2021:art29:cl3",
+        "fdl33-2021:art29:cl4",
+        "fdl33-2021:art29:cl5",
+        "fdl33-2021:art29:cl6",
+        "fdl33-2021:art29:cl7",
+        "fdl33-2021:art29:cl8",
+        "fdl33-2021:art29:cl9",
+        "fdl33-2021:art29:cl10"
+      ]
+    },
+    "overtime": {
+      "pack_id": "OVERTIME",
+      "ref": "Art. 17(1) and Art. 19, FDL 33/2021",
+      "chunk_ids": [
+        "fdl33-2021:art17:cl1",
+        "fdl33-2021:art19:cl2",
+        "fdl33-2021:art19:cl3",
+        "fdl33-2021:art19:cl4",
+        "fdl33-2021:art19:cl5"
+      ]
+    },
+    "document_retention": {
+      "pack_id": "DOCUMENTS",
+      "ref": "Art. 13(2), FDL 33/2021",
+      "chunk_ids": [
+        "fdl33-2021:art13:cl2"
+      ]
+    },
+    "time_limit": {
+      "pack_id": "TIME_LIMIT",
+      "ref": "Art. 54(9), FDL 33/2021",
+      "chunk_ids": [
+        "fdl33-2021:art54:cl9"
+      ]
+    },
+    "complaint_procedure": {
+      "pack_id": "PROCEDURE",
+      "ref": "Art. 54(1), (2), (4) and (5), FDL 33/2021",
+      "chunk_ids": [
+        "fdl33-2021:art54:cl1",
+        "fdl33-2021:art54:cl2",
+        "fdl33-2021:art54:cl4",
+        "fdl33-2021:art54:cl5"
+      ]
+    }
+  },
+  "related": {
+    "termination": [
+      "notice_pay",
+      "gratuity"
+    ],
+    "gratuity": [
+      "termination"
+    ]
+  },
+  "always": [
+    "time_limit",
+    "complaint_procedure"
+  ]
+}
