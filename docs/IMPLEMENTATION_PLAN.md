@@ -91,6 +91,7 @@ Legend: **BLOCKER** = decide before the sprint that needs it; **RISK** = plan ar
     may use free-tier content to improve its products, including human review.
 16. **RISK: Arabic full-text search.** "BM25-style" in Postgres is really `ts_rank`. Arabic stemming needs the `arabic`
     text-search config on Supabase/Neon, so verify it in S2. Fallback: `simple` config on normalized Arabic (strip tashkeel).
+    *2 Oct:* confirmed on Supabase. Migration 0001 builds `tsv_ar` with `to_tsvector('arabic', …)`, and it applied cleanly.
 17. **RISK: Arabic PDF extraction.** Official Arabic PDFs often extract with broken glyph order. n8n already notes
     Art. 17(1) failed to extract. Budget time and keep a hand-corrected `data/law/*.json` as the canonical source.
     The ingest script reads the JSON, and the PDFs are provenance only.
@@ -201,6 +202,8 @@ data sent to them for training, which would break the PRD's "no training on user
 - [x] **2.6 `python -m haqqi.ingest`**: rebuilds the index from `data/law/*.json` idempotently.
       Check: run it twice → same row count; `select count(*) from law_chunks` ≈ articles × clauses. Ports: new.
       *Done 2 Oct:* two runs → 44 rows each (provisional data); rebuild is one transaction.
+      *2 Oct:* Supabase migrated (`0001`) and indexed with `EMBEDDER=cloudflare`: 375 chunks (run from the laptop; this
+      sandbox can't reach Postgres on 5432).
 - [x] **2.7 Hybrid retrieval**: dense (pgvector cosine) + FTS (EN + AR config, flag 16) → RRF (k=60) → top 8, merged
       with Law Pack chunks for the intake `issue_types` (+RELATED, +ALWAYS).
       Check: `pytest tests/rag/test_retrieve.py` (a fake-embedder test proves RRF ordering and pack merge). Ports: `Law Pack` (topic selection).
