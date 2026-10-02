@@ -16,7 +16,7 @@ services:
     envVars:
       # Render sets PORT itself; the Dockerfile's CMD listens on it.
       - key: CORS_ORIGINS
-        value: '["https://haqqi-taupe.vercel.app"]'
+        value: '["https://haqqi-ai.vercel.app"]'
       - key: DATABASE_URL
         sync: false
       - key: K2_API_KEY
