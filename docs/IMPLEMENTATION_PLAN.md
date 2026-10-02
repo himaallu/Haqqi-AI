@@ -272,9 +272,12 @@ data sent to them for training, which would break the PRD's "no training on user
 - [x] **3.8 Citation enforcement**: drop article ids that are not in the retrieved ∪ pack set, and move uncited findings to `not_covered`.
       Check: a unit test with a fabricated id → removed and finding moved. Ports: `enforceCitations` in `Parse Analyst`/`Parse Revision`.
       *Done 2 Oct:* `enforce_citations` + `to_violations` (quotes come from our law text, never the model). 2 unit tests.
-- [ ] **3.9 Analyst → Critic → one revision**, plus a test-only `force_bad_citation` hook (enabled only by an env flag).
+- [x] **3.9 Analyst → Critic → one revision**, plus a test-only `force_bad_citation` hook (enabled only by an env flag).
       Check: live TC-11 → critic `revise`, `revised=True`, final citation ≠ Art. 54(9). A unit test with mocked LLM
       proves at most one revision. Ports: `Build/K2/Parse Analyst`, `Build/K2/Parse Critic`, `Critic Passed?`, `Build/K2/Parse Revision`.
+      *Done 2 Oct:* `run_analysis` enforces citations after every reply. Seeding only happens when the caller passes it, and
+      the API passes it only when `HAQQI_TEST_HOOKS=1`. Live TC-11: critic `revise` → one revision → Art. 54(9) gone.
+      3 calls took 7 + 11 + 5 s. 3 unit tests use a scripted fake LLM.
 - [ ] **3.10 Writer agent** → `WriterOutput` (worker-language text + Arabic letter + translation, flag 9). Rejects output with no
       Arabic script, and amounts are injected from the calculator, never the LLM.
       Check: live TC-03 → `arabic_letter` matches `[؀-ۿ]`; every AED figure in the text equals a calculator figure (regex test). Ports: `Build Writer Prompt`, `K2 Writer`, `Parse Writer`.

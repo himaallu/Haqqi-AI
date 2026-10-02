@@ -30,6 +30,8 @@ class Settings(BaseSettings):
     # Comma-separated in env files (`a,b`); a JSON list also works.
     cors_origins: Annotated[list[str], NoDecode] = ["http://localhost:3000"]
     git_sha: str = "dev"
+    # Test-only hooks such as TC-11's seeded bad citation (task 3.9). Never set in production.
+    haqqi_test_hooks: bool = False
 
     @field_validator("cors_origins", mode="before")
     @classmethod
