@@ -5,7 +5,7 @@ from haqqi.config import get_settings
 from haqqi.rag.embed import HashEmbedder
 from haqqi.rag.ingest import ingest
 from haqqi.rag.lawdata import load_law_pack
-from haqqi.rag.retrieve import merge_with_pack, retrieve, rrf
+from haqqi.rag.retrieve import fulltext_ranking, merge_with_pack, retrieve, rrf
 
 
 def test_rrf_rewards_items_ranked_well_by_both_rankers() -> None:
@@ -53,3 +53,17 @@ def test_retrieve_end_to_end_on_real_postgres() -> None:
     assert "fdl33-2021:art54:cl9" in ids  # always-included time limit
     assert len(ids) == len(set(ids))
     assert {r.source for r in results} <= {"search", "pack"}
+
+
+@pytest.mark.live
+def test_fulltext_matches_when_only_some_query_words_appear() -> None:
+    get_settings.cache_clear()
+    url = get_settings().database_url
+    assert url
+    with psycopg.connect(url) as conn:
+        ingest(conn, HashEmbedder())
+        english = fulltext_ranking(conn, "gratuity qwertyuiop", 5)
+        arabic = fulltext_ranking(conn, "مكافأة نهاية الخدمة كلمةغيرموجودة", 5)
+
+    assert any(i.startswith("fdl33-2021:art51") for i in english)
+    assert any(i.startswith("fdl33-2021:art51") for i in arabic)

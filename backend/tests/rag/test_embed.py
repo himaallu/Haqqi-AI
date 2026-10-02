@@ -60,6 +60,14 @@ def test_cloudflare_embedder_batches_and_normalises() -> None:
     assert vectors[0][:2] == [0.6, 0.8]
 
 
+def test_cloudflare_embedder_caps_batches_by_size() -> None:
+    embedder = _cloudflare(lambda request: httpx.Response(500))
+    big = "x" * (CloudflareEmbedder.BATCH_CHARS // 2)
+
+    assert [len(b) for b in embedder._batches([big, big, big, "y"])] == [2, 2]
+    assert [len(b) for b in embedder._batches(["z" * (CloudflareEmbedder.BATCH_CHARS + 1)])] == [1]
+
+
 def test_cloudflare_embedder_raises_on_api_error_without_leaking_the_token() -> None:
     def handler(request: httpx.Request) -> httpx.Response:
         return httpx.Response(
@@ -73,7 +81,14 @@ def test_cloudflare_embedder_raises_on_api_error_without_leaking_the_token() -> 
 
 def test_get_embedder_requires_cloudflare_credentials() -> None:
     with pytest.raises(ValueError, match="CLOUDFLARE_ACCOUNT_ID"):
-        get_embedder(Settings(_env_file=None, embedder="cloudflare"))
+        get_embedder(
+            Settings(
+                _env_file=None,
+                embedder="cloudflare",
+                cloudflare_account_id=None,
+                cloudflare_api_token=None,
+            )
+        )
     assert isinstance(get_embedder(Settings(_env_file=None, embedder="hash")), HashEmbedder)
 
 
