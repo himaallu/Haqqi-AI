@@ -141,7 +141,7 @@ def test_settings_put_the_chosen_provider_first_and_send_gemini_extras() -> None
     client = LLMClient([gemini], http=client._http, sleep=_no_sleep)
     client.complete("intake", ASK, Verdict)
     assert seen[0]["reasoning_effort"] == "low"
-    assert seen[0]["model"] == "gemini-2.5-flash"
+    assert seen[0]["model"] == "gemini-3-flash-preview"
 
 
 def test_free_tier_quota_falls_back_to_k2() -> None:

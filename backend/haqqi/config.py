@@ -15,7 +15,7 @@ class Settings(BaseSettings):
     llm_provider: Literal["gemini", "k2"] = "gemini"
     gemini_api_key: SecretStr | None = None
     gemini_base_url: str = "https://generativelanguage.googleapis.com/v1beta/openai"
-    gemini_model: str = "gemini-2.5-flash"
+    gemini_model: str = "gemini-3-flash-preview"
 
     # K2 Horizon hosted API (OpenAI-compatible).
     k2_api_key: SecretStr | None = None

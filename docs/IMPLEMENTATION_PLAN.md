@@ -136,7 +136,7 @@ data sent to them for training, which would break the PRD's "no training on user
 | Database | Supabase free (Postgres + pgvector) | Pauses after inactivity; Neon free as alternative |
 | Embeddings | Cloudflare Workers AI, BGE-M3 (flag 15) | 10k neurons/day free; no training on content; ingest and queries use the same model |
 | Speech | **Decided in Sprint 6** | Groq's free tier gave our key no model access (HTTP 404, 2 Oct); pick a free speech-to-text option in task 6.1 |
-| LLM | Gemini free tier (`gemini-2.5-flash`), K2 as fallback (user decision, 2 Oct) | K2 made one case take 153 s, so Gemini is now primary. Free tier: rate limits, and Google may use the data (flag 26). `LLM_PROVIDER=k2` reverses the order |
+| LLM | Gemini free tier (`gemini-3-flash-preview`), K2 as fallback (user decision, 2 Oct) | K2 made one case take 153 s, so Gemini is now primary. Free tier: rate limits, and Google may use the data (flag 26). `LLM_PROVIDER=k2` reverses the order |
 | PDF | WeasyPrint + Noto Naskh Arabic | Open source |
 | Tracing / errors | Langfuse Cloud Hobby / Sentry free | PII redacted before sending |
 
