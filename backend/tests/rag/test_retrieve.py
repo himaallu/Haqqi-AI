@@ -1,7 +1,6 @@
 import psycopg
 import pytest
 
-from haqqi.config import get_settings
 from haqqi.rag.embed import HashEmbedder
 from haqqi.rag.ingest import ingest
 from haqqi.rag.lawdata import load_law_pack
@@ -35,11 +34,9 @@ def test_merge_with_pack_does_not_duplicate_pack_hits_in_top_k() -> None:
 
 
 @pytest.mark.live
-def test_retrieve_end_to_end_on_real_postgres() -> None:
-    # Needs a migrated database: `make dev`, `uv run alembic upgrade head`, then `make test-live`.
-    get_settings.cache_clear()
-    url = get_settings().database_url
-    assert url
+def test_retrieve_end_to_end_on_real_postgres(local_db_url: str) -> None:
+    # Needs a migrated local database: `make dev`, then `make test-live`.
+    url = local_db_url
     embedder = HashEmbedder()
     with psycopg.connect(url) as conn:
         ingest(conn, embedder)
@@ -56,11 +53,8 @@ def test_retrieve_end_to_end_on_real_postgres() -> None:
 
 
 @pytest.mark.live
-def test_fulltext_matches_when_only_some_query_words_appear() -> None:
-    get_settings.cache_clear()
-    url = get_settings().database_url
-    assert url
-    with psycopg.connect(url) as conn:
+def test_fulltext_matches_when_only_some_query_words_appear(local_db_url: str) -> None:
+    with psycopg.connect(local_db_url) as conn:
         ingest(conn, HashEmbedder())
         english = fulltext_ranking(conn, "gratuity qwertyuiop", 5)
         arabic = fulltext_ranking(conn, "مكافأة نهاية الخدمة كلمةغيرموجودة", 5)

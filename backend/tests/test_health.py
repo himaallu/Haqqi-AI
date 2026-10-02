@@ -25,8 +25,11 @@ def test_healthz_reports_db_down_when_unreachable(monkeypatch: pytest.MonkeyPatc
 
 
 @pytest.mark.live
-def test_healthz_reports_db_ok_with_real_database() -> None:
-    # Needs a running database: `make dev`, then `make test-live`.
+def test_healthz_reports_db_ok_with_real_database(
+    monkeypatch: pytest.MonkeyPatch, local_db_url: str
+) -> None:
+    # Needs a running local database: `make dev`, then `make test-live`.
+    monkeypatch.setenv("DATABASE_URL", local_db_url)
     get_settings.cache_clear()
     client = TestClient(create_app())
 
