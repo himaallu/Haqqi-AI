@@ -96,7 +96,7 @@ Legend: **BLOCKER** = decide before the sprint that needs it; **RISK** = plan ar
     Art. 17(1) failed to extract. Budget time and keep a hand-corrected `data/law/*.json` as the canonical source.
     The ingest script reads the JSON, and the PDFs are provenance only.
     *2 Oct:* avoided. The parser reads the portal's HTML text (EN + AR), which has clean Arabic, so no hand fixes are needed.
-18. **RISK: latency < 90 s p95.** There are 4–5 sequential K2 calls, and n8n used 180 s timeouts × 3 retries. Measure in S3
+18. **RISK (measured, over target): latency < 90 s p95.** *2 Oct:* one real case took 153 s (K2 calls 5–77 s each). There are 4–5 sequential K2 calls, and n8n used 180 s timeouts × 3 retries. Measure in S3
     and set per-call timeouts (e.g. 40 s, 1 retry). v1 has no backup LLM (see 0.1): the client keeps a provider slot
     so one can be added later, and a K2 outage shows a clear "try again later" message.
 19. **RISK: streaming through hosting.** SSE for 60–90 s must not pass through a Vercel serverless function, because it would time out.
@@ -284,9 +284,15 @@ data sent to them for training, which would break the PRD's "no training on user
       *Done 2 Oct:* `run_writer` fills `[[AMOUNT_n]]`/`[[TOTAL]]` from the calculator. One retry, then an error, if the letter
       has no Arabic (checked before filling), a token is unknown, or any figure next to AED/درهم (Arabic-Indic digits too)
       is not a calculator figure. Live TC-03 passed (35 s; 3.8k output tokens). 7 unit tests.
-- [ ] **3.11 Orchestrator + API**: `POST /v1/cases`, `PATCH /v1/cases/{id}`, `POST /v1/cases/{id}/analyze` (SSE events:
+- [x] **3.11 Orchestrator + API**: `POST /v1/cases`, `PATCH /v1/cases/{id}`, `POST /v1/cases/{id}/analyze` (SSE events:
       `retrieving`, `calculating`, `analysing`, `critiquing`, `revising`, `writing`, `done`). Case ids are UUIDv4.
       Check: `curl -N` shows ordered stage events, then an `Analysis` JSON; TC-07 returns a referral with no violations. Ports: the `connections` graph; `Assemble Case Pack`; `Out-of-Scope Reply`; `Need-Info Reply`.
+      *Done 2 Oct:* `haqqi/api/cases.py` + `haqqi/agents/pipeline.py`. Cases are stored in `cases` (story kept only for analysis;
+      7-day expiry). Out-of-scope returns the referral with no LLM analysis. LLM failures stream an `error` event with a
+      "try again later" message. 4 API tests (scripted LLM + local DB) + 2 pipeline tests.
+      Real run, TC-02 (Urdu, local server, K2 + BGE-M3): total 6,229.59 = CASES.md. Citations Art. 42(3), 43(1/3/4), 51(2/3/5).
+      **Latency 153 s:** intake 9, analyst 77 (40 s timeout + retry), critic 32, writer 34. The per-call timeout is now 90 s
+      (flag 18). **Quality:** the letter wrote the end date as 2024 instead of 2026, to fix in the Sprint 7 eval loop.
 
 ## Sprint 4 — UI flow (PRD Block 4)
 

@@ -176,3 +176,4 @@ class Analysis(_Model):
     time_limit_note: str = ""
     critic_verdict: Literal["pass", "revise"] | None = None
     revised: bool = False
+    writer: WriterOutput | None = None  # worker-language text and the Arabic letter

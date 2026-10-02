@@ -1,0 +1,45 @@
+from collections.abc import Sequence
+from decimal import Decimal
+
+from haqqi.agents.pipeline import analyze_case
+from haqqi.models import IssueType
+from haqqi.rag.retrieve import RetrievedChunk
+from tests.agents.fakes import FakeLLM
+from tests.agents.test_analysis import FACTS, PASS, REVISE, WAGES, pack_law, reply
+from tests.agents.test_writer import writer
+
+WAGE_LINE = ["Unpaid wages: [[AMOUNT_1]]"]
+
+
+def search(_query: str, issue_types: Sequence[IssueType]) -> list[RetrievedChunk]:
+    return pack_law(*issue_types)
+
+
+def scripted(critic_verdicts: list[object]) -> FakeLLM:
+    return FakeLLM(
+        {
+            "analyst": [reply(WAGES)],
+            "critic": critic_verdicts,  # type: ignore[dict-item]
+            "revision": [reply(WAGES)],
+            "writer": [writer(arabic_letter="إلى الوزارة: [[AMOUNT_1]]", amount_lines=WAGE_LINE)],
+        }
+    )
+
+
+def test_stages_in_order_and_analysis_uses_calculator_money() -> None:
+    stages: list[str] = []
+    analysis = analyze_case(FACTS, "salary unpaid", scripted([PASS]), search, stages.append)
+
+    assert stages == ["retrieving", "calculating", "analysing", "critiquing", "writing"]
+    assert analysis.total_aed == Decimal("4800.00")  # 2 × 2,400
+    assert analysis.violations[0].article.chunk_id == WAGES
+    assert analysis.critic_verdict == "pass" and not analysis.revised
+    assert analysis.writer and "4,800.00 درهم" in analysis.writer.arabic_letter
+
+
+def test_revision_stage_is_reported() -> None:
+    stages: list[str] = []
+    analysis = analyze_case(FACTS, "salary unpaid", scripted([REVISE]), search, stages.append)
+
+    assert "revising" in stages
+    assert analysis.revised

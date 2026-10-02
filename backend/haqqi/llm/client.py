@@ -22,7 +22,7 @@ from haqqi.config import Settings
 
 log = logging.getLogger(__name__)
 
-TIMEOUT_S = 40.0
+TIMEOUT_S = 90.0  # K2 calls measured 5-77 s on 2 Oct; a shorter cap only wastes a retry
 MIN_GAP_S = 0.5  # 2 requests/second
 MAX_RETRY_AFTER_S = 10.0
 
