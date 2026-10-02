@@ -88,12 +88,13 @@ Legend: **BLOCKER** = decide before the sprint that needs it; **RISK** = plan ar
     Art. 17(1) failed to extract. Budget time and keep a hand-corrected `data/law/*.json` as the canonical source.
     The ingest script reads the JSON, and the PDFs are provenance only.
 18. **RISK: latency < 90 s p95.** There are 4–5 sequential K2 calls, and n8n used 180 s timeouts × 3 retries. Measure in S3
-    and set per-call timeouts (e.g. 40 s, 1 retry) with fallback to the backup LLM (Groq free tier, see 0.1).
+    and set per-call timeouts (e.g. 40 s, 1 retry). v1 has no backup LLM (see 0.1): the client keeps a provider slot
+    so one can be added later, and a K2 outage shows a clear "try again later" message.
 19. **RISK: streaming through hosting.** SSE for 60–90 s must not pass through a Vercel serverless function, because it would time out.
     The browser should call the backend directly (CORS allow-list), and Render's request timeout must be checked.
 20. **RISK: K2 key validity / rate limits** (PRD open question). K2's weights are open, so a self-hosted copy has no central
     rate limit. We use IFM's *hosted* API (`api.ifm.ai`) with a key, though, and that has its own limits. Self-hosting the 375B model
-    isn't possible for free. Task 1.9 tests the key. If it fails, the Groq backup becomes the primary LLM.
+    isn't possible for free. Task 1.9 tests the key. If it fails, a backup provider is chosen.
     **RESOLVED (2 Oct, task 1.9):** the K2 key works (reply in 1.75 s). Limits from the response headers:
     **2 requests/second** and **10M tokens per 24 h**. Fine for 4–5 sequential calls per case; the client
     must not fire calls in parallel and should back off on HTTP 429.
@@ -119,8 +120,8 @@ data sent to them for training, which would break the PRD's "no training on user
 | Backend | Render free web service (Docker) | `render.yaml` Blueprint builds `backend/Dockerfile`; 512 MB RAM; sleeps after ~15 min idle (~1 min cold start). Hugging Face was dropped: free accounts can no longer use CPU-basic Spaces |
 | Database | Supabase free (Postgres + pgvector) | Pauses after inactivity; Neon free as alternative |
 | Embeddings | Decided in task 2.5 (flag 15) | Law vectors precomputed at ingest; query embedding must fit in 512 MB or use a hosted API |
-| Speech | Whisper large-v3 via Groq free tier | OpenAI-compatible API |
-| LLM | K2 hosted API (primary) + Groq free tier (backup) | Same OpenAI-compatible client |
+| Speech | **Decided in Sprint 6** | Groq's free tier gave our key no model access (HTTP 404, 2 Oct); pick a free speech-to-text option in task 6.1 |
+| LLM | K2 hosted API only (v1) | 2 req/s, 10M tokens/day. No backup in v1 (user decision, 2 Oct); the client keeps a provider slot |
 | PDF | WeasyPrint + Noto Naskh Arabic | Open source |
 | Tracing / errors | Langfuse Cloud Hobby / Sentry free | PII redacted before sending |
 
@@ -146,11 +147,11 @@ data sent to them for training, which would break the PRD's "no training on user
       *Done 2 Oct:* https://haqqi-ai.vercel.app shows `backend: ok · db: ok` from https://haqqi-api.onrender.com.
 - [x] **1.8 Minimal CI**: GitHub Action runs `make lint` and `make test` on PRs.
       Check: a PR shows green checks. Ports: new.
-- [ ] **1.9 LLM key smoke test**: `python -m haqqi.llm.smoke` sends one chat call to K2 and one to Groq. It prints
+- [x] **1.9 LLM key smoke test**: `python -m haqqi.llm.smoke` sends one chat call to K2 and one to Groq. It prints
       latency and any rate-limit headers, never the key.
       Check: both return a reply, or the failure is recorded in flag 20 and Groq is made primary. Ports: `K2 Horizon API` credential.
-      *2 Oct:* K2 OK (1.75 s; 2 req/s, 10M tokens/day). Groq returned HTTP 404; the script now prints the
-      provider's error message (key masked) to diagnose it. Tick once Groq answers or its failure is understood.
+      *Done 2 Oct:* K2 OK (1.0–1.75 s; 2 req/s, 10M tokens/day). Groq: HTTP 404 "model does not exist or you do
+      not have access to it", so the key has no free model access. Decision: K2 only for v1 (flags 18 and 20).
 
 ## Sprint 2 — Knowledge base (PRD Block 2)
 
@@ -259,7 +260,7 @@ data sent to them for training, which would break the PRD's "no training on user
 
 ## Sprint 6 — Voice and languages (PRD Block 6)
 
-- [ ] **6.1 `POST /v1/transcribe`** (Whisper large-v3 via Groq free tier; size and duration limits; audio is not stored).
+- [ ] **6.1 `POST /v1/transcribe`** (speech-to-text provider chosen here; Groq is unavailable, see 0.1; size and duration limits; audio is not stored).
       Check: `curl -F audio=@tests/fixtures/hi.webm` → `{text, detected_language:"hi"}`. Ports: new (F1 voice).
 - [ ] **6.2 Mic recording in the browser** (MediaRecorder, iOS Safari fallback format).
       Check: record → transcript appears in the story box on Android Chrome and iOS Safari. Ports: new.
