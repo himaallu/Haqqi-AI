@@ -33,7 +33,7 @@ root, so there is nothing to push by hand: every commit touching `backend/` rede
 
 Free services sleep after about 15 minutes without traffic; the first request after that takes about a minute.
 The free plan has 512 MB of RAM (see flag 15 in the plan for what that means for embeddings).
-`render.yaml` deploys the sprint branch for now; change `branch:` to `main` once it's merged.
+`render.yaml` deploys the `main` branch: merging a pull request redeploys the backend.
 
 ## 3. Frontend: Vercel
 

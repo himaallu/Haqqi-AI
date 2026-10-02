@@ -6,8 +6,7 @@ services:
     runtime: docker
     plan: free
     region: frankfurt
-    # Switch to `main` once the sprint branch is merged.
-    branch: claude/sleepy-thompson-n4nfgx
+    branch: main
     dockerfilePath: ./backend/Dockerfile
     dockerContext: ./backend
     buildFilter:
