@@ -12,6 +12,7 @@ services:
     buildFilter:
       paths:
         - backend/**
+        - render.yaml
     healthCheckPath: /healthz
     envVars:
       # Render sets PORT itself; the Dockerfile's CMD listens on it.
