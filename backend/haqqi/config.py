@@ -1,9 +1,11 @@
 """Runtime settings, read from environment variables (see .env.example)."""
 
+import json
 from functools import lru_cache
+from typing import Annotated
 
-from pydantic import SecretStr
-from pydantic_settings import BaseSettings, SettingsConfigDict
+from pydantic import SecretStr, field_validator
+from pydantic_settings import BaseSettings, NoDecode, SettingsConfigDict
 
 
 class Settings(BaseSettings):
@@ -20,8 +22,23 @@ class Settings(BaseSettings):
     groq_model: str = "llama-3.3-70b-versatile"
 
     database_url: str | None = None
-    cors_origins: list[str] = ["http://localhost:3000"]
+    # Comma-separated in env files (`a,b`); a JSON list also works.
+    cors_origins: Annotated[list[str], NoDecode] = ["http://localhost:3000"]
     git_sha: str = "dev"
+
+    @field_validator("cors_origins", mode="before")
+    @classmethod
+    def _split_origins(cls, value: object) -> object:
+        if not isinstance(value, str):
+            return value
+        text = value.strip()
+        if text.startswith("["):
+            try:
+                return json.loads(text)
+            except json.JSONDecodeError:
+                # Some .env loaders (e.g. `uv run --env-file`) strip the inner quotes: [a, b]
+                text = text[1:-1] if text.endswith("]") else text[1:]
+        return [part.strip().strip("'\"") for part in text.split(",") if part.strip()]
 
 
 @lru_cache

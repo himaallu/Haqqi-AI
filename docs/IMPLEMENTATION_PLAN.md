@@ -138,10 +138,9 @@ data sent to them for training, which would break the PRD's "no training on user
       Check: `make dev` → all 3 healthy; `psql -c "create extension vector"` succeeds. Ports: new.
 - [x] **1.6 Makefile**: `dev`, `test`, `lint`, `eval` (stub).
       Check: `make test && make lint` exit 0. Ports: new.
-- [ ] **1.7 Deploy hello-world**: frontend to Vercel, backend to Render via `render.yaml`, DB on Supabase (see 0.1).
+- [x] **1.7 Deploy hello-world**: frontend to Vercel, backend to Render via `render.yaml`, DB on Supabase (see 0.1).
       Check: the public frontend URL shows "backend: ok" from the public backend. Ports: new.
-      *Waiting on accounts:* `render.yaml` and the Docker image (verified locally on Render's port 10000) and
-      `docs/DEPLOY.md` are ready; needs the Render Blueprint set up and Vercel pointed at the Render URL.
+      *Done 2 Oct:* https://haqqi-ai.vercel.app shows `backend: ok · db: ok` from https://haqqi-api.onrender.com.
 - [x] **1.8 Minimal CI**: GitHub Action runs `make lint` and `make test` on PRs.
       Check: a PR shows green checks. Ports: new.
 - [ ] **1.9 LLM key smoke test**: `python -m haqqi.llm.smoke` sends one chat call to K2 and one to Groq. It prints
