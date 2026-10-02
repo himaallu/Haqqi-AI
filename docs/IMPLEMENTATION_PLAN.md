@@ -35,6 +35,9 @@ Legend: **BLOCKER** = decide before the sprint that needs it; **RISK** = plan ar
    **RESOLVED:** add `weekly_hours`. In S2 we read the Executive Regulations' part-time gratuity article. If its rule is
    clear, gratuity is prorated by it (with tests). If not, the gratuity line says "not calculated: ask MOHRE".
    Every other line is calculated normally for part-time workers.
+   *2 Oct, S2 finding:* CR 1/2022 Art. 30(1) is clear: part-time gratuity = (annual contract hours ÷ annual
+   full-time hours) × the full-time gratuity. So we prorate. **Open for S3:** the full-time base. Proposal: 48 h/week,
+   the FDL Art. 17(1) maximum.
 5. **BLOCKER (S3): deductions and leave.** The PRD calculator table has no deduction rule, yet F4 lists "deductions".
    n8n refunds the *whole* reported deduction. Leave encashment is in the PRD but **not** in the n8n calculator.
    TC-22 (still employed, leave refused) expects total 0.
@@ -87,6 +90,7 @@ Legend: **BLOCKER** = decide before the sprint that needs it; **RISK** = plan ar
 17. **RISK: Arabic PDF extraction.** Official Arabic PDFs often extract with broken glyph order. n8n already notes
     Art. 17(1) failed to extract. Budget time and keep a hand-corrected `data/law/*.json` as the canonical source.
     The ingest script reads the JSON, and the PDFs are provenance only.
+    *2 Oct:* avoided. The parser reads the portal's HTML text (EN + AR), which has clean Arabic, so no hand fixes are needed.
 18. **RISK: latency < 90 s p95.** There are 4–5 sequential K2 calls, and n8n used 180 s timeouts × 3 retries. Measure in S3
     and set per-call timeouts (e.g. 40 s, 1 retry). v1 has no backup LLM (see 0.1): the client keeps a provider slot
     so one can be added later, and a K2 outage shows a clear "try again later" message.
@@ -155,17 +159,25 @@ data sent to them for training, which would break the PRD's "no training on user
 
 ## Sprint 2 — Knowledge base (PRD Block 2)
 
-- [ ] **2.1 Law Pack → data**: extract the 10 Law Pack entries (English text, refs, topics) into `data/law/law_pack.json`,
+- [x] **2.1 Law Pack → data**: extract the 10 Law Pack entries (English text, refs, topics) into `data/law/law_pack.json`,
       re-keyed to article-level chunk ids (flag 14), plus the `RELATED` and `ALWAYS` topic maps.
       Check: a unit test loads 10 topics; every topic maps to ≥ 1 chunk id; Art. 51 text matches the official source text (n8n text may be wrong). Ports: `Law Pack`.
       *2 Oct:* `data/law/law_pack.json` (10 topics, related, always) + provisional `data/law/fdl33-2021.json` (44 chunks
       from the n8n texts). Tests pass; the Art. 51 check against the official text waits for task 2.2's download.
-- [ ] **2.2 Source download + provenance**: fetch FDL 33/2021, CR 1/2022 and FDL 20/2023 (EN + AR) and MOHRE pages;
+      *Done 2 Oct:* the official file replaces the provisional one. Every n8n clause text matches the official English
+      (similarity ≥ 0.9), and every pack id resolves. Gratuity adds CR 1/2022 Art. 30 (part-time), and leave adds CR Art. 19(2).
+- [x] **2.2 Source download + provenance**: fetch FDL 33/2021, CR 1/2022 and FDL 20/2023 (EN + AR) and MOHRE pages;
       record URL + retrieval date in `data/law/SOURCES.md`.
       Check: SOURCES.md lists every file with a URL and date. Ports: `Setup` note, step 3.
-- [ ] **2.3 Article parser**: PDF/HTML → `data/law/<law_id>.json` (one record per article, split by clause, EN/AR side by side),
+      *Done 2 Oct:* the consolidated FDL 33/2021 text (it already includes FDL 20/2023) and CR 1/2022, EN + AR, saved
+      from uaelegislation.gov.ae via Firecrawl (Cloudflare blocks curl), each with a sha256. MOHRE pages are unreachable
+      for now and listed as "not yet fetched"; they are not law text and are needed only in S8.
+- [x] **2.3 Article parser**: PDF/HTML → `data/law/<law_id>.json` (one record per article, split by clause, EN/AR side by side),
       with hand fixes committed (flag 17).
       Check: `pytest tests/rag/test_parse.py`; Art. 51 has 8 clauses; Arabic text of Art. 51 is readable (eyeball 3 articles). Ports: new.
+      *Done 2 Oct:* `python -m haqqi.rag.parse` gives FDL 33/2021 (74 articles, 253 chunks) and CR 1/2022 (39 articles, 122 chunks).
+      EN and AR clause counts match for every article. A drift test keeps the JSON in sync with the raw files.
+      Eyeballed Art. 51(2), 53, 54(9) and 43(3), plus CR 30(1).
 - [x] **2.4 Schema + migrations**: `law_chunks(id, law_id, article_no, clause_no, title, topic_tags[], text_en, text_ar,
       source_url, effective_date, embedding vector, tsv_en, tsv_ar)` plus a `cases` table.
       Check: `alembic upgrade head` on a fresh DB; `\d law_chunks` shows the vector + GIN indexes. Ports: new.
