@@ -219,9 +219,12 @@ data sent to them for training, which would break the PRD's "no training on user
 ## Sprint 3 — Core logic (PRD Block 3)
 *(3a = tasks 3.1–3.4: no LLM, runs even if K2 is down. 3b = tasks 3.5–3.11: agents.)*
 
-- [ ] **3.1 Pydantic models**: `ExtractedFacts`, `CaseFacts`, `Citation`, `Violation`, `ClaimLine`, `Analysis`,
+- [x] **3.1 Pydantic models**: `ExtractedFacts`, `CaseFacts`, `Citation`, `Violation`, `ClaimLine`, `Analysis`,
       `CriticReport`, `WriterOutput`, `Emirate` (flags 12–13). Money fields are `Decimal`.
       Check: `mypy --strict haqqi/core haqqi/models.py`; a round-trip JSON test. Ports: the JSON contracts in `Build * Prompt` nodes.
+      *Done 2 Oct:* `haqqi/models.py`; strict `CaseFacts` validates basic ≤ total, end date vs termination, no extra keys.
+      Added `deducted_monthly_aed` (optional) so the Art. 25(2) 50% check compares like with like; `ClaimLine.amount_aed`
+      is `None` for "not calculated" lines.
 - [ ] **3.2 Calculator** `haqqi/core/calculator.py`: gratuity (Art. 51, eligibility, 21/30 days, 2-year cap, unpaid absence),
       unpaid wages, notice pay, notice pay owed *by* a worker who resigned without notice (separate line, flag 2),
       deductions refund, leave encashment, `above_mohre_limit` (50,000), each with `formula` +
