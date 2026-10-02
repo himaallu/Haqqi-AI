@@ -35,6 +35,9 @@ Legend: **BLOCKER** = decide before the sprint that needs it; **RISK** = plan ar
    **RESOLVED:** add `weekly_hours`. In S2 we read the Executive Regulations' part-time gratuity article. If its rule is
    clear, gratuity is prorated by it (with tests). If not, the gratuity line says "not calculated: ask MOHRE".
    Every other line is calculated normally for part-time workers.
+   *2 Oct, S2 finding:* CR 1/2022 Art. 30(1) is clear: part-time gratuity = (annual contract hours ÷ annual
+   full-time hours) × the full-time gratuity. So we prorate. **Open for S3:** the full-time base. Proposal: 48 h/week,
+   the FDL Art. 17(1) maximum.
 5. **BLOCKER (S3): deductions and leave.** The PRD calculator table has no deduction rule, yet F4 lists "deductions".
    n8n refunds the *whole* reported deduction. Leave encashment is in the PRD but **not** in the n8n calculator.
    TC-22 (still employed, leave refused) expects total 0.
@@ -82,11 +85,16 @@ Legend: **BLOCKER** = decide before the sprint that needs it; **RISK** = plan ar
     precomputed at ingest (any machine), and tests use a deterministic fake embedder. For query embeddings, task 2.5
     measures a quantised ONNX multilingual-e5-small in the running container. If it doesn't fit, the fallback is a
     free hosted embedding API, which sends query text off our server: **decision for you in Sprint 2.**
+    **RESOLVED (2 Oct):** e5-small (int8 ONNX) peaks at about 520 MB per query batch (the dequantised 250k-token vocabulary),
+    so it doesn't fit. IFM has no embeddings endpoint. You chose a free embeddings API: **BGE-M3 on Cloudflare Workers AI**
+    (10k neurons/day ≈ 9M tokens, and no training on or reuse of content). Gemini's free tier was rejected because Google
+    may use free-tier content to improve its products, including human review.
 16. **RISK: Arabic full-text search.** "BM25-style" in Postgres is really `ts_rank`. Arabic stemming needs the `arabic`
     text-search config on Supabase/Neon, so verify it in S2. Fallback: `simple` config on normalized Arabic (strip tashkeel).
 17. **RISK: Arabic PDF extraction.** Official Arabic PDFs often extract with broken glyph order. n8n already notes
     Art. 17(1) failed to extract. Budget time and keep a hand-corrected `data/law/*.json` as the canonical source.
     The ingest script reads the JSON, and the PDFs are provenance only.
+    *2 Oct:* avoided. The parser reads the portal's HTML text (EN + AR), which has clean Arabic, so no hand fixes are needed.
 18. **RISK: latency < 90 s p95.** There are 4–5 sequential K2 calls, and n8n used 180 s timeouts × 3 retries. Measure in S3
     and set per-call timeouts (e.g. 40 s, 1 retry). v1 has no backup LLM (see 0.1): the client keeps a provider slot
     so one can be added later, and a K2 outage shows a clear "try again later" message.
@@ -119,7 +127,7 @@ data sent to them for training, which would break the PRD's "no training on user
 | Frontend | Vercel Hobby | Preview deploys per PR |
 | Backend | Render free web service (Docker) | `render.yaml` Blueprint builds `backend/Dockerfile`; 512 MB RAM; sleeps after ~15 min idle (~1 min cold start). Hugging Face was dropped: free accounts can no longer use CPU-basic Spaces |
 | Database | Supabase free (Postgres + pgvector) | Pauses after inactivity; Neon free as alternative |
-| Embeddings | Decided in task 2.5 (flag 15) | Law vectors precomputed at ingest; query embedding must fit in 512 MB or use a hosted API |
+| Embeddings | Cloudflare Workers AI, BGE-M3 (flag 15) | 10k neurons/day free; no training on content; ingest and queries use the same model |
 | Speech | **Decided in Sprint 6** | Groq's free tier gave our key no model access (HTTP 404, 2 Oct); pick a free speech-to-text option in task 6.1 |
 | LLM | K2 hosted API only (v1) | 2 req/s, 10M tokens/day. No backup in v1 (user decision, 2 Oct); the client keeps a provider slot |
 | PDF | WeasyPrint + Noto Naskh Arabic | Open source |
@@ -155,17 +163,25 @@ data sent to them for training, which would break the PRD's "no training on user
 
 ## Sprint 2 — Knowledge base (PRD Block 2)
 
-- [ ] **2.1 Law Pack → data**: extract the 10 Law Pack entries (English text, refs, topics) into `data/law/law_pack.json`,
+- [x] **2.1 Law Pack → data**: extract the 10 Law Pack entries (English text, refs, topics) into `data/law/law_pack.json`,
       re-keyed to article-level chunk ids (flag 14), plus the `RELATED` and `ALWAYS` topic maps.
       Check: a unit test loads 10 topics; every topic maps to ≥ 1 chunk id; Art. 51 text matches the official source text (n8n text may be wrong). Ports: `Law Pack`.
       *2 Oct:* `data/law/law_pack.json` (10 topics, related, always) + provisional `data/law/fdl33-2021.json` (44 chunks
       from the n8n texts). Tests pass; the Art. 51 check against the official text waits for task 2.2's download.
-- [ ] **2.2 Source download + provenance**: fetch FDL 33/2021, CR 1/2022 and FDL 20/2023 (EN + AR) and MOHRE pages;
+      *Done 2 Oct:* the official file replaces the provisional one. Every n8n clause text matches the official English
+      (similarity ≥ 0.9), and every pack id resolves. Gratuity adds CR 1/2022 Art. 30 (part-time), and leave adds CR Art. 19(2).
+- [x] **2.2 Source download + provenance**: fetch FDL 33/2021, CR 1/2022 and FDL 20/2023 (EN + AR) and MOHRE pages;
       record URL + retrieval date in `data/law/SOURCES.md`.
       Check: SOURCES.md lists every file with a URL and date. Ports: `Setup` note, step 3.
-- [ ] **2.3 Article parser**: PDF/HTML → `data/law/<law_id>.json` (one record per article, split by clause, EN/AR side by side),
+      *Done 2 Oct:* the consolidated FDL 33/2021 text (it already includes FDL 20/2023) and CR 1/2022, EN + AR, saved
+      from uaelegislation.gov.ae via Firecrawl (Cloudflare blocks curl), each with a sha256. MOHRE pages are unreachable
+      for now and listed as "not yet fetched"; they are not law text and are needed only in S8.
+- [x] **2.3 Article parser**: PDF/HTML → `data/law/<law_id>.json` (one record per article, split by clause, EN/AR side by side),
       with hand fixes committed (flag 17).
       Check: `pytest tests/rag/test_parse.py`; Art. 51 has 8 clauses; Arabic text of Art. 51 is readable (eyeball 3 articles). Ports: new.
+      *Done 2 Oct:* `python -m haqqi.rag.parse` gives FDL 33/2021 (74 articles, 253 chunks) and CR 1/2022 (39 articles, 122 chunks).
+      EN and AR clause counts match for every article. A drift test keeps the JSON in sync with the raw files.
+      Eyeballed Art. 51(2), 53, 54(9) and 43(3), plus CR 30(1).
 - [x] **2.4 Schema + migrations**: `law_chunks(id, law_id, article_no, clause_no, title, topic_tags[], text_en, text_ar,
       source_url, effective_date, embedding vector, tsv_en, tsv_ar)` plus a `cases` table.
       Check: `alembic upgrade head` on a fresh DB; `\d law_chunks` shows the vector + GIN indexes. Ports: new.
@@ -176,6 +192,9 @@ data sent to them for training, which would break the PRD's "no training on user
       dimension, and memory stays within the host's limit. Ports: new.
       *2 Oct:* `Embedder` protocol + deterministic `HashEmbedder` done and tested; the real model needs huggingface.co
       (network change requested), then the 512 MB measurement decides flag 15.
+      *2 Oct:* `CloudflareEmbedder` (BGE-M3, 1024-d, batches of 50, normalised) done, with mocked HTTP tests. Dense search
+      skips stored vectors of another dimension. Waiting on your Cloudflare account ID + token to run the live
+      Hindi/Arabic test (`make test-live`).
 - [x] **2.6 `python -m haqqi.ingest`**: rebuilds the index from `data/law/*.json` idempotently.
       Check: run it twice → same row count; `select count(*) from law_chunks` ≈ articles × clauses. Ports: new.
       *Done 2 Oct:* two runs → 44 rows each (provisional data); rebuild is one transaction.
@@ -186,6 +205,9 @@ data sent to them for training, which would break the PRD's "no training on user
 - [ ] **2.8 Eyeball 10 queries**: `python -m haqqi.rag.probe "<query>"` for 10 queries in EN/HI/AR, results saved to
       `eval/retrieval_probe.md`.
       Check: at least 8/10 have the expected article in the top 5 (by eye). Ports: new.
+      *2 Oct:* `python -m haqqi.rag.probe` (one query, or `--all` → `eval/retrieval_probe_<EMBEDDER>.md`), search only
+      with no pack top-up. Keyword-only baseline (hash embedder): **5/10**. Hindi and paraphrased English miss. The BGE-M3
+      run follows once the Cloudflare token is set.
 
 ## Sprint 3 — Core logic (PRD Block 3)
 *(3a = tasks 3.1–3.4: no LLM, runs even if K2 is down. 3b = tasks 3.5–3.11: agents.)*

@@ -42,7 +42,7 @@
     },
     "gratuity": {
       "pack_id": "GRATUITY",
-      "ref": "Art. 51, FDL 33/2021",
+      "ref": "Art. 51, FDL 33/2021; Art. 30, CR 1/2022 (part-time)",
       "chunk_ids": [
         "fdl33-2021:art51:cl1",
         "fdl33-2021:art51:cl2",
@@ -51,12 +51,14 @@
         "fdl33-2021:art51:cl5",
         "fdl33-2021:art51:cl6",
         "fdl33-2021:art51:cl7",
-        "fdl33-2021:art51:cl8"
+        "fdl33-2021:art51:cl8",
+        "cr1-2022:art30:cl1",
+        "cr1-2022:art30:cl2"
       ]
     },
     "leave": {
       "pack_id": "LEAVE",
-      "ref": "Art. 29, FDL 33/2021",
+      "ref": "Art. 29, FDL 33/2021; Art. 19(2), CR 1/2022 (leave pay at end of service)",
       "chunk_ids": [
         "fdl33-2021:art29:cl1",
         "fdl33-2021:art29:cl2",
@@ -67,7 +69,8 @@
         "fdl33-2021:art29:cl7",
         "fdl33-2021:art29:cl8",
         "fdl33-2021:art29:cl9",
-        "fdl33-2021:art29:cl10"
+        "fdl33-2021:art29:cl10",
+        "cr1-2022:art19:cl2"
       ]
     },
     "overtime": {

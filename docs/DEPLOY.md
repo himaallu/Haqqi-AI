@@ -28,14 +28,32 @@ root, so there is nothing to push by hand: every commit touching `backend/` rede
 1. Sign up at render.com with **GitHub** and allow access to the `Haqqi-AI` repository.
 2. **New → Blueprint** → pick `himaallu/Haqqi-AI`. Render reads `render.yaml` and shows one web service,
    `haqqi-api` (free plan, Frankfurt).
-3. Fill in the three secrets it asks for: `DATABASE_URL` (the Supabase Session pooler URI from step 1),
-   `K2_API_KEY`, `GROQ_API_KEY`. `CORS_ORIGINS` is already set in `render.yaml`.
+3. Fill in the secrets it asks for: `DATABASE_URL` (the Supabase Session pooler URI from step 1),
+   `K2_API_KEY`, `GROQ_API_KEY`, and `CLOUDFLARE_ACCOUNT_ID` + `CLOUDFLARE_API_TOKEN` (step 2b below).
+   `CORS_ORIGINS` and `EMBEDDER` are already set in `render.yaml`.
 4. **Apply**. The first build takes a few minutes; watch it under the service's **Logs**.
 5. Check: `curl https://haqqi-api.onrender.com/healthz` → `{"status":"ok","db":"ok",...}`.
    Your exact URL is shown at the top of the service page. If the name was taken, it has a suffix.
 
 Free services sleep after about 15 minutes without traffic; the first request after that takes about a minute.
-The free plan has 512 MB of RAM (see flag 15 in the plan for what that means for embeddings).
+The free plan has 512 MB of RAM, too little for a local multilingual embedding model (flag 15), so embeddings
+come from Cloudflare Workers AI.
+
+## 2b. Embeddings: Cloudflare Workers AI (free)
+
+Law search embeds text with BGE-M3 on Workers AI: 10,000 free "neurons" a day (about 9M tokens; one full ingest is
+about 60k tokens). Cloudflare does not use request content to train models or improve services
+(developers.cloudflare.com/workers-ai/platform/data-usage).
+
+1. Sign up at dash.cloudflare.com (free plan; no domain needed).
+2. Account ID: on the account home page, **⋯ → Copy account ID** (also shown under Workers & Pages).
+3. Token: **My Profile → API Tokens → Create Token → Custom token**, permission **Account · Workers AI · Read**,
+   limited to your account. Copy the token once.
+4. Put both in Render (step 3 above) and in your local `backend/.env`, with `EMBEDDER=cloudflare`.
+   Never paste them in chat.
+5. Re-index Supabase with the new embedder from your laptop:
+   `cd backend && DATABASE_URL='<Supabase URI>' EMBEDDER=cloudflare uv run python -m haqqi.ingest`
+   (law vectors must come from the same embedder as queries).
 `render.yaml` deploys the `main` branch: merging a pull request redeploys the backend.
 
 ## 3. Frontend: Vercel

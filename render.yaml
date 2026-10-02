@@ -24,3 +24,10 @@ services:
         sync: false
       - key: GROQ_API_KEY
         sync: false
+      # Law search embeddings: BGE-M3 on Cloudflare Workers AI (free tier, flag 15)
+      - key: EMBEDDER
+        value: cloudflare
+      - key: CLOUDFLARE_ACCOUNT_ID
+        sync: false
+      - key: CLOUDFLARE_API_TOKEN
+        sync: false

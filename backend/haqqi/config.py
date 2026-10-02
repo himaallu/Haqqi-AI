@@ -22,8 +22,11 @@ class Settings(BaseSettings):
     groq_model: str = "llama-3.3-70b-versatile"
 
     database_url: str | None = None
-    # "hash" = deterministic test stand-in; the real model is chosen in task 2.5 (flag 15).
-    embedder: Literal["hash"] = "hash"
+    # Law-search embedder (flag 15): "cloudflare" = BGE-M3 on Workers AI (free tier);
+    # "hash" = deterministic stand-in for tests and offline work. Ingest and API must match.
+    embedder: Literal["hash", "cloudflare"] = "hash"
+    cloudflare_account_id: str | None = None
+    cloudflare_api_token: SecretStr | None = None
     # Comma-separated in env files (`a,b`); a JSON list also works.
     cors_origins: Annotated[list[str], NoDecode] = ["http://localhost:3000"]
     git_sha: str = "dev"
