@@ -33,6 +33,9 @@ jobs:
           cache: pnpm
           cache-dependency-path: frontend/pnpm-lock.yaml
 
+      - name: Install PDF libraries (Pango, HarfBuzz) for WeasyPrint
+        run: sudo apt-get update && sudo apt-get install -y --no-install-recommends libpango-1.0-0 libpangoft2-1.0-0 libharfbuzz-subset0
+
       - name: Install backend
         working-directory: backend
         run: uv sync --locked
