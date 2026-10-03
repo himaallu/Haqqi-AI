@@ -1,6 +1,6 @@
 import { describe, expect, it, vi } from "vitest";
 
-import { apiUrl, fetchHealth } from "./api";
+import { analyzeCase, ApiError, apiUrl, confirmCase, createCase, fetchHealth, getCase } from "./api";
 
 describe("apiUrl", () => {
   it("joins base and path with exactly one slash", () => {
@@ -21,5 +21,50 @@ describe("fetchHealth", () => {
     const fakeFetch = vi.fn().mockResolvedValue(new Response("nope", { status: 503 }));
 
     await expect(fetchHealth(fakeFetch)).rejects.toThrow("503");
+  });
+});
+
+describe("case calls", () => {
+  it("POSTs the story as JSON and returns the case", async () => {
+    const view = { id: "abc", status: "ready" };
+    const fakeFetch = vi.fn().mockResolvedValue(new Response(JSON.stringify(view), { status: 201 }));
+
+    await expect(createCase({ language: "hi", story: "salary unpaid" }, fakeFetch)).resolves.toEqual(view);
+    const [url, init] = fakeFetch.mock.calls[0];
+    expect(url).toMatch(/\/v1\/cases$/);
+    expect(init.method).toBe("POST");
+    expect(JSON.parse(init.body)).toEqual({ language: "hi", story: "salary unpaid" });
+    expect(init.headers).toEqual({ "Content-Type": "application/json" });
+  });
+
+  it("raises ApiError with FastAPI's detail on 422", async () => {
+    const detail = [{ loc: ["total_wage_aed"], msg: "Input should be greater than 0" }];
+    const fakeFetch = vi.fn().mockResolvedValue(new Response(JSON.stringify({ detail }), { status: 422 }));
+
+    const err = await confirmCase("abc", { total_wage_aed: "0" }, fakeFetch).catch((e: unknown) => e);
+    expect(err).toBeInstanceOf(ApiError);
+    expect((err as ApiError).status).toBe(422);
+    expect((err as ApiError).detail).toEqual(detail);
+  });
+
+  it("GETs a case by id", async () => {
+    const fakeFetch = vi.fn().mockResolvedValue(new Response("{}", { status: 200 }));
+    await getCase("a/b", fakeFetch);
+    expect(fakeFetch.mock.calls[0][0]).toMatch(/\/v1\/cases\/a%2Fb$/);
+  });
+
+  it("streams analysis events", async () => {
+    const body = 'event: retrieving\ndata: {}\n\nevent: done\ndata: {"in_scope":true}\n\n';
+    const fakeFetch = vi.fn().mockResolvedValue(new Response(body, { status: 200 }));
+    const names: string[] = [];
+
+    await analyzeCase("abc", (e) => names.push(e.event), undefined, fakeFetch);
+    expect(names).toEqual(["retrieving", "done"]);
+    expect(fakeFetch.mock.calls[0][1].method).toBe("POST");
+  });
+
+  it("raises ApiError when analysis is refused", async () => {
+    const fakeFetch = vi.fn().mockResolvedValue(new Response('{"detail":"confirm first"}', { status: 409 }));
+    await expect(analyzeCase("abc", () => {}, undefined, fakeFetch)).rejects.toMatchObject({ status: 409 });
   });
 });
