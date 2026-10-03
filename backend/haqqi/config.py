@@ -16,6 +16,13 @@ class Settings(BaseSettings):
     gemini_api_key: SecretStr | None = None
     gemini_base_url: str = "https://generativelanguage.googleapis.com/v1beta/openai"
     gemini_model: str = "gemini-3-flash-preview"
+    # Free-tier quotas are per model, so these take over when the primary hits its limit, before K2
+    # (flag 18). Comma-separated in env files; a JSON list also works.
+    gemini_fallback_models: Annotated[list[str], NoDecode] = [
+        "gemini-3.5-flash",
+        "gemini-3.8-flash",
+        "gemini-3.1-flash-lite",
+    ]
 
     # K2 Horizon hosted API (OpenAI-compatible).
     k2_api_key: SecretStr | None = None
@@ -39,7 +46,7 @@ class Settings(BaseSettings):
     # Test-only hooks such as TC-11's seeded bad citation (task 3.9). Never set in production.
     haqqi_test_hooks: bool = False
 
-    @field_validator("cors_origins", mode="before")
+    @field_validator("cors_origins", "gemini_fallback_models", mode="before")
     @classmethod
     def _split_origins(cls, value: object) -> object:
         if not isinstance(value, str):

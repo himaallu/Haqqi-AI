@@ -98,7 +98,10 @@ Legend: **BLOCKER** = decide before the sprint that needs it; **RISK** = plan ar
     *2 Oct:* avoided. The parser reads the portal's HTML text (EN + AR), which has clean Arabic, so no hand fixes are needed.
 18. **RISK: latency < 90 s p95.** *2 Oct:* K2: one real case took 153 s (calls 5–77 s each). **Gemini
     (`gemini-3-flash-preview`): the same TC-02 case took 13 s** (intake 2, analysis + critic 5, writer 6). Free-tier limit:
-    **5 requests/minute** per model, and a case needs 4–6 calls, so a second case in the same minute falls back to K2 (slow). There are 4–5 sequential K2 calls, and n8n used 180 s timeouts × 3 retries. Measure in S3
+    **5 requests/minute** per model, and a case needs 4–6 calls, so a second case in the same minute falls back to K2 (slow).
+    *3 Oct:* quotas are per model, so the client chains the free models before K2: 3-flash-preview (5/min) →
+    3.5-flash (5) → 3.8-flash (5) → 3.1-flash-lite (15), about 30 requests/min in all (`GEMINI_FALLBACK_MODELS`).
+    A 429 moves straight to the next model instead of waiting out the ~40 s quota window. There are 4–5 sequential K2 calls, and n8n used 180 s timeouts × 3 retries. Measure in S3
     and set per-call timeouts (e.g. 40 s, 1 retry). v1 has no backup LLM (see 0.1): the client keeps a provider slot
     so one can be added later, and a K2 outage shows a clear "try again later" message.
 19. **RISK: streaming through hosting.** SSE for 60–90 s must not pass through a Vercel serverless function, because it would time out.
@@ -125,6 +128,7 @@ Legend: **BLOCKER** = decide before the sprint that needs it; **RISK** = plan ar
     - The story screen tells workers not to include names, phone numbers, passport, Emirates ID or labour card numbers (S4, task 4.3).
     - The results page and disclaimer say the text is processed by Google Gemini (S8, task 8.7).
     - Billing can be enabled later to move to the paid tier, which doesn't use data for training, without a code change.
+    - **3 Oct, your choice: free tier only.** Billing stays off in AI Studio; extra capacity comes from chaining free models (flag 18).
 
 ## 0.1 Free stack (replaces the PRD's paid choices)
 
@@ -138,7 +142,7 @@ data sent to them for training, which would break the PRD's "no training on user
 | Database | Supabase free (Postgres + pgvector) | Pauses after inactivity; Neon free as alternative |
 | Embeddings | Cloudflare Workers AI, BGE-M3 (flag 15) | 10k neurons/day free; no training on content; ingest and queries use the same model |
 | Speech | **Decided in Sprint 6** | Groq's free tier gave our key no model access (HTTP 404, 2 Oct); pick a free speech-to-text option in task 6.1 |
-| LLM | Gemini free tier (`gemini-3-flash-preview`), K2 as fallback (user decision, 2 Oct) | K2 made one case take 153 s, so Gemini is now primary. Free tier: rate limits, and Google may use the data (flag 26). `LLM_PROVIDER=k2` reverses the order |
+| LLM | Gemini free tier only (`gemini-3-flash-preview`, then free 3.5-flash, 3.8-flash, 3.1-flash-lite), K2 as fallback (user decision, 2 Oct) | K2 made one case take 153 s, so Gemini is now primary. Free tier: rate limits, and Google may use the data (flag 26). `LLM_PROVIDER=k2` reverses the order |
 | PDF | WeasyPrint + Noto Naskh Arabic | Open source |
 | Tracing / errors | Langfuse Cloud Hobby / Sentry free | PII redacted before sending |
 

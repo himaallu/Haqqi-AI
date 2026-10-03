@@ -129,11 +129,20 @@ def test_extract_json_rejects_text_without_an_object() -> None:
 
 def test_settings_put_the_chosen_provider_first_and_send_gemini_extras() -> None:
     settings = Settings(_env_file=None, gemini_api_key="g", k2_api_key="k")
-    names = [p.name for p in providers_from_settings(settings)]
-    assert names == ["gemini", "k2"]
+    models = [p.model for p in providers_from_settings(settings)]
+    assert models == [
+        "gemini-3-flash-preview",
+        "gemini-3.5-flash",
+        "gemini-3.8-flash",
+        "gemini-3.1-flash-lite",
+        "IFM/K2-Horizon-375B-A23B",
+    ]
 
     k2_first = Settings(_env_file=None, llm_provider="k2", gemini_api_key="g", k2_api_key="k")
-    assert [p.name for p in providers_from_settings(k2_first)] == ["k2", "gemini"]
+    assert [p.name for p in providers_from_settings(k2_first)][:2] == [
+        "k2",
+        "gemini:gemini-3-flash-preview",
+    ]
 
     seen: list[dict[str, object]] = []
     client, _ = client_for([reply('{"verdict": "pass", "score": 1}')], seen)
@@ -161,4 +170,36 @@ def test_free_tier_quota_falls_back_to_k2() -> None:
     )
 
     assert client.complete("intake", ASK, Verdict).score == 4
-    assert hosts == ["generativelanguage.googleapis.com"] * 2 + ["api.ifm.ai"]
+    # Every free Gemini model is tried once (no waiting on a quota), then K2.
+    assert hosts == ["generativelanguage.googleapis.com"] * 4 + ["api.ifm.ai"]
+
+
+def test_rate_limited_model_hands_over_to_the_next_free_model_without_waiting() -> None:
+    models: list[str] = []
+    sleeps: list[float] = []
+
+    def handler(request: httpx.Request) -> httpx.Response:
+        model = json.loads(request.content)["model"]
+        models.append(model)
+        if model == "gemini-3-flash-preview":
+            return httpx.Response(429, headers={"retry-after": "40"}, json={})
+        return reply('{"verdict": "pass", "score": 5}')
+
+    settings = Settings(_env_file=None, gemini_api_key="g", k2_api_key="k")
+    client = LLMClient(
+        providers_from_settings(settings),
+        http=httpx.Client(transport=httpx.MockTransport(handler)),
+        sleep=sleeps.append,
+    )
+
+    assert client.complete("intake", ASK, Verdict).score == 5
+    assert models == ["gemini-3-flash-preview", "gemini-3.5-flash"]
+    assert all(s <= 0.5 for s in sleeps)  # only the 2 req/s spacing, never the 40 s quota wait
+
+
+def test_fallback_models_read_from_a_comma_separated_env_value(
+    monkeypatch: pytest.MonkeyPatch,
+) -> None:
+    monkeypatch.setenv("GEMINI_FALLBACK_MODELS", "gemini-3.1-flash-lite, gemini-3.5-flash")
+    settings = Settings(_env_file=None)
+    assert settings.gemini_fallback_models == ["gemini-3.1-flash-lite", "gemini-3.5-flash"]

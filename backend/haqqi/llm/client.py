@@ -2,7 +2,8 @@
 
 Every reply is parsed into a Pydantic model (CLAUDE.md): invalid JSON gets one retry with a
 short correction, then `LLMOutputError`. Transport failures get one retry, then the next
-provider in the list (flag 18; K2 only in v1), then `LLMUnavailable`. Calls are serialised
+provider in the list (flag 18: free-tier Gemini models, then K2), then `LLMUnavailable`. A rate
+limit moves straight on to the next provider; only the last one waits it out. Calls are serialised
 and spaced to respect K2's 2 requests/second (flag 20). Logs never contain content or keys.
 """
 
@@ -52,17 +53,24 @@ class Provider:
 
 
 def providers_from_settings(settings: Settings) -> list[Provider]:
-    """The configured primary provider first, the other as fallback (flag 18)."""
-    gemini = Provider(
-        "gemini",
-        settings.gemini_base_url,
-        settings.gemini_model,
-        settings.gemini_api_key,
-        # Less hidden "thinking" means faster replies; our prompts ask for extraction and JSON.
-        extra={"reasoning_effort": "low"},
-    )
+    """The configured primary provider first, the other as fallback (flag 18).
+
+    Gemini is one provider per free-tier model: each model has its own quota, so a rate-limited
+    model hands over to the next one instead of waiting.
+    """
+    gemini = [
+        Provider(
+            f"gemini:{model}",
+            settings.gemini_base_url,
+            model,
+            settings.gemini_api_key,
+            # Less hidden "thinking" means faster replies; our prompts ask for extraction and JSON.
+            extra={"reasoning_effort": "low"},
+        )
+        for model in dict.fromkeys([settings.gemini_model, *settings.gemini_fallback_models])
+    ]
     k2 = Provider("k2", settings.k2_base_url, settings.k2_model, settings.k2_api_key)
-    return [gemini, k2] if settings.llm_provider == "gemini" else [k2, gemini]
+    return [*gemini, k2] if settings.llm_provider == "gemini" else [k2, *gemini]
 
 
 @dataclass(frozen=True)
@@ -99,6 +107,12 @@ def _short_error(exc: Exception) -> str:
         parts = [f"{'.'.join(str(p) for p in e['loc'])}: {e['msg']}" for e in exc.errors()[:5]]
         return "; ".join(parts)
     return str(exc)[:200]
+
+
+@dataclass(frozen=True)
+class _Retry:
+    wait_s: float
+    rate_limited: bool = False
 
 
 class Completer(Protocol):
@@ -151,17 +165,20 @@ class LLMClient:
     def _chat(self, stage: str, messages: Sequence[Message]) -> str:
         if not self._providers:
             raise LLMUnavailable("no LLM provider configured (set GEMINI_API_KEY or K2_API_KEY)")
+        last = self._providers[-1]
         for provider in self._providers:
             for attempt in (1, 2):
                 outcome = self._post(stage, provider, messages)
                 if isinstance(outcome, str):
                     return outcome
+                if outcome.rate_limited and provider is not last:
+                    break  # another provider (or model quota) may be free: don't wait this one out
                 if attempt == 1:
-                    self._sleep(outcome)
+                    self._sleep(outcome.wait_s)
             log.warning("llm %s: provider %s unavailable", stage, provider.name)
         raise LLMUnavailable(f"{stage}: the language model is not responding, try again later")
 
-    def _post(self, stage: str, provider: Provider, messages: Sequence[Message]) -> str | float:
+    def _post(self, stage: str, provider: Provider, messages: Sequence[Message]) -> str | _Retry:
         """The reply text, or how long to wait before retrying."""
         assert provider.api_key is not None
         with self._lock:
@@ -184,15 +201,15 @@ class LLMClient:
             )
         except httpx.HTTPError as exc:
             log.warning("llm %s: %s %s", stage, provider.name, type(exc).__name__)
-            return 1.0
+            return _Retry(1.0)
         latency = time.perf_counter() - started
         if resp.status_code == 429:
             retry_after = _retry_after(resp)
-            log.warning("llm %s: rate limited, waiting %.1fs", stage, retry_after)
-            return retry_after
+            log.warning("llm %s: %s rate limited", stage, provider.name)
+            return _Retry(retry_after, rate_limited=True)
         if resp.status_code >= 500:
             log.warning("llm %s: HTTP %s", stage, resp.status_code)
-            return 1.0
+            return _Retry(1.0)
         if resp.status_code != 200:
             raise LLMUnavailable(f"{stage}: HTTP {resp.status_code} from {provider.name}")
         try:
@@ -200,11 +217,12 @@ class LLMClient:
             text = body["choices"][0]["message"]["content"] or ""
         except (ValueError, KeyError, IndexError, TypeError):
             log.warning("llm %s: unexpected response shape", stage)
-            return 1.0
+            return _Retry(1.0)
         usage = body.get("usage") or {}
         log.info(
-            "llm %s: ok in %.1fs, tokens in=%s out=%s",
+            "llm %s: %s ok in %.1fs, tokens in=%s out=%s",
             stage,
+            provider.name,
             latency,
             usage.get("prompt_tokens"),
             usage.get("completion_tokens"),

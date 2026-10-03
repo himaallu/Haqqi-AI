@@ -65,6 +65,9 @@ about 60k tokens). Cloudflare does not use request content to train models or im
 
 Free tier: requests are rate-limited, and Google may use free-tier content to improve its products (including human
 review). See flag 26 in the plan. `LLM_PROVIDER=k2` switches back to K2 first.
+Keep **billing off** on the AI Studio project so every call stays on the free tier. Each model has its own free
+quota (requests per minute and per day), so the backend tries `GEMINI_MODEL`, then each of `GEMINI_FALLBACK_MODELS`,
+then K2.
 
 ## 3. Frontend: Vercel
 
