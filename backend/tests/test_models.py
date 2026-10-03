@@ -66,3 +66,18 @@ def test_analysis_round_trip() -> None:
     analysis = Analysis(in_scope=True, claim=[line], total_aed=Decimal("5400.00"))
 
     assert Analysis.model_validate_json(analysis.model_dump_json()) == analysis
+
+
+def test_analysis_saved_before_the_facts_only_writer_still_loads() -> None:
+    old_writer = {
+        "headline": "h",
+        "explanation": "e",
+        "amount_lines": [],
+        "checklist": [],
+        "arabic_letter": "إلى الوزارة",
+        "letter_translation": "To MOHRE",
+    }
+    analysis = Analysis.model_validate({"in_scope": True, "writer": old_writer})
+    assert analysis.writer is not None
+    assert analysis.writer.explanation == "e"
+    assert analysis.writer.letter_facts_ar == ""  # the complaint download asks for a new analysis
