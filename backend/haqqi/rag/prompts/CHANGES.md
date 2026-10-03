@@ -1,4 +1,6 @@
-# Prompt changes from the n8n hackathon version (task 3.6), for your review
+# Prompt changes from the n8n hackathon version (task 3.6)
+
+**Approved 3 Oct 2026.**
 
 The n8n prompts (`legacy/n8n/Haqqi_main.json`, `Build * Prompt` nodes) are the starting point. Each material change
 below has a reason. The rendered prompts are in `backend/tests/agents/snapshots/*.txt`.

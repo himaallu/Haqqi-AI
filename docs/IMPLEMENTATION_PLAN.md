@@ -269,13 +269,14 @@ data sent to them for training, which would break the PRD's "no training on user
       Pydantic. Bad output gets one correction retry, then `LLMOutputError`. Transport: 40 s timeout, one retry on 5xx or
       timeout, 429 honours Retry-After, next provider, then `LLMUnavailable`. Calls are serialised with a 0.5 s gap
       (2 req/s) at temperature 0. Logs show only stage, latency and token counts. 10 tests.
-- [ ] **3.6 Prompts** `haqqi/rag/prompts/*.md`: the Intake, Analyst, Critic, Revision and Writer prompts, starting from the n8n
+      *3 Oct:* free-tier Gemini first (one provider per free model, flag 18), then K2; a 429 moves to the next model.
+- [x] **3.6 Prompts** `haqqi/rag/prompts/*.md`: the Intake, Analyst, Critic, Revision and Writer prompts, starting from the n8n
       prompts and rewritten where needed. Each material change is recorded in `haqqi/rag/prompts/CHANGES.md` for review.
       Arabic letter template in `haqqi/pdf/template_ar.txt`.
       Check: you review and approve CHANGES.md; prompt snapshot tests pass. Ports: `Build Intake/Analyst/Critic/Revision/Writer Prompt`.
       *2 Oct:* the prompts, the message builders (`haqqi/agents/messages.py`) and the Arabic template are written, with 12 snapshot
-      and safety tests (one fence per message, the writer sees money only as `[[AMOUNT_n]]`). **Waiting for your review of
-      `haqqi/rag/prompts/CHANGES.md`** before ticking.
+      and safety tests (one fence per message, the writer sees money only as `[[AMOUNT_n]]`). *Done 3 Oct:* you approved
+      `haqqi/rag/prompts/CHANGES.md`.
 - [x] **3.7 Intake agent** → `ExtractedFacts`.
       Check: `pytest -m live tests/agents/test_intake.py` on TC-01 (Hindi) → `unpaid_wages`, wage 1800; TC-18 fills
       dates and wages from the story. Ports: `Build Intake Prompt`, `K2 Intake`, `Parse Intake`.
