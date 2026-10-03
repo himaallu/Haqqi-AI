@@ -19,7 +19,7 @@ type State =
   | { kind: "failed"; message: MessageKey }
   | { kind: "form"; view: CaseView }
   | { kind: "analysing"; view: CaseView; stages: string[]; error: MessageKey | null }
-  | { kind: "results"; analysis: Analysis }
+  | { kind: "results"; analysis: Analysis; view: CaseView }
   | { kind: "referral"; referral: ReferralKind | null };
 
 /** The backend's `error` event carries an English sentence (haqqi/api/cases.py `_user_message`). */
@@ -31,7 +31,7 @@ function streamErrorKey(data: string): MessageKey {
 
 function fromView(view: CaseView): State {
   if (view.status === "out_of_scope") return { kind: "referral", referral: view.referral_kind };
-  if (view.status === "analysed" && view.analysis) return { kind: "results", analysis: view.analysis };
+  if (view.status === "analysed" && view.analysis) return { kind: "results", analysis: view.analysis, view };
   return { kind: "form", view };
 }
 
@@ -56,7 +56,7 @@ export function CaseFlow({ caseId }: { caseId: string }) {
         if (event === "done") {
           const analysis = JSON.parse(data) as Analysis;
           setState(
-            analysis.in_scope ? { kind: "results", analysis } : { kind: "referral", referral: view.referral_kind },
+            analysis.in_scope ? { kind: "results", analysis, view } : { kind: "referral", referral: view.referral_kind },
           );
         } else if (event === "error") {
           fail(streamErrorKey(data));
@@ -98,7 +98,7 @@ export function CaseFlow({ caseId }: { caseId: string }) {
         />
       );
     case "results":
-      return <Results analysis={state.analysis} />;
+      return <Results analysis={state.analysis} onRetry={() => analyse(state.view)} />;
     case "referral":
       return <Referral kind={state.referral} />;
   }

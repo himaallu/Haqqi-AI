@@ -47,3 +47,8 @@ def test_violation_quotes_come_from_our_law_text() -> None:
     assert violation.article.quote == ART22.text_en
     assert violation.article.law_id == "fdl33-2021"
     assert (violation.article.article_no, violation.article.clause_no) == (22, 2)
+
+
+def test_a_repeated_citation_becomes_one_violation() -> None:
+    reply = AnalystReply(issues=[issue("Wages unpaid", ART22.id, ART22.id)])
+    assert len(to_violations(reply, [ART22])) == 1

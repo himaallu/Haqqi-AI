@@ -203,3 +203,72 @@ def test_fallback_models_read_from_a_comma_separated_env_value(
     monkeypatch.setenv("GEMINI_FALLBACK_MODELS", "gemini-3.1-flash-lite, gemini-3.5-flash")
     settings = Settings(_env_file=None)
     assert settings.gemini_fallback_models == ["gemini-3.1-flash-lite", "gemini-3.5-flash"]
+
+
+DAILY_QUOTA = {
+    "error": {
+        "code": 429,
+        "details": [
+            {"violations": [{"quotaId": "GenerateRequestsPerDayPerProjectPerModel"}]},
+            {"retryDelay": "4632s"},
+        ],
+    }
+}
+
+
+def test_a_model_over_its_daily_quota_is_skipped_on_later_calls() -> None:
+    models: list[str] = []
+
+    def handler(request: httpx.Request) -> httpx.Response:
+        model = json.loads(request.content)["model"]
+        models.append(model)
+        if model == "gemini-3-flash-preview":
+            return httpx.Response(429, json=[DAILY_QUOTA])
+        return reply('{"verdict": "pass", "score": 6}')
+
+    settings = Settings(_env_file=None, gemini_api_key="g", k2_api_key="k")
+    client = LLMClient(
+        providers_from_settings(settings),
+        http=httpx.Client(transport=httpx.MockTransport(handler)),
+        sleep=_no_sleep,
+    )
+
+    client.complete("intake", ASK, Verdict)
+    client.complete("analyst", ASK, Verdict)
+    assert models == ["gemini-3-flash-preview", "gemini-3.5-flash", "gemini-3.5-flash"]
+
+
+def test_a_short_rate_limit_does_not_park_the_model() -> None:
+    models: list[str] = []
+    limited = iter([True])
+
+    def handler(request: httpx.Request) -> httpx.Response:
+        model = json.loads(request.content)["model"]
+        models.append(model)
+        if model == "gemini-3-flash-preview" and next(limited, False):
+            return httpx.Response(429, headers={"retry-after": "40"}, json={})
+        return reply('{"verdict": "pass", "score": 6}')
+
+    settings = Settings(_env_file=None, gemini_api_key="g", k2_api_key="k")
+    client = LLMClient(
+        providers_from_settings(settings),
+        http=httpx.Client(transport=httpx.MockTransport(handler)),
+        sleep=_no_sleep,
+    )
+
+    client.complete("intake", ASK, Verdict)
+    client.complete("analyst", ASK, Verdict)
+    assert models == ["gemini-3-flash-preview", "gemini-3.5-flash", "gemini-3-flash-preview"]
+
+
+def test_every_provider_parked_is_unavailable() -> None:
+    def handler(request: httpx.Request) -> httpx.Response:
+        return httpx.Response(429, json=[DAILY_QUOTA])
+
+    k2 = Provider("k2", "https://k2.test/v1", "m", SecretStr("a"))
+    http = httpx.Client(transport=httpx.MockTransport(handler))
+    client = LLMClient([k2], http=http, sleep=_no_sleep)
+    with pytest.raises(LLMUnavailable):
+        client.complete("intake", ASK, Verdict)
+    with pytest.raises(LLMUnavailable, match="over its quota"):
+        client.complete("intake", ASK, Verdict)

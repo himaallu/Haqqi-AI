@@ -43,3 +43,15 @@ def test_revision_stage_is_reported() -> None:
 
     assert "revising" in stages
     assert analysis.revised
+
+
+def test_writer_failure_still_returns_the_checked_results() -> None:
+    bad = writer(arabic_letter="إلى الوزارة", explanation="You are owed AED 99,999.")
+    llm = FakeLLM(
+        {"analyst": [reply(WAGES)], "critic": [PASS], "writer": [bad, bad]}  # rejected twice
+    )
+    analysis = analyze_case(FACTS, "salary unpaid", llm, search, lambda _stage: None)
+
+    assert analysis.writer is None and analysis.writer_failed
+    assert analysis.total_aed == Decimal("4800.00")  # the calculator's money is unaffected
+    assert analysis.violations[0].article.chunk_id == WAGES

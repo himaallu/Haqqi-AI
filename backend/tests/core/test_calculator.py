@@ -296,3 +296,12 @@ def test_service_days_counts_both_ends() -> None:
 
     assert service_days(date(2025, 1, 1), date(2025, 1, 1)) == 1
     assert service_days(date(2025, 1, 1), date(2025, 12, 31), unpaid_absence_days=5) == 360
+
+
+def test_gratuity_formula_shows_the_30_day_rate_only_after_five_years() -> None:
+    def formula(start: str, end: str) -> str:
+        r = calculate(facts(start_date=start, end_date=end, termination="employer"))
+        return next(line.formula for line in r.claim if line.item == "End-of-service gratuity")
+
+    assert "× 30 " not in formula("2024-06-01", "2026-09-20")  # TC-02: 2.3 years
+    assert "× 21 + " in formula("2020-08-01", "2026-08-31")  # TC-03: 6.1 years

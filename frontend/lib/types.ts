@@ -102,6 +102,7 @@ export type Analysis = {
   critic_verdict: "pass" | "revise" | null;
   revised: boolean;
   writer: WriterOutput | null;
+  writer_failed: boolean;
 };
 
 export type CaseView = {

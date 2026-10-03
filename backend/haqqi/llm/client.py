@@ -26,6 +26,11 @@ log = logging.getLogger(__name__)
 TIMEOUT_S = 90.0  # K2 calls measured 5-77 s on 2 Oct; a shorter cap only wastes a retry
 MIN_GAP_S = 0.5  # 2 requests/second
 MAX_RETRY_AFTER_S = 10.0
+# A 429 asking us to wait longer than this (e.g. a free-tier daily quota, 20 requests per model per
+# day) parks that provider instead of costing a request on every later call. Capped at an hour.
+PARK_AFTER_S = 60.0
+MAX_PARK_S = 3600.0
+_RETRY_DELAY = re.compile(r'"retryDelay"\s*:\s*"(\d+(?:\.\d+)?)s"')
 
 _THINK = re.compile(r"<think>.*?</think>", re.S)
 _FENCE = re.compile(r"```(?:json)?")
@@ -135,6 +140,7 @@ class LLMClient:
         self._sleep = sleep
         self._lock = threading.Lock()
         self._last_call = 0.0
+        self._parked_until: dict[str, float] = {}  # provider name -> time.monotonic() deadline
 
     @classmethod
     def from_settings(cls, settings: Settings) -> "LLMClient":
@@ -165,8 +171,12 @@ class LLMClient:
     def _chat(self, stage: str, messages: Sequence[Message]) -> str:
         if not self._providers:
             raise LLMUnavailable("no LLM provider configured (set GEMINI_API_KEY or K2_API_KEY)")
-        last = self._providers[-1]
-        for provider in self._providers:
+        now = time.monotonic()
+        available = [p for p in self._providers if self._parked_until.get(p.name, 0.0) <= now]
+        if not available:
+            raise LLMUnavailable(f"{stage}: every provider is over its quota, try again later")
+        last = available[-1]
+        for provider in available:
             for attempt in (1, 2):
                 outcome = self._post(stage, provider, messages)
                 if isinstance(outcome, str):
@@ -205,6 +215,11 @@ class LLMClient:
         latency = time.perf_counter() - started
         if resp.status_code == 429:
             retry_after = _retry_after(resp)
+            quota_wait = _quota_wait(resp)
+            if quota_wait > PARK_AFTER_S:
+                park = min(quota_wait, MAX_PARK_S)
+                self._parked_until[provider.name] = time.monotonic() + park
+                log.warning("llm %s: %s over quota, parked for %.0fs", stage, provider.name, park)
             log.warning("llm %s: %s rate limited", stage, provider.name)
             return _Retry(retry_after, rate_limited=True)
         if resp.status_code >= 500:
@@ -235,6 +250,17 @@ def _retry_after(resp: httpx.Response) -> float:
         return min(float(resp.headers.get("retry-after", "2")), MAX_RETRY_AFTER_S)
     except ValueError:
         return 2.0
+
+
+def _quota_wait(resp: httpx.Response) -> float:
+    """How long the provider asks us to wait: Gemini puts it in the body, others in Retry-After."""
+    match = _RETRY_DELAY.search(resp.text)
+    if match:
+        return float(match.group(1))
+    try:
+        return float(resp.headers.get("retry-after", "0"))
+    except ValueError:
+        return 0.0
 
 
 def dump_json(data: object) -> str:

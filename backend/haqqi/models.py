@@ -177,3 +177,4 @@ class Analysis(_Model):
     critic_verdict: Literal["pass", "revise"] | None = None
     revised: bool = False
     writer: WriterOutput | None = None  # worker-language text and the Arabic letter
+    writer_failed: bool = False  # the Writer's output failed our checks; the rest is still valid

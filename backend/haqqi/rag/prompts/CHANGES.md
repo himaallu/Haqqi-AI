@@ -62,4 +62,4 @@ below has a reason. The rendered prompts are in `backend/tests/agents/snapshots/
     told without a year becomes the most recent such date on or before today, never a future one. The old rule said
     "null unless the year is clear", but the model ignored it and guessed: the TC-02 story ("20 September") was filled
     in as 2024-09-20, a date before the start date. The worker still confirms every date on the form.
-    **Waiting for your review.**
+    **Approved 4 Oct.**

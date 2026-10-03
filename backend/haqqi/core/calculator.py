@@ -212,10 +212,12 @@ def _gratuity(f: CaseFacts, days: int, daily_basic: Decimal) -> ClaimLine:
     )
     amount = wage_days * daily_basic
     cap = f.basic_wage_aed * CONFIG.gratuity_cap_months
+    day_terms = f"{num(first)} × {CONFIG.gratuity_days_first_5_years}"
+    if rest:  # the 30-day rate only applies after 5 years
+        day_terms += f" + {num(rest)} × {CONFIG.gratuity_days_after_5_years}"
     formula = (
         f"{days:,} service days ÷ 365 = {num(years)} years; "
-        f"{num(first)} × {CONFIG.gratuity_days_first_5_years} + "
-        f"{num(rest)} × {CONFIG.gratuity_days_after_5_years} = {num(wage_days)} days × "
+        f"{day_terms} = {num(wage_days)} days × "
         f"{aed(daily_basic)} daily basic wage ({aed(f.basic_wage_aed)} ÷ 30) = {aed(amount)}"
     )
     if amount > cap:
