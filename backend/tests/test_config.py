@@ -88,3 +88,8 @@ def test_api_keys_are_hidden_in_repr(monkeypatch: pytest.MonkeyPatch) -> None:
     settings = Settings(_env_file=None)
 
     assert "super-secret-value" not in repr(settings)
+
+
+def test_health_version_comes_from_render_commit(monkeypatch: pytest.MonkeyPatch) -> None:
+    monkeypatch.setenv("RENDER_GIT_COMMIT", "abc1234")
+    assert Settings(_env_file=None).git_sha == "abc1234"

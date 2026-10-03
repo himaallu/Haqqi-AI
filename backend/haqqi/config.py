@@ -4,7 +4,7 @@ import json
 from functools import lru_cache
 from typing import Annotated, Literal
 
-from pydantic import SecretStr, field_validator
+from pydantic import AliasChoices, Field, SecretStr, field_validator
 from pydantic_settings import BaseSettings, NoDecode, SettingsConfigDict
 
 
@@ -42,7 +42,8 @@ class Settings(BaseSettings):
     cloudflare_api_token: SecretStr | None = None
     # Comma-separated in env files (`a,b`); a JSON list also works.
     cors_origins: Annotated[list[str], NoDecode] = ["http://localhost:3000"]
-    git_sha: str = "dev"
+    # Shown by /healthz. Render sets RENDER_GIT_COMMIT on every deploy.
+    git_sha: str = Field("dev", validation_alias=AliasChoices("GIT_SHA", "RENDER_GIT_COMMIT"))
     # Test-only hooks such as TC-11's seeded bad citation (task 3.9). Never set in production.
     haqqi_test_hooks: bool = False
 
