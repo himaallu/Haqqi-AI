@@ -25,6 +25,11 @@ REFERRALS: dict[Referral, str] = {
 
 MISSING_WAGE = "Your monthly salary in AED"
 MISSING_START = "The date you started this job"
+# The form fields the UI highlights for each missing fact.
+MISSING_FIELDS: dict[str, list[str]] = {
+    MISSING_WAGE: ["basic_wage_aed", "total_wage_aed"],
+    MISSING_START: ["start_date"],
+}
 
 
 @dataclass(frozen=True)
