@@ -101,7 +101,11 @@ Legend: **BLOCKER** = decide before the sprint that needs it; **RISK** = plan ar
     **5 requests/minute** per model, and a case needs 4–6 calls, so a second case in the same minute falls back to K2 (slow).
     *3 Oct:* quotas are per model, so the client chains the free models before K2: 3-flash-preview (5/min) →
     3.5-flash (5) → 3.8-flash (5) → 3.1-flash-lite (15), about 30 requests/min in all (`GEMINI_FALLBACK_MODELS`).
-    A 429 moves straight to the next model instead of waiting out the ~40 s quota window. There are 4–5 sequential K2 calls, and n8n used 180 s timeouts × 3 retries. Measure in S3
+    A 429 moves straight to the next model instead of waiting out the ~40 s quota window.
+    **4 Oct: the free tier also caps each model at 20 requests per day** (429 `GenerateRequestsPerDayPerProjectPerModel`).
+    At 4–6 calls per case that is about 10–12 cases a day on the three Flash models, then Flash-Lite, then K2 (slow).
+    The client now parks a model for the wait Google asks for (capped at 1 h), so later calls skip it.
+    **RISK for Sprint 7:** the 50-case eval needs 200–300 calls: spread it over days, run it on K2, or enable billing for it. There are 4–5 sequential K2 calls, and n8n used 180 s timeouts × 3 retries. Measure in S3
     and set per-call timeouts (e.g. 40 s, 1 retry). v1 has no backup LLM (see 0.1): the client keeps a provider slot
     so one can be added later, and a K2 outage shows a clear "try again later" message.
 19. **RISK: streaming through hosting.** SSE for 60–90 s must not pass through a Vercel serverless function, because it would time out.
@@ -142,7 +146,7 @@ data sent to them for training, which would break the PRD's "no training on user
 | Database | Supabase free (Postgres + pgvector) | Pauses after inactivity; Neon free as alternative |
 | Embeddings | Cloudflare Workers AI, BGE-M3 (flag 15) | 10k neurons/day free; no training on content; ingest and queries use the same model |
 | Speech | **Decided in Sprint 6** | Groq's free tier gave our key no model access (HTTP 404, 2 Oct); pick a free speech-to-text option in task 6.1 |
-| LLM | Gemini free tier only (`gemini-3-flash-preview`, then free 3.5-flash, 3.8-flash, 3.1-flash-lite), K2 as fallback (user decision, 2 Oct) | K2 made one case take 153 s, so Gemini is now primary. Free tier: rate limits, and Google may use the data (flag 26). `LLM_PROVIDER=k2` reverses the order |
+| LLM | Gemini free tier only (`gemini-3-flash-preview`, then free 3.5-flash, 3.8-flash, 3.1-flash-lite), K2 as fallback (user decision, 2 Oct) | K2 made one case take 153 s, so Gemini is now primary. Free tier: 5 requests/minute and 20/day per model (flag 18), and Google may use the data (flag 26). `LLM_PROVIDER=k2` reverses the order |
 | PDF | WeasyPrint + Noto Naskh Arabic | Open source |
 | Tracing / errors | Langfuse Cloud Hobby / Sentry free | PII redacted before sending |
 
@@ -343,14 +347,20 @@ data sent to them for training, which would break the PRD's "no training on user
 - [x] **4.7 Referral page** for out-of-scope cases, with three texts: domestic worker, DIFC/ADGM, other free zone (flag 1).
       Check: TC-08 → domestic referral; TC-07 (DIFC) → DIFC/ADGM referral; TC-14 (JAFZA) → free-zone-authority referral. Ports: `Out-of-Scope Reply`.
       *Done 3 Oct:* TC-08 (ne) → domestic, TC-07 → difc_adgm, TC-14 → free_zone, each with a tap-to-call 80084.
-- [ ] **4.8 Deploy + phone run**.
+- [x] **4.8 Deploy + phone run**.
       Check: one full case completed on a real phone against the public URL; screenshot saved to `docs/screens/`. Ports: `Show Result`.
       *4 Oct, first phone run (iPhone, Safari):* every analysis failed with "Something went wrong" at `retrieving`. The
       Docker image held only `backend/`, so `data/law/*.json` (law text + Law Pack) was missing on Render. Fixed: the image
       builds from the repo root, copies `data/law/*.json`, and fails to build if they don't load (`LAW_DATA_DIR`); Render
       redeploys on `data/law/**` changes. The rebuilt container ran TC-02 (English) end to end: 6,229.59.
-      Also found: the Intake guessed 2024 for "20 September" (it now gets today's date; CHANGES.md 21, waiting for your
-      review), iOS date inputs overflowed the card (CSS fix), and `/healthz` showed `dev` (now `RENDER_GIT_COMMIT`).
+      Also found: the Intake guessed 2024 for "20 September" (it now gets today's date; CHANGES.md 21,
+      approved 4 Oct), iOS date inputs overflowed the card (CSS fix), and `/healthz` showed `dev` (now `RENDER_GIT_COMMIT`).
+      *Done 4 Oct, second phone run:* English TC-02 on the public URL → **6,229.59**, Art. 43(1)/43(3)/42(3)/51(2), formulas
+      shown (`docs/screens/s4-phone-results-en.jpeg`). The first attempt failed at the Writer ("could not check";
+      `s4-phone-writer-error-en.jpeg`), most likely a weaker fallback model after the daily quotas ran out (flag 18).
+      Follow-ups (your choice: show results anyway): a Writer failure now returns the checked findings and amounts with a
+      notice and "Try again" (`writer_failed`); rejection reasons are logged; models over their daily quota are parked;
+      one card per finding with all its articles; the gratuity formula drops the 30-day term under 5 years.
 
 ## Sprint 5 — Arabic complaint (PRD Block 5)
 
