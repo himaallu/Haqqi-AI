@@ -1,12 +1,16 @@
 """Load the law corpus and the issue-type Law Pack from data/law/*.json."""
 
 import json
+import os
 from datetime import date
 from pathlib import Path
 
 from pydantic import BaseModel
 
-DATA_DIR = Path(__file__).resolve().parents[3] / "data" / "law"
+# The repo's data/law by default; the Docker image copies it elsewhere and sets LAW_DATA_DIR.
+DATA_DIR = Path(
+    os.environ.get("LAW_DATA_DIR") or Path(__file__).resolve().parents[3] / "data" / "law"
+)
 LAW_PACK_FILE = "law_pack.json"
 
 
