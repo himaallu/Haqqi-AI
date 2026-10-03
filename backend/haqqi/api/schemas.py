@@ -12,6 +12,11 @@ from haqqi.models import Emirate, Language, WorkerType, Zone
 MAX_STORY_CHARS = 8000
 MAX_CONTRACT_CHARS = 4000
 
+
+def _one_line(text: str) -> str:
+    return " ".join(clean_text(text).split())
+
+
 Story = Annotated[str, AfterValidator(clean_text), Field(min_length=1, max_length=MAX_STORY_CHARS)]
 ContractText = Annotated[str, AfterValidator(clean_text), Field(max_length=MAX_CONTRACT_CHARS)]
 
@@ -31,3 +36,20 @@ class CreateCaseRequest(BaseModel):
     end_date: date | None = None
     basic_wage_aed: Decimal | None = Field(default=None, ge=0, le=1_000_000)
     total_wage_aed: Decimal | None = Field(default=None, ge=0, le=1_000_000)
+
+
+IdentityText = Annotated[str, AfterValidator(_one_line)]
+
+
+class ComplaintRequest(BaseModel):
+    """`POST /v1/cases/{id}/complaint`: identity fields for the letter (flag 8).
+
+    Printed into the PDF and nothing else: never stored, logged or sent to an LLM. All optional;
+    an empty field is left as a line to fill in by hand.
+    """
+
+    model_config = ConfigDict(extra="forbid")
+
+    name: IdentityText | None = Field(default=None, max_length=120)
+    labour_card: IdentityText | None = Field(default=None, max_length=40)
+    employer: IdentityText | None = Field(default=None, max_length=160)
