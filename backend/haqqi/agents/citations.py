@@ -29,8 +29,12 @@ def to_violations(reply: AnalystReply, law: Sequence[RetrievedChunk]) -> list[Vi
     """One `Violation` per cited clause; call after `enforce_citations`."""
     by_id = {chunk.id: chunk for chunk in law}
     violations = []
+    seen: set[tuple[str, str]] = set()
     for issue in reply.issues:
         for cid in issue.chunk_ids:
+            if (issue.finding, cid) in seen:  # the model sometimes repeats a citation
+                continue
+            seen.add((issue.finding, cid))
             chunk = by_id[cid]
             violations.append(
                 Violation(
