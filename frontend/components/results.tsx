@@ -8,6 +8,7 @@ import { useI18n } from "@/lib/i18n/provider";
 import type { MessageKey } from "@/lib/i18n/translate";
 import { formatAed } from "@/lib/money";
 import type { Analysis, Citation, ClaimLine, Confidence } from "@/lib/types";
+import { groupViolations } from "@/lib/violations";
 
 const CONFIDENCE: Record<Confidence, MessageKey> = {
   high: "results.confidence.high",
@@ -19,7 +20,7 @@ const CONFIDENCE: Record<Confidence, MessageKey> = {
  * Steps 4–6 (task 4.6). The Writer's text is in the worker's language; the analyst's findings,
  * formulas and law quotes are English. Every amount is the calculator's figure, shown as-is.
  */
-export function Results({ analysis }: { analysis: Analysis }) {
+export function Results({ analysis, onRetry }: { analysis: Analysis; onRetry?: () => void }) {
   const { lang, t } = useI18n();
   const writer = analysis.writer;
   const lines = [...analysis.claim, ...analysis.worker_owes];
@@ -40,6 +41,16 @@ export function Results({ analysis }: { analysis: Analysis }) {
               {para}
             </p>
           ))}
+        {analysis.writer_failed && (
+          <div className="flex flex-col gap-3 rounded-md bg-warning-bg px-3 py-3 text-warning-fg" data-testid="writer-failed">
+            <p>{t("results.writerFailed")}</p>
+            {onRetry && (
+              <Button variant="outline" onClick={onRetry}>
+                {t("common.retry")}
+              </Button>
+            )}
+          </div>
+        )}
       </header>
 
       <Section title={t("results.violations")} note={t("results.inEnglish")}>
@@ -47,16 +58,24 @@ export function Results({ analysis }: { analysis: Analysis }) {
           <p>{t("results.noViolations")}</p>
         ) : (
           <ul className="flex flex-col gap-3" data-testid="violations">
-            {analysis.violations.map((v, i) => (
+            {groupViolations(analysis.violations).map((finding, i) => (
               <li key={i} className="flex flex-col gap-2 rounded-lg border p-4">
                 <div className="flex flex-wrap items-center gap-2">
-                  <ArticleChip citation={v.article} />
-                  <span className="rounded-full bg-muted px-2 py-0.5 text-xs">{t(CONFIDENCE[v.confidence])}</span>
+                  {finding.citations.map((citation) => (
+                    <ArticleChip key={citation.chunk_id} citation={citation} />
+                  ))}
+                  <span className="rounded-full bg-muted px-2 py-0.5 text-xs">{t(CONFIDENCE[finding.confidence])}</span>
                 </div>
                 <p lang="en" dir="ltr" className="text-start">
-                  {v.issue}
+                  {finding.issue}
                 </p>
-                <LawQuote citation={v.article} />
+                {finding.citations.map((citation) => (
+                  <LawQuote
+                    key={citation.chunk_id}
+                    citation={citation}
+                    label={finding.citations.length > 1 ? articleRef(citation) : undefined}
+                  />
+                ))}
               </li>
             ))}
           </ul>
@@ -139,13 +158,14 @@ function ArticleChip({ citation }: { citation: Citation }) {
 }
 
 /** Native <details>: expandable without JavaScript and announced correctly by screen readers. */
-function LawQuote({ citation }: { citation: Citation }) {
+function LawQuote({ citation, label }: { citation: Citation; label?: string }) {
   const { t } = useI18n();
+  const suffix = label ? ` (${label})` : "";
   return (
     <details className="group text-sm">
       <summary className="flex min-h-11 cursor-pointer items-center text-muted-foreground underline-offset-4 hover:underline">
-        <span className="group-open:hidden">{t("results.showLaw")}</span>
-        <span className="hidden group-open:inline">{t("results.hideLaw")}</span>
+        <span className="group-open:hidden">{t("results.showLaw")}{suffix}</span>
+        <span className="hidden group-open:inline">{t("results.hideLaw")}{suffix}</span>
       </summary>
       <blockquote lang="en" dir="ltr" className="border-s-2 ps-3 text-start whitespace-pre-line">
         {citation.quote}

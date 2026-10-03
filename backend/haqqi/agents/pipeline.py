@@ -4,15 +4,18 @@ retrieve → calculate → Analyst/Critic/one revision → Writer. Each stage is
 `emit` so the API can stream progress (F8). Money comes only from the calculator.
 """
 
+import logging
 from collections.abc import Callable, Sequence
 
 from haqqi.agents.analysis import run_analysis
 from haqqi.agents.citations import to_violations
 from haqqi.agents.writer import run_writer
 from haqqi.core.calculator import calculate
-from haqqi.llm.client import Completer
+from haqqi.llm.client import Completer, LLMOutputError
 from haqqi.models import Analysis, CaseFacts, IssueType
 from haqqi.rag.retrieve import RetrievedChunk
+
+log = logging.getLogger(__name__)
 
 Search = Callable[[str, Sequence[IssueType]], list[RetrievedChunk]]
 Emit = Callable[[str], None]
@@ -36,7 +39,13 @@ def analyze_case(
     run = run_analysis(llm, facts, law, calc, seed_bad_citation=seed_bad_citation, on_stage=emit)
 
     emit("writing")
-    writer = run_writer(llm, facts, run.reply, calc)
+    try:
+        writer = run_writer(llm, facts, run.reply, calc)
+    except LLMOutputError as exc:
+        # Violations, citations and money are already checked by code: show them without the
+        # worker-language text and letter rather than failing the whole case (user decision, 4 Oct).
+        log.warning("writer failed, returning analysis without it: %s", exc)
+        writer = None
 
     return Analysis(
         in_scope=True,
@@ -46,11 +55,12 @@ def analyze_case(
         worker_owes=calc.worker_owes,
         total_aed=calc.total_aed,
         above_mohre_limit=calc.above_mohre_limit,
-        explanation=writer.explanation,
+        explanation=writer.explanation if writer else "",
         next_steps=run.reply.next_steps,
         documents_to_gather=run.reply.documents_to_gather,
         time_limit_note=run.reply.time_limit_note,
         critic_verdict=run.critic.verdict,
         revised=run.revised,
         writer=writer,
+        writer_failed=writer is None,
     )

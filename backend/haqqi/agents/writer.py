@@ -6,6 +6,7 @@ letter has no Arabic, a token is unknown, or any figure next to a currency word 
 the calculator produced.
 """
 
+import logging
 import re
 from decimal import Decimal, InvalidOperation
 
@@ -14,6 +15,8 @@ from haqqi.agents.schemas import AnalystReply
 from haqqi.core.calculator import CalcResult, money
 from haqqi.llm.client import Completer, LLMOutputError, Message
 from haqqi.models import CaseFacts, WriterOutput
+
+log = logging.getLogger(__name__)
 
 ARABIC = re.compile(r"[؀-ۿ]")
 TOKEN = re.compile(r"\[\[[A-Z_0-9]+\]\]")
@@ -98,6 +101,8 @@ def run_writer(
     try:
         return fill_and_check(out, calc)
     except WriterCheckError as first:
+        # The reason names a field and a rule, never the text itself.
+        log.warning("writer output rejected, retrying once: %s", first)
         retry = [
             *messages,
             Message("assistant", out.model_dump_json()),

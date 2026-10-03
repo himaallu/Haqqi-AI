@@ -109,6 +109,7 @@
   "results.timeLimit": "Time limit",
   "results.complaintSoon": "The formal Arabic complaint for MOHRE will be available here soon.",
   "results.gemini": "Your story was processed by Google Gemini to prepare this result.",
+  "results.writerFailed": "We couldn't prepare the plain-language explanation and the Arabic letter this time. The findings and amounts below are checked and correct.",
   "referral.title": "Haqqi cannot check this case",
   "referral.domestic": "Domestic workers are covered by a separate law that Haqqi does not check. Contact MOHRE about your case.",
   "referral.difc_adgm": "DIFC and ADGM have their own employment laws and courts, so the federal labour law does not apply. Use the DIFC or ADGM courts' employment services.",
