@@ -1,0 +1,205 @@
+import json
+
+import httpx
+import pytest
+from pydantic import BaseModel, SecretStr
+
+from haqqi.config import Settings
+from haqqi.llm.client import (
+    LLMClient,
+    LLMOutputError,
+    LLMUnavailable,
+    Message,
+    Provider,
+    extract_json,
+    providers_from_settings,
+)
+
+
+class Verdict(BaseModel):
+    verdict: str
+    score: int
+
+
+def reply(content: str, status: int = 200) -> httpx.Response:
+    return httpx.Response(status, json={"choices": [{"message": {"content": content}}]})
+
+
+def client_for(
+    responses: list[httpx.Response], seen: list[dict[str, object]] | None = None
+) -> tuple[LLMClient, list[float]]:
+    queue = list(responses)
+    sleeps: list[float] = []
+
+    def handler(request: httpx.Request) -> httpx.Response:
+        if seen is not None:
+            seen.append(json.loads(request.content))
+        return queue.pop(0)
+
+    http = httpx.Client(transport=httpx.MockTransport(handler))
+    k2 = Provider("k2", "https://k2.test/v1", "m", SecretStr("secret-key"))
+    return LLMClient([k2], http=http, sleep=sleeps.append), sleeps
+
+
+ASK = [Message("system", "rules"), Message("user", "data")]
+
+
+@pytest.mark.parametrize(
+    "content",
+    [
+        '{"verdict": "pass", "score": 3}',
+        'Sure!\n```json\n{"verdict": "pass", "score": 3}\n```',
+        '<think>The user wants {json} ...</think>\n{"verdict": "pass", "score": 3}',
+    ],
+    ids=["plain", "fenced", "think-tag"],
+)
+def test_parses_valid_fenced_and_think_tag_replies(content: str) -> None:
+    client, _ = client_for([reply(content)])
+    assert client.complete("critic", ASK, Verdict) == Verdict(verdict="pass", score=3)
+
+
+def test_invalid_json_gets_one_correction_retry() -> None:
+    seen: list[dict[str, object]] = []
+    client, _ = client_for(
+        [reply('{"verdict": "pass"}'), reply('{"verdict": "pass", "score": 1}')], seen
+    )
+
+    assert client.complete("critic", ASK, Verdict).score == 1
+    retry_messages = seen[1]["messages"]
+    assert isinstance(retry_messages, list)
+    assert retry_messages[-1]["role"] == "user"
+    assert "score" in retry_messages[-1]["content"]  # names the missing field
+
+
+def test_invalid_twice_raises_llm_output_error() -> None:
+    client, _ = client_for([reply("no json here"), reply('{"verdict": 1}')])
+    with pytest.raises(LLMOutputError, match="critic: invalid JSON after one retry"):
+        client.complete("critic", ASK, Verdict)
+
+
+def test_rate_limit_waits_retry_after_then_succeeds() -> None:
+    limited = httpx.Response(429, headers={"retry-after": "3"}, json={})
+    client, sleeps = client_for([limited, reply('{"verdict": "pass", "score": 2}')])
+
+    assert client.complete("intake", ASK, Verdict).score == 2
+    assert 3.0 in sleeps
+
+
+def test_repeated_server_errors_raise_unavailable_without_leaking_the_key() -> None:
+    client, _ = client_for([httpx.Response(503), httpx.Response(502)])
+    with pytest.raises(LLMUnavailable) as err:
+        client.complete("writer", ASK, Verdict)
+    assert "secret-key" not in str(err.value)
+
+
+def test_falls_back_to_the_next_provider() -> None:
+    calls: list[str] = []
+
+    def handler(request: httpx.Request) -> httpx.Response:
+        calls.append(request.url.host)
+        if request.url.host == "k2.test":
+            return httpx.Response(503)
+        return reply('{"verdict": "pass", "score": 9}')
+
+    http = httpx.Client(transport=httpx.MockTransport(handler))
+    providers = [
+        Provider("k2", "https://k2.test/v1", "m", SecretStr("a")),
+        Provider("backup", "https://backup.test/v1", "m", SecretStr("b")),
+    ]
+    client = LLMClient(providers, http=http, sleep=_no_sleep)
+
+    assert client.complete("intake", ASK, Verdict).score == 9
+    assert calls == ["k2.test", "k2.test", "backup.test"]
+
+
+def _no_sleep(_seconds: float) -> None:
+    return None
+
+
+def test_no_key_configured_is_unavailable() -> None:
+    client = LLMClient([Provider("k2", "https://k2.test/v1", "m", None)])
+    with pytest.raises(LLMUnavailable, match="K2_API_KEY"):
+        client.complete("intake", ASK, Verdict)
+
+
+def test_extract_json_rejects_text_without_an_object() -> None:
+    with pytest.raises(ValueError):
+        extract_json("I cannot help with that.")
+
+
+def test_settings_put_the_chosen_provider_first_and_send_gemini_extras() -> None:
+    settings = Settings(_env_file=None, gemini_api_key="g", k2_api_key="k")
+    models = [p.model for p in providers_from_settings(settings)]
+    assert models == [
+        "gemini-3-flash-preview",
+        "gemini-3.5-flash",
+        "gemini-3.8-flash",
+        "gemini-3.1-flash-lite",
+        "IFM/K2-Horizon-375B-A23B",
+    ]
+
+    k2_first = Settings(_env_file=None, llm_provider="k2", gemini_api_key="g", k2_api_key="k")
+    assert [p.name for p in providers_from_settings(k2_first)][:2] == [
+        "k2",
+        "gemini:gemini-3-flash-preview",
+    ]
+
+    seen: list[dict[str, object]] = []
+    client, _ = client_for([reply('{"verdict": "pass", "score": 1}')], seen)
+    gemini = providers_from_settings(settings)[0]
+    client = LLMClient([gemini], http=client._http, sleep=_no_sleep)
+    client.complete("intake", ASK, Verdict)
+    assert seen[0]["reasoning_effort"] == "low"
+    assert seen[0]["model"] == "gemini-3-flash-preview"
+
+
+def test_free_tier_quota_falls_back_to_k2() -> None:
+    hosts: list[str] = []
+
+    def handler(request: httpx.Request) -> httpx.Response:
+        hosts.append(request.url.host)
+        if request.url.host == "generativelanguage.googleapis.com":
+            return httpx.Response(429, headers={"retry-after": "1"}, json={})
+        return reply('{"verdict": "pass", "score": 4}')
+
+    settings = Settings(_env_file=None, gemini_api_key="g", k2_api_key="k")
+    client = LLMClient(
+        providers_from_settings(settings),
+        http=httpx.Client(transport=httpx.MockTransport(handler)),
+        sleep=_no_sleep,
+    )
+
+    assert client.complete("intake", ASK, Verdict).score == 4
+    # Every free Gemini model is tried once (no waiting on a quota), then K2.
+    assert hosts == ["generativelanguage.googleapis.com"] * 4 + ["api.ifm.ai"]
+
+
+def test_rate_limited_model_hands_over_to_the_next_free_model_without_waiting() -> None:
+    models: list[str] = []
+    sleeps: list[float] = []
+
+    def handler(request: httpx.Request) -> httpx.Response:
+        model = json.loads(request.content)["model"]
+        models.append(model)
+        if model == "gemini-3-flash-preview":
+            return httpx.Response(429, headers={"retry-after": "40"}, json={})
+        return reply('{"verdict": "pass", "score": 5}')
+
+    settings = Settings(_env_file=None, gemini_api_key="g", k2_api_key="k")
+    client = LLMClient(
+        providers_from_settings(settings),
+        http=httpx.Client(transport=httpx.MockTransport(handler)),
+        sleep=sleeps.append,
+    )
+
+    assert client.complete("intake", ASK, Verdict).score == 5
+    assert models == ["gemini-3-flash-preview", "gemini-3.5-flash"]
+    assert all(s <= 0.5 for s in sleeps)  # only the 2 req/s spacing, never the 40 s quota wait
+
+
+def test_fallback_models_read_from_a_comma_separated_env_value(
+    monkeypatch: pytest.MonkeyPatch,
+) -> None:
+    monkeypatch.setenv("GEMINI_FALLBACK_MODELS", "gemini-3.1-flash-lite, gemini-3.5-flash")
+    settings = Settings(_env_file=None)
+    assert settings.gemini_fallback_models == ["gemini-3.1-flash-lite", "gemini-3.5-flash"]

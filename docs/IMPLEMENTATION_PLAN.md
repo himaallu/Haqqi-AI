@@ -96,7 +96,12 @@ Legend: **BLOCKER** = decide before the sprint that needs it; **RISK** = plan ar
     Art. 17(1) failed to extract. Budget time and keep a hand-corrected `data/law/*.json` as the canonical source.
     The ingest script reads the JSON, and the PDFs are provenance only.
     *2 Oct:* avoided. The parser reads the portal's HTML text (EN + AR), which has clean Arabic, so no hand fixes are needed.
-18. **RISK: latency < 90 s p95.** There are 4–5 sequential K2 calls, and n8n used 180 s timeouts × 3 retries. Measure in S3
+18. **RISK: latency < 90 s p95.** *2 Oct:* K2: one real case took 153 s (calls 5–77 s each). **Gemini
+    (`gemini-3-flash-preview`): the same TC-02 case took 13 s** (intake 2, analysis + critic 5, writer 6). Free-tier limit:
+    **5 requests/minute** per model, and a case needs 4–6 calls, so a second case in the same minute falls back to K2 (slow).
+    *3 Oct:* quotas are per model, so the client chains the free models before K2: 3-flash-preview (5/min) →
+    3.5-flash (5) → 3.8-flash (5) → 3.1-flash-lite (15), about 30 requests/min in all (`GEMINI_FALLBACK_MODELS`).
+    A 429 moves straight to the next model instead of waiting out the ~40 s quota window. There are 4–5 sequential K2 calls, and n8n used 180 s timeouts × 3 retries. Measure in S3
     and set per-call timeouts (e.g. 40 s, 1 retry). v1 has no backup LLM (see 0.1): the client keeps a provider slot
     so one can be added later, and a K2 outage shows a clear "try again later" message.
 19. **RISK: streaming through hosting.** SSE for 60–90 s must not pass through a Vercel serverless function, because it would time out.
@@ -117,6 +122,13 @@ Legend: **BLOCKER** = decide before the sprint that needs it; **RISK** = plan ar
     (LLM-judge vs hand labels). Proposal: hand-label `supported` per expected article in cases.jsonl; LLM-judge is optional.
 25. **RISK: schedule.** 8 × 2 h blocks for this scope is very tight. Follow the PRD cut order. Sprint 3 is the biggest; split
     its agent work into 3a (calculator/routing, no LLM) and 3b (agents) so the deterministic core lands even if K2 is down.
+26. **DECISION (2 Oct): Gemini free tier for the LLM.** You chose free-tier Gemini (with K2 as fallback) to cut latency.
+    Google's terms say free-tier content may be used to improve its products and read by human reviewers. That deviates
+    from the PRD's "no training on user data". Mitigations:
+    - The story screen tells workers not to include names, phone numbers, passport, Emirates ID or labour card numbers (S4, task 4.3).
+    - The results page and disclaimer say the text is processed by Google Gemini (S8, task 8.7).
+    - Billing can be enabled later to move to the paid tier, which doesn't use data for training, without a code change.
+    - **3 Oct, your choice: free tier only.** Billing stays off in AI Studio; extra capacity comes from chaining free models (flag 18).
 
 ## 0.1 Free stack (replaces the PRD's paid choices)
 
@@ -130,7 +142,7 @@ data sent to them for training, which would break the PRD's "no training on user
 | Database | Supabase free (Postgres + pgvector) | Pauses after inactivity; Neon free as alternative |
 | Embeddings | Cloudflare Workers AI, BGE-M3 (flag 15) | 10k neurons/day free; no training on content; ingest and queries use the same model |
 | Speech | **Decided in Sprint 6** | Groq's free tier gave our key no model access (HTTP 404, 2 Oct); pick a free speech-to-text option in task 6.1 |
-| LLM | K2 hosted API only (v1) | 2 req/s, 10M tokens/day. No backup in v1 (user decision, 2 Oct); the client keeps a provider slot |
+| LLM | Gemini free tier only (`gemini-3-flash-preview`, then free 3.5-flash, 3.8-flash, 3.1-flash-lite), K2 as fallback (user decision, 2 Oct) | K2 made one case take 153 s, so Gemini is now primary. Free tier: rate limits, and Google may use the data (flag 26). `LLM_PROVIDER=k2` reverses the order |
 | PDF | WeasyPrint + Noto Naskh Arabic | Open source |
 | Tracing / errors | Langfuse Cloud Hobby / Sentry free | PII redacted before sending |
 
@@ -249,28 +261,53 @@ data sent to them for training, which would break the PRD's "no training on user
       *Done 2 Oct:* `haqqi/api/schemas.py` `CreateCaseRequest` (story 1–8,000 chars, contract ≤ 4,000, wage bounds, no extra
       keys; control/bidi characters stripped). `haqqi/core/untrusted.py` `wrap_worker_data` removes any copy of the delimiters
       from inside the story, so it can't close the fence early.
-- [ ] **3.5 K2 client** `haqqi/llm/client.py`: OpenAI-compatible httpx client that strips `<think>` and fences, parses into a
+- [x] **3.5 K2 client** `haqqi/llm/client.py`: OpenAI-compatible httpx client that strips `<think>` and fences, parses into a
       Pydantic model, retries once on invalid JSON then raises `LLMOutputError`, uses per-call timeouts, and has a fallback-provider
       hook (flag 18).
       Check: unit tests with recorded responses (valid, fenced, think-tag, invalid×2 → error). Ports: `K2 Intake/Analyst/Critic/Revise/Writer` (HTTP) + the `parseK2` function.
-- [ ] **3.6 Prompts** `haqqi/rag/prompts/*.md`: the Intake, Analyst, Critic, Revision and Writer prompts, starting from the n8n
+      *Done 2 Oct:* `LLMClient.complete(stage, messages, schema)`. Parsing: strips `<think>` and fences, keeps the outer object,
+      Pydantic. Bad output gets one correction retry, then `LLMOutputError`. Transport: 40 s timeout, one retry on 5xx or
+      timeout, 429 honours Retry-After, next provider, then `LLMUnavailable`. Calls are serialised with a 0.5 s gap
+      (2 req/s) at temperature 0. Logs show only stage, latency and token counts. 10 tests.
+      *3 Oct:* free-tier Gemini first (one provider per free model, flag 18), then K2; a 429 moves to the next model.
+- [x] **3.6 Prompts** `haqqi/rag/prompts/*.md`: the Intake, Analyst, Critic, Revision and Writer prompts, starting from the n8n
       prompts and rewritten where needed. Each material change is recorded in `haqqi/rag/prompts/CHANGES.md` for review.
       Arabic letter template in `haqqi/pdf/template_ar.txt`.
       Check: you review and approve CHANGES.md; prompt snapshot tests pass. Ports: `Build Intake/Analyst/Critic/Revision/Writer Prompt`.
-- [ ] **3.7 Intake agent** → `ExtractedFacts`.
+      *2 Oct:* the prompts, the message builders (`haqqi/agents/messages.py`) and the Arabic template are written, with 12 snapshot
+      and safety tests (one fence per message, the writer sees money only as `[[AMOUNT_n]]`). *Done 3 Oct:* you approved
+      `haqqi/rag/prompts/CHANGES.md`.
+- [x] **3.7 Intake agent** → `ExtractedFacts`.
       Check: `pytest -m live tests/agents/test_intake.py` on TC-01 (Hindi) → `unpaid_wages`, wage 1800; TC-18 fills
       dates and wages from the story. Ports: `Build Intake Prompt`, `K2 Intake`, `Parse Intake`.
-- [ ] **3.8 Citation enforcement**: drop article ids that are not in the retrieved ∪ pack set, and move uncited findings to `not_covered`.
+      *Done 2 Oct:* `run_intake` (the form's answers then override the model's). Live K2: TC-01 → unpaid_wages, total 1800,
+      3 months unpaid, still employed; TC-18 → start 2025-05-01, total 2200, basic 1600. About 8 s per call.
+- [x] **3.8 Citation enforcement**: drop article ids that are not in the retrieved ∪ pack set, and move uncited findings to `not_covered`.
       Check: a unit test with a fabricated id → removed and finding moved. Ports: `enforceCitations` in `Parse Analyst`/`Parse Revision`.
-- [ ] **3.9 Analyst → Critic → one revision**, plus a test-only `force_bad_citation` hook (enabled only by an env flag).
+      *Done 2 Oct:* `enforce_citations` + `to_violations` (quotes come from our law text, never the model). 2 unit tests.
+- [x] **3.9 Analyst → Critic → one revision**, plus a test-only `force_bad_citation` hook (enabled only by an env flag).
       Check: live TC-11 → critic `revise`, `revised=True`, final citation ≠ Art. 54(9). A unit test with mocked LLM
       proves at most one revision. Ports: `Build/K2/Parse Analyst`, `Build/K2/Parse Critic`, `Critic Passed?`, `Build/K2/Parse Revision`.
-- [ ] **3.10 Writer agent** → `WriterOutput` (worker-language text + Arabic letter + translation, flag 9). Rejects output with no
+      *Done 2 Oct:* `run_analysis` enforces citations after every reply. Seeding only happens when the caller passes it, and
+      the API passes it only when `HAQQI_TEST_HOOKS=1`. Live TC-11: critic `revise` → one revision → Art. 54(9) gone.
+      3 calls took 7 + 11 + 5 s. 3 unit tests use a scripted fake LLM.
+- [x] **3.10 Writer agent** → `WriterOutput` (worker-language text + Arabic letter + translation, flag 9). Rejects output with no
       Arabic script, and amounts are injected from the calculator, never the LLM.
       Check: live TC-03 → `arabic_letter` matches `[؀-ۿ]`; every AED figure in the text equals a calculator figure (regex test). Ports: `Build Writer Prompt`, `K2 Writer`, `Parse Writer`.
-- [ ] **3.11 Orchestrator + API**: `POST /v1/cases`, `PATCH /v1/cases/{id}`, `POST /v1/cases/{id}/analyze` (SSE events:
+      *Done 2 Oct:* `run_writer` fills `[[AMOUNT_n]]`/`[[TOTAL]]` from the calculator. One retry, then an error, if the letter
+      has no Arabic (checked before filling), a token is unknown, or any figure next to AED/درهم (Arabic-Indic digits too)
+      is not a calculator figure. Live TC-03 passed (35 s; 3.8k output tokens). 7 unit tests.
+- [x] **3.11 Orchestrator + API**: `POST /v1/cases`, `PATCH /v1/cases/{id}`, `POST /v1/cases/{id}/analyze` (SSE events:
       `retrieving`, `calculating`, `analysing`, `critiquing`, `revising`, `writing`, `done`). Case ids are UUIDv4.
       Check: `curl -N` shows ordered stage events, then an `Analysis` JSON; TC-07 returns a referral with no violations. Ports: the `connections` graph; `Assemble Case Pack`; `Out-of-Scope Reply`; `Need-Info Reply`.
+      *Done 2 Oct:* `haqqi/api/cases.py` + `haqqi/agents/pipeline.py`. Cases are stored in `cases` (story kept only for analysis;
+      7-day expiry). Out-of-scope returns the referral with no LLM analysis. LLM failures stream an `error` event with a
+      "try again later" message. 4 API tests (scripted LLM + local DB) + 2 pipeline tests.
+      Real run, TC-02 (Urdu, local server, K2 + BGE-M3): total 6,229.59 = CASES.md. Citations Art. 42(3), 43(1/3/4), 51(2/3/5).
+      **Latency 153 s:** intake 9, analyst 77 (40 s timeout + retry), critic 32, writer 34. The per-call timeout is now 90 s
+      (flag 18). **Quality:** the letter wrote the end date as 2024 instead of 2026, to fix in the Sprint 7 eval loop.
+      *2 Oct, Gemini:* the same TC-02 run took 13 s end to end; total 6,229.59, citations Art. 42(3), 43(1/3), 51(2/3),
+      and the letter dates are correct (2024-06-01 → 2026-09-20). Live agent tests pass on Gemini.
 
 ## Sprint 4 — UI flow (PRD Block 4)
 

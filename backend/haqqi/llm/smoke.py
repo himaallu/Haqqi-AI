@@ -9,17 +9,9 @@ import time
 from dataclasses import dataclass, field
 
 import httpx
-from pydantic import SecretStr
 
 from haqqi.config import Settings, get_settings
-
-
-@dataclass
-class Provider:
-    name: str
-    base_url: str
-    model: str
-    api_key: SecretStr | None
+from haqqi.llm.client import Provider, providers_from_settings
 
 
 @dataclass
@@ -33,7 +25,7 @@ class SmokeResult:
 
 def providers(settings: Settings) -> list[Provider]:
     return [
-        Provider("k2", settings.k2_base_url, settings.k2_model, settings.k2_api_key),
+        *providers_from_settings(settings),
         Provider("groq", settings.groq_base_url, settings.groq_model, settings.groq_api_key),
     ]
 
@@ -63,6 +55,7 @@ def smoke(provider: Provider, client: httpx.Client) -> SmokeResult:
                 "model": provider.model,
                 "messages": [{"role": "user", "content": "Reply with the single word: pong"}],
                 "max_tokens": 200,
+                **provider.extra,
             },
         )
     except httpx.HTTPError as exc:

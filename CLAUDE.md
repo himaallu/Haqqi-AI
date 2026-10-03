@@ -13,8 +13,9 @@ a calculated claim, and a formal Arabic complaint PDF.
 - backend/: Python 3.12, FastAPI, Pydantic v2, pytest, ruff, mypy
 - frontend/: Next.js (App Router), TypeScript, Tailwind, shadcn/ui; package manager is pnpm (never npm or yarn)
 - Postgres + pgvector (docker-compose for local dev)
-- LLM: K2 Horizon, OpenAI-compatible endpoint https://api.ifm.ai/v1/chat/completions,
-  model IFM/K2-Horizon-375B-A23B. Key in env var K2_API_KEY.
+- LLM: Gemini (free tier, OpenAI-compatible endpoint, key GEMINI_API_KEY) first, then
+  K2 Horizon as the fallback (https://api.ifm.ai/v1, model IFM/K2-Horizon-375B-A23B, key K2_API_KEY).
+  LLM_PROVIDER=k2 reverses the order.
 
 ## Commands
 
