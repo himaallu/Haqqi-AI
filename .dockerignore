@@ -1,0 +1,7 @@
+# The backend image builds from the repo root (backend/Dockerfile). Send only what it copies.
+*
+!backend/pyproject.toml
+!backend/uv.lock
+!backend/haqqi
+!data/law/*.json
+**/__pycache__

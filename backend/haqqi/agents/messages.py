@@ -2,6 +2,7 @@
 law enters as clause ids and official text; money enters the Writer only as tokens."""
 
 from collections.abc import Sequence
+from datetime import date
 
 from haqqi.agents.schemas import AnalystReply
 from haqqi.api.schemas import CreateCaseRequest
@@ -53,12 +54,14 @@ def _facts(facts: CaseFacts) -> str:
     return dump_json(data) + "\n\nWorker's own words:\n" + wrap_worker_data(worker_text)
 
 
-def intake_messages(req: CreateCaseRequest) -> list[Message]:
+def intake_messages(req: CreateCaseRequest, today: date | None = None) -> list[Message]:
+    """`today` lets the model place dates told without a year (tests pass a fixed date)."""
     form = req.model_dump(mode="json", exclude={"story", "contract_text"}, exclude_none=True)
     worker_text = req.story + (
         f"\n\nContract text:\n{req.contract_text}" if req.contract_text else ""
     )
     user = (
+        f"TODAY: {(today or date.today()).isoformat()}\n\n"
         f"FORM (chosen by the worker):\n{dump_json(form)}\n\n"
         f"STORY:\n{wrap_worker_data(worker_text)}"
     )

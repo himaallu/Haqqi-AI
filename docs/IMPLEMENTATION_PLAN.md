@@ -345,6 +345,12 @@ data sent to them for training, which would break the PRD's "no training on user
       *Done 3 Oct:* TC-08 (ne) → domestic, TC-07 → difc_adgm, TC-14 → free_zone, each with a tap-to-call 80084.
 - [ ] **4.8 Deploy + phone run**.
       Check: one full case completed on a real phone against the public URL; screenshot saved to `docs/screens/`. Ports: `Show Result`.
+      *4 Oct, first phone run (iPhone, Safari):* every analysis failed with "Something went wrong" at `retrieving`. The
+      Docker image held only `backend/`, so `data/law/*.json` (law text + Law Pack) was missing on Render. Fixed: the image
+      builds from the repo root, copies `data/law/*.json`, and fails to build if they don't load (`LAW_DATA_DIR`); Render
+      redeploys on `data/law/**` changes. The rebuilt container ran TC-02 (English) end to end: 6,229.59.
+      Also found: the Intake guessed 2024 for "20 September" (it now gets today's date; CHANGES.md 21, waiting for your
+      review), iOS date inputs overflowed the card (CSS fix), and `/healthz` showed `dev` (now `RENDER_GIT_COMMIT`).
 
 ## Sprint 5 — Arabic complaint (PRD Block 5)
 

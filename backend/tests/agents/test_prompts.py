@@ -6,6 +6,7 @@ and review the diff (material changes go in haqqi/rag/prompts/CHANGES.md).
 """
 
 import os
+from datetime import date
 from decimal import Decimal
 from pathlib import Path
 
@@ -74,7 +75,7 @@ def all_messages() -> dict[str, list[Message]]:
     calc = calculate(FACTS)
     request = CreateCaseRequest(language="hi", story=STORY, zone="mainland")
     return {
-        "intake": m.intake_messages(request),
+        "intake": m.intake_messages(request, today=date(2026, 10, 4)),
         "analyst": m.analyst_messages(FACTS, LAW, calc),
         "critic": m.critic_messages(FACTS, LAW, ANALYSIS),
         "revision": m.revision_messages(FACTS, LAW, calc, ANALYSIS, CRITIC),
@@ -116,3 +117,10 @@ def test_clause_refs_in_english_and_arabic() -> None:
     assert m.clause_ref("cr1-2022:art30:cl1", "ar") == (
         "المادة (30) البند (1) من قرار مجلس الوزراء رقم (1) لسنة 2022"
     )
+
+
+def test_intake_is_told_todays_date() -> None:
+    request = CreateCaseRequest(language="ur", story="20 September ko naukri khatam.")
+    user = m.intake_messages(request, today=date(2026, 10, 4))[1].content
+    assert user.startswith("TODAY: 2026-10-04")
+    assert user.index("TODAY") < user.index(OPEN)  # outside the worker's fenced text

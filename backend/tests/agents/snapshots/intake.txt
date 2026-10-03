@@ -41,12 +41,16 @@ Rules:
 - in_scope is false for domestic workers, DIFC, ADGM and free zone companies; otherwise true when the facts are about a private-sector job.
 - termination: "employer" if the employer ended the job, "resigned" if the worker resigned, "still_employed" if the worker still works there.
 - deducted_amount_aed is the total deducted so far; deducted_monthly_aed is the amount per month, if stated.
-- Dates: convert to YYYY-MM-DD only when the day, month and year are clear; otherwise null and say so in missing_info.
+- Dates: convert to YYYY-MM-DD when the day and month are clear. If the year is not stated, use the most recent date on or
+  before TODAY (for example "20 September", told in October 2026, is 2026-09-20); never a date after TODAY. If the day
+  or month is unclear, use null and say so in missing_info.
 - missing_info: plain descriptions of facts needed but not given (for example "monthly salary", "start date").
 - facts_summary_en: 3 to 6 short English sentences describing the situation. Do not include names, phone numbers, passport, Emirates ID or labour card numbers.
 
 
 ### user
+TODAY: 2026-10-04
+
 FORM (chosen by the worker):
 {
  "language": "hi",

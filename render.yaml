@@ -8,10 +8,11 @@ services:
     region: frankfurt
     branch: main
     dockerfilePath: ./backend/Dockerfile
-    dockerContext: ./backend
+    dockerContext: .
     buildFilter:
       paths:
         - backend/**
+        - data/law/**
         - render.yaml
     healthCheckPath: /healthz
     envVars:

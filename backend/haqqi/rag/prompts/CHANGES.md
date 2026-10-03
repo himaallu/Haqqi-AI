@@ -56,3 +56,10 @@ below has a reason. The rendered prompts are in `backend/tests/agents/snapshots/
 19. **Not-covered points and no claims.** It says MOHRE 80084 can help with not-covered points. With no claims it must not
     suggest money is owed (TC-22).
 20. **Dropped from Writer output:** nothing. `amount_lines` and `checklist` are kept, and `next_steps` comes from the Analyst.
+
+## After approval (4 Oct, from the phone run)
+21. **Today's date for the Intake.** The Intake now gets `TODAY: YYYY-MM-DD` (outside the worker's fenced text). A date
+    told without a year becomes the most recent such date on or before today, never a future one. The old rule said
+    "null unless the year is clear", but the model ignored it and guessed: the TC-02 story ("20 September") was filled
+    in as 2024-09-20, a date before the start date. The worker still confirms every date on the form.
+    **Waiting for your review.**
