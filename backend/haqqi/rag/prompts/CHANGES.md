@@ -74,4 +74,9 @@ below has a reason. The rendered prompts are in `backend/tests/agents/snapshots/
     - The Writer no longer gets `TEMPLATE_AR` or the Arabic references (`references_ar`); `haqqi/pdf/template_ar.txt`
       is replaced by `haqqi/pdf/letter.html.j2`.
     - Supersedes 16 (`letter_translation`) and 17 (identity placeholders are now printed by code at download, flag 8).
-    - The money check is unchanged: amounts only as `[[AMOUNT_n]]`/`[[TOTAL]]`, and the facts section must contain Arabic.
+    - **No amounts in the facts section**, enforced in code (no tokens, no money figures; one retry, then the usual
+      error). In the first live TC-03 run the Writer put the claim token where the employer's offer belonged, so the
+      letter said the employer offered AED 16,056.85 (what the worker is owed) instead of 6,000. The claims section
+      prints every amount; the facts describe amounts in words ("less than the law gives").
+    - The other fields' money check is unchanged: amounts only as `[[AMOUNT_n]]`/`[[TOTAL]]`, and the facts section
+      must contain Arabic.

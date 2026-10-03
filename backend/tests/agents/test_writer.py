@@ -49,9 +49,9 @@ def writer(**overrides: object) -> WriterOutput:
         "amount_lines": ["Gratuity: [[AMOUNT_1]] (basic AED 3,500.00 ÷ 30 per day)"],
         "checklist": ["Keep your payslips."],
         "letter_facts_ar": "عملت لدى الشركة من 2020-08-01 حتى 2026-08-31، "
-        "ومكافأة نهاية الخدمة المستحقة لي [[AMOUNT_1]].",
+        "وعرضت عليّ مكافأة أقل مما يقرره القانون.",
         "letter_facts_translation": "I worked from 2020-08-01 to 2026-08-31. "
-        "My gratuity is [[AMOUNT_1]].",
+        "The company offered less gratuity than the law gives.",
     }
     return WriterOutput.model_validate(base | overrides)
 
@@ -62,8 +62,7 @@ def test_tokens_are_filled_with_calculator_figures() -> None:
     out = run_writer(llm, TC03, GRATUITY, calculate(TC03))
 
     assert "AED 16,056.85" in out.explanation
-    assert "16,056.85 درهم" in out.letter_facts_ar
-    assert "AED 16,056.85" in out.letter_facts_translation
+    assert out.amount_lines == ["Gratuity: AED 16,056.85 (basic AED 3,500.00 ÷ 30 per day)"]
     assert llm.stages() == ["writer"]
 
 
@@ -84,9 +83,15 @@ def test_every_aed_figure_in_the_output_is_a_calculator_figure() -> None:
     "bad",
     [
         {"explanation": "Your employer owes you AED 1,000,000."},
-        {"letter_facts_ar": "المطالبة: ٥٠٠٠ درهم"},  # Arabic-Indic digits, not a calculator figure
+        {"explanation": "المطالبة: ٥٠٠٠ درهم"},  # Arabic-Indic digits, not a calculator figure
+        # The letter's facts carry no amounts: once the claim token stood in for the employer's
+        # offer (TC-03 live run, 3 Oct) and said the employer offered what the worker is owed.
+        {"letter_facts_ar": "تعرض الشركة مكافأة قدرها [[AMOUNT_1]]."},
+        {"letter_facts_ar": "عرضت الشركة ٦٬٠٠٠ فقط."},
+        {"letter_facts_translation": "The company offered 6,000 only."},
+        {"letter_facts_translation": "The company offers AED 16,056.85."},
         {"explanation": "Owed: [[AMOUNT_7]]"},  # unknown token
-        {"letter_facts_ar": "I worked six years: [[AMOUNT_1]]"},  # no Arabic
+        {"letter_facts_ar": "I worked six years."},  # no Arabic
     ],
 )
 def test_bad_output_gets_one_retry_then_fails(bad: dict[str, object]) -> None:

@@ -21,7 +21,7 @@ def scripted(critic_verdicts: list[object]) -> FakeLLM:
             "analyst": [reply(WAGES)],
             "critic": critic_verdicts,  # type: ignore[dict-item]
             "revision": [reply(WAGES)],
-            "writer": [writer(letter_facts_ar="أجري: [[AMOUNT_1]]", amount_lines=WAGE_LINE)],
+            "writer": [writer(letter_facts_ar="لم أتقاضَ أجري", amount_lines=WAGE_LINE)],
         }
     )
 
@@ -34,7 +34,7 @@ def test_stages_in_order_and_analysis_uses_calculator_money() -> None:
     assert analysis.total_aed == Decimal("4800.00")  # 2 × 2,400
     assert analysis.violations[0].article.chunk_id == WAGES
     assert analysis.critic_verdict == "pass" and not analysis.revised
-    assert analysis.writer and "4,800.00 درهم" in analysis.writer.letter_facts_ar
+    assert analysis.writer and analysis.writer.amount_lines == ["Unpaid wages: AED 4,800.00"]
 
 
 def test_revision_stage_is_reported() -> None:

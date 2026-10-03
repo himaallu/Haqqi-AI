@@ -2,8 +2,8 @@
 
 Ports Build/K2/Parse Writer. The model writes `[[AMOUNT_n]]` / `[[TOTAL]]` where money goes;
 code fills in the calculator's figures. Output is rejected (one retry, then error) if the
-letter's facts section has no Arabic, a token is unknown, or any figure next to a currency
-word is not one the calculator produced.
+letter's facts section has no Arabic or contains any amount (code prints the claims), a token
+is unknown, or any figure next to a currency word is not one the calculator produced.
 """
 
 import logging
@@ -25,6 +25,9 @@ _NUM = r"([0-9][0-9,]*(?:\.[0-9]+)?)"
 _CUR = r"(?:AED|Dhs?\.?|dirhams?|درهم|دراهم|د\.إ)"
 MONEY = re.compile(rf"{_CUR}\s*{_NUM}|{_NUM}\s*{_CUR}", re.IGNORECASE)
 ANY_NUMBER = re.compile(_NUM)
+# A figure that reads as money even without a currency word: 6,000 or 1500.50 (not dates).
+GROUPED = re.compile(r"\d{1,3}(?:,\d{3})+|\d+\.\d{2}\b")
+LETTER_FACTS = ("letter_facts_ar", "letter_facts_translation")
 
 
 class WriterCheckError(ValueError):
@@ -59,29 +62,31 @@ def _to_decimal(text: str) -> Decimal | None:
 
 
 def fill_and_check(out: WriterOutput, calc: CalcResult) -> WriterOutput:
-    # Check the model's own words: once tokens are filled, "درهم" would count as Arabic.
-    if not ARABIC.search(TOKEN.sub("", out.letter_facts_ar)):
+    if not ARABIC.search(out.letter_facts_ar):
         raise WriterCheckError("letter_facts_ar contains no Arabic text")
+    for field in LETTER_FACTS:
+        # A token here once stood in for the employer's own figure and reversed the meaning.
+        text = getattr(out, field).translate(ARABIC_DIGITS)
+        if TOKEN.search(text) or MONEY.search(text) or GROUPED.search(text):
+            raise WriterCheckError(f"{field} contains an amount; the claims section lists them")
     tokens = amounts_by_token(calc)
     allowed = allowed_figures(calc)
     filled: dict[str, object] = {}
     for field, value in out.model_dump().items():
         texts = value if isinstance(value, list) else [value]
-        arabic = field == "letter_facts_ar"
-        done = [_fill(str(t), tokens, arabic) for t in texts]
+        done = [_fill(str(t), tokens) for t in texts]
         for text in done:
             _check_money(text, allowed, field)
         filled[field] = done if isinstance(value, list) else done[0]
     return WriterOutput.model_validate(filled)
 
 
-def _fill(text: str, tokens: dict[str, Decimal], arabic: bool) -> str:
+def _fill(text: str, tokens: dict[str, Decimal]) -> str:
     def replace(match: re.Match[str]) -> str:
         token = match.group(0)
         if token not in tokens:
             raise WriterCheckError(f"unknown amount token {token}")
-        amount = f"{tokens[token]:,.2f}"
-        return f"{amount} درهم" if arabic else f"AED {amount}"
+        return f"AED {tokens[token]:,.2f}"
 
     return TOKEN.sub(replace, text)
 
@@ -109,7 +114,8 @@ def run_writer(
             Message(
                 "user",
                 f"Rejected: {first}. Write every amount only as its [[AMOUNT_n]] or [[TOTAL]] "
-                "token, write no other money figures, and write letter_facts_ar in Arabic. "
+                "token, write no other money figures, write letter_facts_ar in Arabic, and put "
+                "no amounts or tokens in letter_facts_ar or letter_facts_translation. "
                 "Reply with ONLY the corrected JSON object.",
             ),
         ]

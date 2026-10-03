@@ -76,9 +76,7 @@ def test_tc01_create_confirm_analyze_streams_stages_then_analysis(db: str) -> No
             "intake": [TC01_EXTRACTED],
             "analyst": [reply(WAGES)],
             "critic": [PASS],
-            "writer": [
-                writer(letter_facts_ar="لم أتقاضَ أجري: [[AMOUNT_1]]", amount_lines=WAGE_LINE)
-            ],
+            "writer": [writer(letter_facts_ar="لم أتقاضَ أجري", amount_lines=WAGE_LINE)],
         }
     )
     client = client_with(llm, db)
@@ -110,7 +108,7 @@ def test_tc01_create_confirm_analyze_streams_stages_then_analysis(db: str) -> No
     analysis = Analysis.model_validate(got[-1][1])
     assert analysis.total_aed == Decimal("5400.00")
     assert analysis.violations and analysis.writer
-    assert "5,400.00 درهم" in analysis.writer.letter_facts_ar
+    assert analysis.writer.amount_lines == ["Unpaid wages: AED 5,400.00"]
 
     with psycopg.connect(db) as conn:
         row = conn.execute("SELECT status FROM cases WHERE id = %s", (case["id"],)).fetchone()
@@ -177,9 +175,7 @@ def test_seeded_bad_citation_needs_the_test_hooks_setting(db: str) -> None:
                 "intake": [TC01_EXTRACTED],
                 "analyst": [reply(WAGES)],
                 "critic": [PASS],
-                "writer": [
-                    writer(letter_facts_ar="لم أتقاضَ أجري: [[AMOUNT_1]]", amount_lines=WAGE_LINE)
-                ],
+                "writer": [writer(letter_facts_ar="لم أتقاضَ أجري", amount_lines=WAGE_LINE)],
             }
         )
         client = client_with(llm, db, hooks=hooks)
