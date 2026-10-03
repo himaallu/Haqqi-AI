@@ -221,5 +221,11 @@ def render_html(letter: Letter) -> str:
 
 
 def render_pdf(letter: Letter) -> bytes:
-    pdf: bytes = HTML(string=render_html(letter), base_url=f"{FONT_DIR}/").write_pdf()
-    return pdf
+    return render_pdf_with_fonts(letter)[0]
+
+
+def render_pdf_with_fonts(letter: Letter) -> tuple[bytes, list[str]]:
+    """The PDF and the names of the fonts embedded in it (tests check each script's font)."""
+    document = HTML(string=render_html(letter), base_url=f"{FONT_DIR}/").render()
+    pdf: bytes = document.write_pdf()
+    return pdf, [font.name.decode().lstrip("/") for font in document.fonts.values()]

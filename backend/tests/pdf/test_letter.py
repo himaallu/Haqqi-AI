@@ -22,6 +22,7 @@ from haqqi.pdf.letter import (
     build_letter,
     render_html,
     render_pdf,
+    render_pdf_with_fonts,
 )
 from tests.agents.test_writer import TC03, writer
 
@@ -159,3 +160,21 @@ def test_catalogs_have_the_same_keys() -> None:
         data = json.loads(path.read_text(encoding="utf-8"))
         assert keys(data) == keys(en), path.name
         assert len(data["attachment_list"]) == len(en["attachment_list"]), path.name
+
+
+@pytest.mark.parametrize(
+    ("lang", "font"),
+    [
+        ("ur", "Noto-Nastaliq-Urdu"),
+        ("hi", "Noto-Sans-Devanagari"),
+        ("ne", "Noto-Sans-Devanagari"),
+        ("ml", "Noto-Sans-Malayalam"),
+        ("bn", "Noto-Sans-Bengali"),
+        ("en", "Noto-Sans"),
+    ],
+)
+def test_translation_column_embeds_its_script_font(lang: str, font: str) -> None:
+    facts = tc03(lang)
+    _pdf, fonts = render_pdf_with_fonts(build_letter(facts, analysis_for(facts), Identity(), TODAY))
+    assert any(name.split("+")[-1].startswith(font) for name in fonts), fonts
+    assert any("Noto-Naskh-Arabic" in name for name in fonts)

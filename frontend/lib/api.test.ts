@@ -1,6 +1,15 @@
 import { describe, expect, it, vi } from "vitest";
 
-import { analyzeCase, ApiError, apiUrl, confirmCase, createCase, fetchHealth, getCase } from "./api";
+import {
+  analyzeCase,
+  ApiError,
+  apiUrl,
+  confirmCase,
+  createCase,
+  downloadComplaint,
+  fetchHealth,
+  getCase,
+} from "./api";
 
 describe("apiUrl", () => {
   it("joins base and path with exactly one slash", () => {
@@ -66,5 +75,27 @@ describe("case calls", () => {
   it("raises ApiError when analysis is refused", async () => {
     const fakeFetch = vi.fn().mockResolvedValue(new Response('{"detail":"confirm first"}', { status: 409 }));
     await expect(analyzeCase("abc", () => {}, undefined, fakeFetch)).rejects.toMatchObject({ status: 409 });
+  });
+});
+
+describe("downloadComplaint", () => {
+  it("POSTs only the filled identity fields and returns the PDF", async () => {
+    const fakeFetch = vi.fn().mockResolvedValue(
+      new Response(new Blob(["%PDF-1.7"], { type: "application/pdf" }), { status: 200 }),
+    );
+
+    const pdf = await downloadComplaint("a/b", { name: "  Ramesh ", labour_card: " ", employer: "" }, fakeFetch);
+
+    expect(await pdf.text()).toBe("%PDF-1.7");
+    const [url, init] = fakeFetch.mock.calls[0];
+    expect(url).toMatch(/\/v1\/cases\/a%2Fb\/complaint$/);
+    expect(init.method).toBe("POST");
+    expect(JSON.parse(init.body)).toEqual({ name: "Ramesh" });
+  });
+
+  it("raises ApiError when the case has no complaint yet", async () => {
+    const fakeFetch = vi.fn().mockResolvedValue(new Response(JSON.stringify({ detail: "x" }), { status: 409 }));
+    const err = await downloadComplaint("abc", {}, fakeFetch).catch((e: unknown) => e);
+    expect((err as ApiError).status).toBe(409);
   });
 });

@@ -98,7 +98,7 @@ export function CaseFlow({ caseId }: { caseId: string }) {
         />
       );
     case "results":
-      return <Results analysis={state.analysis} onRetry={() => analyse(state.view)} />;
+      return <Results caseId={caseId} analysis={state.analysis} onRetry={() => analyse(state.view)} />;
     case "referral":
       return <Referral kind={state.referral} />;
   }

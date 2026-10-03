@@ -2,6 +2,7 @@
 
 import Link from "next/link";
 
+import { ComplaintDownload } from "@/components/complaint-download";
 import { Button } from "@/components/ui/button";
 import { articleRef, lawName } from "@/lib/citation";
 import { useI18n } from "@/lib/i18n/provider";
@@ -19,14 +20,17 @@ const CONFIDENCE: Record<Confidence, MessageKey> = {
 /**
  * Steps 4–6 (task 4.6). The Writer's text is in the worker's language; the analyst's findings,
  * formulas and law quotes are English. Every amount is the calculator's figure, shown as-is.
+ * Step 7, the complaint PDF, needs the Writer's facts section and something to complain about.
  */
-export function Results({ analysis, onRetry }: { analysis: Analysis; onRetry?: () => void }) {
+export function Results({ caseId, analysis, onRetry }: { caseId: string; analysis: Analysis; onRetry?: () => void }) {
   const { lang, t } = useI18n();
   const writer = analysis.writer;
   const lines = [...analysis.claim, ...analysis.worker_owes];
   // The Writer returns one plain-language line per claim line, in the same order (haqqi/agents/writer.py).
   const plain = writer && writer.amount_lines.length === lines.length ? writer.amount_lines : null;
   const nextSteps = writer?.checklist.length ? writer.checklist : analysis.next_steps;
+  const canComplain =
+    Boolean(writer?.letter_facts_ar) && (analysis.violations.length > 0 || analysis.claim.length > 0);
 
   return (
     <article className="flex flex-col gap-8" data-testid="results">
@@ -123,8 +127,9 @@ export function Results({ analysis, onRetry }: { analysis: Analysis; onRetry?: (
         </Section>
       )}
 
+      {canComplain && <ComplaintDownload caseId={caseId} />}
+
       <div className="flex flex-col gap-3">
-        <p className="text-sm text-muted-foreground">{t("results.complaintSoon")}</p>
         <p className="text-xs text-muted-foreground">{t("results.gemini")}</p>
         <Button asChild variant="outline">
           <Link href={`/${lang}`}>{t("common.startOver")}</Link>

@@ -44,8 +44,10 @@ body { font-family: "Noto Naskh Arabic", "Noto Sans"; font-size: 11pt; line-heig
 table { width: 100%; border-collapse: collapse; table-layout: fixed; }
 td { vertical-align: top; padding: 2pt 6pt; }
 td.ar { text-align: right; {% if two %}width: 55%; border-left: 0.5pt solid #bbb;{% endif %} }
-td.tr { width: 45%; font-family: {{ letter.tr_font }}; font-size: 9.5pt; color: #333; text-align: start; }
-{% if letter.lang == "ur" %}td.tr { line-height: 2.1; }{% endif %}
+td.tr { width: 45%; font-family: {{ letter.tr_font | safe }}; font-size: 9.5pt; color: #333; text-align: start; }
+{% if letter.lang == "ur" %}
+td.tr { line-height: 2.1; }
+{% endif %}
 tr.title td { font-size: 15pt; font-weight: bold; padding-bottom: 6pt; }
 tr.title td.tr { font-size: 12pt; }
 tr.heading td { font-weight: bold; padding-top: 10pt; border-bottom: 0.5pt solid #bbb; }
