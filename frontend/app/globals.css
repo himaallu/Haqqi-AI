@@ -82,3 +82,16 @@
   font-family: var(--font-urdu);
   line-height: 2;
 }
+
+/* iOS Safari gives date inputs an intrinsic width that ignores w-full, so they spilled out of the
+   form card on iPhone. Drop the native styling and let them shrink to their container. */
+input[type="date"] {
+  -webkit-appearance: none;
+  appearance: none;
+  display: block;
+  min-width: 0;
+  max-width: 100%;
+}
+input[type="date"]::-webkit-date-and-time-value {
+  text-align: start;
+}
