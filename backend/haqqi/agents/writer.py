@@ -2,8 +2,8 @@
 
 Ports Build/K2/Parse Writer. The model writes `[[AMOUNT_n]]` / `[[TOTAL]]` where money goes;
 code fills in the calculator's figures. Output is rejected (one retry, then error) if the
-letter has no Arabic, a token is unknown, or any figure next to a currency word is not one
-the calculator produced.
+letter's facts section has no Arabic, a token is unknown, or any figure next to a currency
+word is not one the calculator produced.
 """
 
 import logging
@@ -60,14 +60,14 @@ def _to_decimal(text: str) -> Decimal | None:
 
 def fill_and_check(out: WriterOutput, calc: CalcResult) -> WriterOutput:
     # Check the model's own words: once tokens are filled, "درهم" would count as Arabic.
-    if not ARABIC.search(TOKEN.sub("", out.arabic_letter)):
-        raise WriterCheckError("arabic_letter contains no Arabic text")
+    if not ARABIC.search(TOKEN.sub("", out.letter_facts_ar)):
+        raise WriterCheckError("letter_facts_ar contains no Arabic text")
     tokens = amounts_by_token(calc)
     allowed = allowed_figures(calc)
     filled: dict[str, object] = {}
     for field, value in out.model_dump().items():
         texts = value if isinstance(value, list) else [value]
-        arabic = field == "arabic_letter"
+        arabic = field == "letter_facts_ar"
         done = [_fill(str(t), tokens, arabic) for t in texts]
         for text in done:
             _check_money(text, allowed, field)
@@ -109,7 +109,7 @@ def run_writer(
             Message(
                 "user",
                 f"Rejected: {first}. Write every amount only as its [[AMOUNT_n]] or [[TOTAL]] "
-                "token, write no other money figures, and write arabic_letter in Arabic. "
+                "token, write no other money figures, and write letter_facts_ar in Arabic. "
                 "Reply with ONLY the corrected JSON object.",
             ),
         ]

@@ -74,7 +74,7 @@ def test_tc01_create_confirm_analyze_streams_stages_then_analysis(db: str) -> No
             "analyst": [reply(WAGES)],
             "critic": [PASS],
             "writer": [
-                writer(arabic_letter="إلى الوزارة: المطالبة [[AMOUNT_1]]", amount_lines=WAGE_LINE)
+                writer(letter_facts_ar="لم أتقاضَ أجري: [[AMOUNT_1]]", amount_lines=WAGE_LINE)
             ],
         }
     )
@@ -107,7 +107,7 @@ def test_tc01_create_confirm_analyze_streams_stages_then_analysis(db: str) -> No
     analysis = Analysis.model_validate(got[-1][1])
     assert analysis.total_aed == Decimal("5400.00")
     assert analysis.violations and analysis.writer
-    assert "5,400.00 درهم" in analysis.writer.arabic_letter
+    assert "5,400.00 درهم" in analysis.writer.letter_facts_ar
 
     with psycopg.connect(db) as conn:
         row = conn.execute("SELECT status FROM cases WHERE id = %s", (case["id"],)).fetchone()
@@ -175,7 +175,7 @@ def test_seeded_bad_citation_needs_the_test_hooks_setting(db: str) -> None:
                 "analyst": [reply(WAGES)],
                 "critic": [PASS],
                 "writer": [
-                    writer(arabic_letter="إلى الوزارة: [[AMOUNT_1]]", amount_lines=WAGE_LINE)
+                    writer(letter_facts_ar="لم أتقاضَ أجري: [[AMOUNT_1]]", amount_lines=WAGE_LINE)
                 ],
             }
         )

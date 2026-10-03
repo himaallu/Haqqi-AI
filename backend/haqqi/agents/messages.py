@@ -10,7 +10,7 @@ from haqqi.core.calculator import CalcResult
 from haqqi.core.untrusted import wrap_worker_data
 from haqqi.llm.client import Message, dump_json
 from haqqi.models import CaseFacts, CriticReport
-from haqqi.rag.prompts import system_prompt, template_ar
+from haqqi.rag.prompts import system_prompt
 from haqqi.rag.retrieve import RetrievedChunk
 
 LANGUAGE_NAMES = {
@@ -133,7 +133,6 @@ def writer_messages(facts: CaseFacts, analysis: AnalystReply, calc: CalcResult) 
                 "issue_type": issue.issue_type,
                 "finding": issue.finding,
                 "references_en": [clause_ref(c) for c in issue.chunk_ids],
-                "references_ar": [clause_ref(c, "ar") for c in issue.chunk_ids],
             }
             for issue in analysis.issues
         ],
@@ -144,8 +143,7 @@ def writer_messages(facts: CaseFacts, analysis: AnalystReply, calc: CalcResult) 
     user = (
         f"FACTS:\n{_facts(facts)}\n\n"
         f"APPROVED ANALYSIS:\n{dump_json(approved)}\n\n"
-        f"CLAIMS (total {TOTAL_PLACEHOLDER}):\n{dump_json(claims)}\n\n"
-        f"TEMPLATE_AR:\n{template_ar()}"
+        f"CLAIMS (total {TOTAL_PLACEHOLDER}):\n{dump_json(claims)}"
     )
     language = LANGUAGE_NAMES[facts.language]
     return [Message("system", system_prompt("writer", language=language)), Message("user", user)]

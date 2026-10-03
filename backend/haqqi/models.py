@@ -151,14 +151,17 @@ class CriticReport(_Model):
 
 
 class WriterOutput(_Model):
-    """Worker-facing text and the Arabic letter. Amounts are inserted from the calculator."""
+    """Worker-facing text and the letter's facts section. Amounts are inserted from the calculator.
+
+    Code builds the rest of the complaint letter (haqqi/pdf/letter.py); the Writer only narrates.
+    """
 
     headline: str
     explanation: str  # in the worker's language
     amount_lines: list[str]  # one per claim line, in the worker's language
     checklist: list[str]
-    arabic_letter: str
-    letter_translation: str  # the letter in the worker's language (flag 9)
+    letter_facts_ar: str  # the letter's facts section, formal Arabic
+    letter_facts_translation: str  # the same section in the worker's language (flag 9)
 
 
 class Analysis(_Model):
