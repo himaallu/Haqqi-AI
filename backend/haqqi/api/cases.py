@@ -38,6 +38,8 @@ log = logging.getLogger(__name__)
 router = APIRouter(prefix="/v1/cases")
 
 Status = Literal["out_of_scope", "need_info", "ready", "confirmed", "analysed"]
+# Stop proxies (Render, nginx) from buffering the stream, so stages reach the browser live.
+SSE_HEADERS = {"Cache-Control": "no-cache", "X-Accel-Buffering": "no"}
 NOT_EDITABLE = {"story", "contract_text", "language"}
 
 
@@ -240,6 +242,7 @@ def analyze(
     return StreamingResponse(
         _run_streamed(case_id, facts, query, llm, search, db_url, seed_bad_citation and test_hooks),
         media_type="text/event-stream",
+        headers=SSE_HEADERS,
     )
 
 
@@ -282,7 +285,9 @@ def _run_streamed(
 
 def _sse(events: Sequence[tuple[str, str]]) -> StreamingResponse:
     return StreamingResponse(
-        iter([_sse_event(name, data) for name, data in events]), media_type="text/event-stream"
+        iter([_sse_event(name, data) for name, data in events]),
+        media_type="text/event-stream",
+        headers=SSE_HEADERS,
     )
 
 

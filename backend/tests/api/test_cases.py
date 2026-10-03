@@ -93,6 +93,8 @@ def test_tc01_create_confirm_analyze_streams_stages_then_analysis(db: str) -> No
 
     streamed = client.post(f"/v1/cases/{case['id']}/analyze")
     assert streamed.headers["content-type"].startswith("text/event-stream")
+    assert streamed.headers["cache-control"] == "no-cache"
+    assert streamed.headers["x-accel-buffering"] == "no"
     got = events(streamed.text)
     assert [name for name, _ in got] == [
         "retrieving",
