@@ -18,6 +18,9 @@
   --border: oklch(0.922 0 0);
   --input: oklch(0.922 0 0);
   --ring: oklch(0.708 0 0);
+  --success: oklch(0.52 0.13 155);
+  --warning-bg: oklch(0.97 0.05 85);
+  --warning-fg: oklch(0.42 0.09 70);
 }
 
 @media (prefers-color-scheme: dark) {
@@ -34,6 +37,9 @@
     --border: oklch(1 0 0 / 10%);
     --input: oklch(1 0 0 / 15%);
     --ring: oklch(0.556 0 0);
+    --success: oklch(0.72 0.15 155);
+    --warning-bg: oklch(0.3 0.06 80);
+    --warning-fg: oklch(0.9 0.08 85);
   }
 }
 
@@ -50,11 +56,16 @@
   --color-border: var(--border);
   --color-input: var(--input);
   --color-ring: var(--ring);
+  --color-success: var(--success);
+  --color-warning-bg: var(--warning-bg);
+  --color-warning-fg: var(--warning-fg);
   --radius-sm: calc(var(--radius) - 4px);
   --radius-md: calc(var(--radius) - 2px);
   --radius-lg: var(--radius);
-  /* System fonts for now; Noto fonts for Arabic and Indic scripts are added locally in Sprint 4. */
-  --font-sans: system-ui, -apple-system, "Segoe UI", Roboto, "Noto Sans", sans-serif;
+  /* Noto fonts per script are self-hosted by next/font (app/fonts.ts); system fonts are the fallback. */
+  --font-sans: var(--font-noto-sans), var(--font-noto-devanagari), var(--font-noto-bengali),
+    var(--font-noto-malayalam), var(--font-noto-arabic), system-ui, -apple-system, "Segoe UI", Roboto, sans-serif;
+  --font-urdu: var(--font-noto-nastaliq), var(--font-noto-arabic), system-ui, sans-serif;
 }
 
 @layer base {
@@ -64,4 +75,10 @@
   body {
     @apply bg-background text-foreground font-sans;
   }
+}
+
+/* Urdu reads best in Nastaliq, which needs extra line height. */
+[lang="ur"] {
+  font-family: var(--font-urdu);
+  line-height: 2;
 }

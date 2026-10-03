@@ -93,6 +93,8 @@ def test_tc01_create_confirm_analyze_streams_stages_then_analysis(db: str) -> No
 
     streamed = client.post(f"/v1/cases/{case['id']}/analyze")
     assert streamed.headers["content-type"].startswith("text/event-stream")
+    assert streamed.headers["cache-control"] == "no-cache"
+    assert streamed.headers["x-accel-buffering"] == "no"
     got = events(streamed.text)
     assert [name for name, _ in got] == [
         "retrieving",
@@ -111,6 +113,14 @@ def test_tc01_create_confirm_analyze_streams_stages_then_analysis(db: str) -> No
         row = conn.execute("SELECT status FROM cases WHERE id = %s", (case["id"],)).fetchone()
     assert row == ("analysed",)
 
+    # A reload fetches the stored case and its analysis back; the story never leaves the server.
+    fetched = client.get(f"/v1/cases/{case['id']}")
+    assert fetched.status_code == 200, fetched.text
+    body = fetched.json()
+    assert body["status"] == "analysed"
+    assert Analysis.model_validate(body["analysis"]) == analysis
+    assert TC01["story"] not in fetched.text
+
 
 def test_tc07_difc_is_referred_without_analysis(db: str) -> None:
     llm = FakeLLM({"intake": [ExtractedFacts(zone="difc", issue_types=["unpaid_wages"])]})
@@ -121,11 +131,26 @@ def test_tc07_difc_is_referred_without_analysis(db: str) -> None:
     ).json()
     assert case["status"] == "out_of_scope"
     assert "DIFC" in case["referral"] and "80084" in case["referral"]
+    assert case["referral_kind"] == "difc_adgm"
 
     ((name, data),) = events(client.post(f"/v1/cases/{case['id']}/analyze").text)
     assert name == "done"
     assert data["in_scope"] is False and data["violations"] == []
     assert llm.stages() == ["intake"]  # no analysis calls
+
+
+def test_need_info_names_the_form_fields_to_fill(db: str) -> None:
+    llm = FakeLLM({"intake": [ExtractedFacts(issue_types=["unpaid_wages"])]})
+    client = client_with(llm, db)
+
+    case = client.post("/v1/cases", json={"language": "en", "story": "They stopped paying me."})
+    body = case.json()
+    assert body["status"] == "need_info"
+    assert body["missing_fields"] == ["basic_wage_aed", "total_wage_aed", "start_date"]
+    assert body["referral_kind"] is None and body["analysis"] is None
+
+    fetched = client.get(f"/v1/cases/{body['id']}").json()
+    assert fetched["status"] == "need_info" and fetched["missing_fields"] == body["missing_fields"]
 
 
 def test_guards_unknown_case_unconfirmed_case_and_story_edits(db: str) -> None:
@@ -138,6 +163,8 @@ def test_guards_unknown_case_unconfirmed_case_and_story_edits(db: str) -> None:
     assert client.patch(f"/v1/cases/{case['id']}", json={"total_wage_aed": "-1"}).status_code == 422
     unknown = "00000000-0000-4000-8000-000000000000"
     assert client.patch(f"/v1/cases/{unknown}", json={}).status_code == 404
+    assert client.get(f"/v1/cases/{unknown}").status_code == 404
+    assert client.get("/v1/cases/not-a-uuid").status_code == 422
 
 
 def test_seeded_bad_citation_needs_the_test_hooks_setting(db: str) -> None:

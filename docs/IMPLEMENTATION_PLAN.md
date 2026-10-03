@@ -311,22 +311,38 @@ data sent to them for training, which would break the PRD's "no training on user
 
 ## Sprint 4 — UI flow (PRD Block 4)
 
-- [ ] **4.1 i18n setup**: 7 languages + Arabic UI strings (JSON catalogs, RTL for ur/ar).
+- [x] **4.1 i18n setup**: 7 languages + Arabic UI strings (JSON catalogs, RTL for ur/ar).
       Check: switching to Urdu flips `dir="rtl"`; no missing-key warnings in the console. Ports: new.
-- [ ] **4.2 Language picker** (flags + native script).
+      *Done 3 Oct:* `frontend/lib/i18n/` holds 8 JSON catalogs (no library) with `t()`, which falls back to English and warns
+      on a missing key. A test keeps every catalog on the English key set and placeholders. The non-English catalogs are
+      **drafts for native review in 6.3**. `/ur` and `/ar` set `dir="rtl"` on the page and on `<html>`. Noto fonts per script
+      (Nastaliq for Urdu) are self-hosted via `next/font`. No console warnings during the browser run.
+- [x] **4.2 Language picker** (flags + native script).
       Check: at 375 px wide, all 8 options are tappable (≥ 44 px). Ports: `Haqqi Form` (Preferred language).
-- [ ] **4.3 Story input** (text; mic button stubbed for S6), with the "don't include name/ID/passport" hint.
+      *Done 3 Oct:* at 375 px, the 8 options are 343 px wide and 58–82 px tall, with no horizontal scroll (`docs/screens/s4-picker.png`).
+- [x] **4.3 Story input** (text; mic button stubbed for S6), with the "don't include name/ID/passport" hint.
       Check: submitting calls `POST /v1/cases` and moves to the confirm step. Ports: `Haqqi Form` (Your story, description).
-- [ ] **4.4 Confirm-fields form**: emirate, zone, worker type, contract type, dates, wages, months unpaid, notice days,
+      *Done 3 Oct:* 8,000-char counter, privacy hint, Gemini notice (flag 26), mic stub. Submit → `/{lang}/case/{id}`.
+- [x] **4.4 Confirm-fields form**: emirate, zone, worker type, contract type, dates, wages, months unpaid, notice days,
       leave days, pre-filled from extraction and marked "please confirm".
       Check: TC-18 story → fields pre-filled; editing a field calls `PATCH`; the need-info route highlights missing fields. Ports: `Haqqi Form` fields, `Need-Info Reply`.
-- [ ] **4.5 Progress view** consuming SSE.
+      *Done 3 Oct:* TC-18 pre-fills Ajman, 2025-05-01, 2,200/1,600, still employed (7 "please confirm" badges).
+      TC-02 (Urdu, story only) → need-info banner + 3 highlighted fields. The PATCH sends every field (hidden ones as null),
+      digits typed on Arabic/Indic keyboards are accepted, and 422s map back to fields. New backend (your choice):
+      `GET /v1/cases/{id}` so a reload resumes the case; `CaseView` adds `referral_kind` and `missing_fields`.
+- [x] **4.5 Progress view** consuming SSE.
       Check: stages tick live during a real run. Ports: new (F8).
-- [ ] **4.6 Results page**: verdict + violations with article citations (expandable quote), itemised claim with
+      *Done 3 Oct:* fetch-based SSE reader (POST). Real TC-02 run: the stages ticked at 0.1 / 0.9 / 8.2 / 17.9 s → results at 23.9 s.
+- [x] **4.6 Results page**: verdict + violations with article citations (expandable quote), itemised claim with
       formulas, total, a separate "you may owe your employer" notice line (flag 2), above-50k note, next steps, documents, not-covered notice, disclaimer (EN + worker language + AR, MOHRE 80084).
       Check: TC-02 shows termination + notice with citations; every amount row shows a formula. Ports: `Assemble Case Pack` (page_html).
-- [ ] **4.7 Referral page** for out-of-scope cases, with three texts: domestic worker, DIFC/ADGM, other free zone (flag 1).
+      *Done 3 Oct:* TC-02 in Urdu → Art. 43(1), 43(3), 42(3), 44(2), 51(2), 51(3); notice pay 3,000.00 + gratuity 3,229.59
+      = **6,229.59** (CASES.md), each with its formula. A reload shows the saved result. The analyst's findings, formulas, documents and law quotes
+      are English (labelled "shown in English"); the Writer's headline, explanation, amount lines and checklist are in
+      the worker's language. To review in 6.3: translating the analyst fields.
+- [x] **4.7 Referral page** for out-of-scope cases, with three texts: domestic worker, DIFC/ADGM, other free zone (flag 1).
       Check: TC-08 → domestic referral; TC-07 (DIFC) → DIFC/ADGM referral; TC-14 (JAFZA) → free-zone-authority referral. Ports: `Out-of-Scope Reply`.
+      *Done 3 Oct:* TC-08 (ne) → domestic, TC-07 → difc_adgm, TC-14 → free_zone, each with a tap-to-call 80084.
 - [ ] **4.8 Deploy + phone run**.
       Check: one full case completed on a real phone against the public URL; screenshot saved to `docs/screens/`. Ports: `Show Result`.
 

@@ -1,6 +1,7 @@
 """Case API (task 3.11).
 
 POST   /v1/cases               story + form → Intake agent → routing; stores the case (UUIDv4)
+GET    /v1/cases/{id}          the case as stored (no story), plus its Analysis once analysed
 PATCH  /v1/cases/{id}          the worker confirms or edits the facts → strict CaseFacts
 POST   /v1/cases/{id}/analyze  Server-Sent Events: one event per stage, then the Analysis
 
@@ -26,7 +27,7 @@ from haqqi.agents.intake import run_intake
 from haqqi.agents.pipeline import Search, analyze_case
 from haqqi.api.schemas import CreateCaseRequest
 from haqqi.config import get_settings
-from haqqi.core.routing import RouteDecision, route_case
+from haqqi.core.routing import MISSING_FIELDS, Referral, RouteDecision, route_case
 from haqqi.llm.client import Completer, LLMClient, LLMError, LLMUnavailable
 from haqqi.models import Analysis, CaseFacts, ExtractedFacts, IssueType
 from haqqi.rag.embed import Embedder, get_embedder
@@ -37,6 +38,8 @@ log = logging.getLogger(__name__)
 router = APIRouter(prefix="/v1/cases")
 
 Status = Literal["out_of_scope", "need_info", "ready", "confirmed", "analysed"]
+# Stop proxies (Render, nginx) from buffering the stream, so stages reach the browser live.
+SSE_HEADERS = {"Cache-Control": "no-cache", "X-Accel-Buffering": "no"}
 NOT_EDITABLE = {"story", "contract_text", "language"}
 
 
@@ -45,8 +48,11 @@ class CaseView(BaseModel):
     status: Status
     extracted: ExtractedFacts
     missing: list[str] = []
+    missing_fields: list[str] = []  # form fields to highlight for `missing`
     referral: str | None = None
+    referral_kind: Referral | None = None
     confirmed: dict[str, Any] | None = None  # CaseFacts without the story
+    analysis: Analysis | None = None
 
 
 # Dependencies (overridden in tests)
@@ -99,13 +105,19 @@ def _save(
 
 
 def _load(db_url: str, case_id: UUID) -> tuple[Status, dict[str, Any]]:
+    status, data, _analysis = _load_full(db_url, case_id)
+    return status, data
+
+
+def _load_full(db_url: str, case_id: UUID) -> tuple[Status, dict[str, Any], dict[str, Any] | None]:
     with psycopg.connect(db_url) as conn:
         row = conn.execute(
-            "SELECT status, facts FROM cases WHERE id = %s AND expires_at > now()", (case_id,)
+            "SELECT status, facts, analysis FROM cases WHERE id = %s AND expires_at > now()",
+            (case_id,),
         ).fetchone()
     if row is None:
         raise HTTPException(404, "case not found")
-    return row[0], row[1]
+    return row[0], row[1], row[2]
 
 
 def _save_analysis(db_url: str, case_id: UUID, analysis: Analysis) -> None:
@@ -116,7 +128,9 @@ def _save_analysis(db_url: str, case_id: UUID, analysis: Analysis) -> None:
         )
 
 
-def _view(case_id: UUID, status: Status, data: dict[str, Any]) -> CaseView:
+def _view(
+    case_id: UUID, status: Status, data: dict[str, Any], analysis: Analysis | None = None
+) -> CaseView:
     route = data["route"]
     confirmed = data.get("confirmed")
     return CaseView(
@@ -124,10 +138,13 @@ def _view(case_id: UUID, status: Status, data: dict[str, Any]) -> CaseView:
         status=status,
         extracted=ExtractedFacts.model_validate(data["extracted"]),
         missing=route["missing"],
+        missing_fields=[f for m in route["missing"] for f in MISSING_FIELDS.get(m, [])],
         referral=route["referral_text"],
+        referral_kind=route["referral"],
         confirmed={k: v for k, v in confirmed.items() if k not in NOT_EDITABLE | {"language"}}
         if confirmed
         else None,
+        analysis=analysis,
     )
 
 
@@ -158,6 +175,14 @@ def create_case(req: CreateCaseRequest, llm: Llm, db_url: DbUrl) -> CaseView:
     }
     case_id = _save(db_url, None, req.language, decision.route, data)
     return _view(case_id, decision.route, data)
+
+
+@router.get("/{case_id}")
+def get_case(case_id: UUID, db_url: DbUrl) -> CaseView:
+    status, data, analysis = _load_full(db_url, case_id)
+    return _view(
+        case_id, status, data, Analysis.model_validate(analysis) if analysis is not None else None
+    )
 
 
 @router.patch("/{case_id}")
@@ -217,6 +242,7 @@ def analyze(
     return StreamingResponse(
         _run_streamed(case_id, facts, query, llm, search, db_url, seed_bad_citation and test_hooks),
         media_type="text/event-stream",
+        headers=SSE_HEADERS,
     )
 
 
@@ -259,7 +285,9 @@ def _run_streamed(
 
 def _sse(events: Sequence[tuple[str, str]]) -> StreamingResponse:
     return StreamingResponse(
-        iter([_sse_event(name, data) for name, data in events]), media_type="text/event-stream"
+        iter([_sse_event(name, data) for name, data in events]),
+        media_type="text/event-stream",
+        headers=SSE_HEADERS,
     )
 
 
