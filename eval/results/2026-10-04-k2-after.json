@@ -4,20 +4,20 @@
  "run_on": "2026-10-04",
  "metrics": {
   "cases": 20,
-  "errors": 1,
+  "errors": 0,
   "outcome_accuracy": 1.0,
   "issue_detection": 1.0,
-  "retrieval_hit_at_5": 0.727,
+  "retrieval_hit_at_5": 0.75,
   "citations_cited": 1.0,
-  "citations_supported": 0.957,
+  "citations_supported": 0.962,
   "critic_catch_rate": 1.0,
   "calculator_correctness": 1.0,
   "injection_resistance": 1.0,
   "latency_p95_s": 299.1,
   "counts": {
-   "analysed": 12,
-   "with_issues": 11,
-   "violations": 47,
+   "analysed": 13,
+   "with_issues": 12,
+   "violations": 52,
    "seeded": 1,
    "injected": 1,
    "writer_failed": 2
@@ -980,7 +980,84 @@
   },
   "TC-21": {
    "id": "TC-21",
-   "error": "LLMOutputError: analyst: invalid JSON after one retry (no JSON object in the reply)"
+   "language": "en",
+   "tags": [
+    "gratuity",
+    "unpaid_wages",
+    "mixed"
+   ],
+   "route": "ready",
+   "referral": null,
+   "outcome_ok": true,
+   "intake_issues": [
+    "gratuity",
+    "unpaid_wages"
+   ],
+   "issue_recall": 1.0,
+   "hit_at_5": true,
+   "top5": [
+    "fdl33-2021:art51:cl5",
+    "fdl33-2021:art1",
+    "fdl33-2021:art51:cl2",
+    "fdl33-2021:art37:cl3",
+    "fdl33-2021:art51:cl6"
+   ],
+   "seconds": 193.1,
+   "analysed": true,
+   "total_aed": "18381.37",
+   "claim": {
+    "Unpaid wages": "6000.00",
+    "End-of-service gratuity": "12381.37"
+   },
+   "citations": [
+    "fdl33-2021:art22:cl2",
+    "fdl33-2021:art53",
+    "fdl33-2021:art51:cl2",
+    "fdl33-2021:art51:cl3",
+    "fdl33-2021:art51:cl5"
+   ],
+   "findings": [
+    {
+     "clause": "fdl33-2021:art22:cl2",
+     "issue": "The employer has not paid the July salary even though it was due and the contract ended on 31 July 2026; wages must be paid on their due dates, and all wages and other entitlements must be paid within 14 days of the end of the contract."
+    },
+    {
+     "clause": "fdl33-2021:art53",
+     "issue": "The employer has not paid the July salary even though it was due and the contract ended on 31 July 2026; wages must be paid on their due dates, and all wages and other entitlements must be paid within 14 days of the end of the contract."
+    },
+    {
+     "clause": "fdl33-2021:art51:cl2",
+     "issue": "The worker completed more than one year of continuous full-time service and resigned, so an end-of-service gratuity is due; it remains unpaid after the end of service."
+    },
+    {
+     "clause": "fdl33-2021:art51:cl3",
+     "issue": "The worker completed more than one year of continuous full-time service and resigned, so an end-of-service gratuity is due; it remains unpaid after the end of service."
+    },
+    {
+     "clause": "fdl33-2021:art51:cl5",
+     "issue": "The worker completed more than one year of continuous full-time service and resigned, so an end-of-service gratuity is due; it remains unpaid after the end of service."
+    }
+   ],
+   "violation_cited": [
+    true,
+    true,
+    true,
+    true,
+    true
+   ],
+   "violation_supported": [
+    true,
+    true,
+    true,
+    true,
+    true
+   ],
+   "not_covered": [],
+   "critic": "revise",
+   "revised": true,
+   "writer_failed": false,
+   "headline": "Your employer has not paid your July 2026 salary or your end-of-service gratuity.",
+   "calculator_exact": true
   }
  }
 }

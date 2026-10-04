@@ -460,18 +460,31 @@ data sent to them for training, which would break the PRD's "no training on user
       end of a job, above the 50,000 limit, injection, a second seeded citation, need-info, and free zone/ADGM. The
       validator shows 50 rows (40 ready, 6 out of scope, 4 need-info), with gratuity 23, unpaid wages 13, termination 11,
       notice 11. The app's calculator matches the independent hand arithmetic on all 40.
-- [ ] **7.3 `eval/run_eval.py`**: runs the pipeline per case and computes the 8 PRD metrics (outcome, issue detection,
+- [x] **7.3 `eval/run_eval.py`**: runs the pipeline per case and computes the 8 PRD metrics (outcome, issue detection,
       hit@5, citation validity, critic catch, calculator exact, injection resistance, p95 latency).
       Check: `make eval` prints the metrics table and writes `eval/results/<date>.json`. Ports: `Loop Over Items`, `Run Haqqi`, `Check Result`, `Summary`, `Is Test Run?`, `Return to Tests`, `When Executed by Another Workflow`.
+      *Done 4 Oct:* in-process pipeline per case. Each case's result is saved as it finishes, so a run resumes, and
+      `--rerun`/`--limit` let it be split across days or providers. K2 by default (your choice for eval);
+      `--provider gemini` uses the free chain. Metric definitions are in `eval/metrics.py`; `eval/compare.py` gives a
+      before/after on the same cases. First full K2 run: 16 of 50 cases were lost to a K2-only retry bug (HTTP 400,
+      fixed). **Your call (4 Oct):** 20 cases today (TC-01 to TC-21), and the other 30 tomorrow on a Gemini + K2 mix.
 - [x] **7.4 Offline eval subset for CI**: calculator exactness + retrieval hit@5 with no LLM.
       Check: `make eval-offline` finishes in < 2 min without `K2_API_KEY`; it exits non-zero if calculator < 100%. Ports: new.
       *Done 4 Oct:* `eval/offline.py`: calculator vs all 40 hand-worked cases (40/40) in about a second, no LLM, DB or key;
       CI runs it after the tests. Retrieval hit@5 runs too when a local BGE-M3 index is reachable (story as the query),
       otherwise it says "skipped".
-- [ ] **7.5 Fix the worst failures** (top 3 by metric gap).
+- [x] **7.5 Fix the worst failures** (top 3 by metric gap).
       Check: before/after table in `eval/CHANGELOG.md`. Ports: new.
+      *Done 4 Oct (20 cases, K2):*
+      - Retrieval hit@5 went from 50% to 75%: issue words are added to the search query. The 3 remaining misses are
+        unpaid wages, where CR 16 ranks above Art. 22; **your call whether CR 16 counts**.
+      - No false notice breaches: CHANGES.md 27, approved. In TC-21 the false finding is gone.
+      - Support labels widened by documented rules. Re-scored on the same labels, support is 98% before and 96% after.
+      - The K2 retry fix: 0 cases lost.
+      - Latency stays a K2 limit (p95 299 s); production runs on Gemini.
 - [ ] **7.6 Record scores**.
       Check: the README metrics table matches the latest results file. Ports: `Log Results` (replaced).
+      *4 Oct:* the README has the table for the 20-case K2 run, marked partial. It stays open until all 50 have run.
 
 ## Sprint 8 — Production polish (PRD Block 8)
 
