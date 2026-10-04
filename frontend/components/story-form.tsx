@@ -1,15 +1,16 @@
 "use client";
 
-import { Mic } from "lucide-react";
 import { useRouter } from "next/navigation";
 import { useState } from "react";
 
 import { Button } from "@/components/ui/button";
+import { VoiceInput } from "@/components/voice-input";
 import { Label, Textarea } from "@/components/ui/field";
 import { createCase } from "@/lib/api";
 import { errorMessageKey } from "@/lib/errors";
 import { useI18n } from "@/lib/i18n/provider";
 import type { MessageKey } from "@/lib/i18n/translate";
+import { cn } from "@/lib/utils";
 
 export const MAX_STORY_CHARS = 8000; // backend/haqqi/api/schemas.py
 
@@ -47,6 +48,7 @@ export function StoryForm() {
       <p role="note" className="rounded-md bg-warning-bg px-3 py-2 text-sm text-warning-fg">
         {t("story.privacy")}
       </p>
+      <p className="text-sm text-muted-foreground">{t("story.micHint")}</p>
 
       <div className="flex flex-col gap-2">
         <Label htmlFor="story" className="sr-only">
@@ -64,12 +66,12 @@ export function StoryForm() {
           required
           disabled={busy}
         />
-        <div className="flex items-center justify-between gap-2 text-sm">
-          <Button type="button" variant="outline" size="sm" disabled title={t("story.mic")}>
-            <Mic aria-hidden className="size-4" />
-            {t("story.mic")}
-          </Button>
-          <span id="story-count" className={tooLong ? "text-destructive" : "text-muted-foreground"}>
+        <div className="flex items-start justify-between gap-2 text-sm">
+          <VoiceInput
+            disabled={busy}
+            onText={(text) => setStory((current) => (current.trim() ? `${current.trimEnd()}\n${text}` : text))}
+          />
+          <span id="story-count" dir="ltr" className={cn("pt-2.5", tooLong ? "text-destructive" : "text-muted-foreground")}>
             {t("story.count", { count: story.length, max: MAX_STORY_CHARS })}
           </span>
         </div>

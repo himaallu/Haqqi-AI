@@ -106,3 +106,26 @@ export async function downloadComplaint(
   if (!resp.ok) throw new ApiError(resp.status, await errorDetail(resp));
   return resp.blob();
 }
+
+export type Transcription = { text: string; detected_language: string | null };
+
+/** Voice → text for the story box (task 6.1). The recording is sent once and never stored. */
+export async function transcribeAudio(
+  audio: Blob,
+  language: Language,
+  fetchFn: typeof fetch = fetch,
+): Promise<Transcription> {
+  const form = new FormData();
+  form.append("audio", audio, `recording.${audioExtension(audio.type)}`);
+  form.append("language", language);
+  // No Content-Type header: the browser sets the multipart boundary itself.
+  const resp = await fetchFn(apiUrl("/v1/transcribe"), { method: "POST", cache: "no-store", body: form });
+  if (!resp.ok) throw new ApiError(resp.status, await errorDetail(resp));
+  return (await resp.json()) as Transcription;
+}
+
+function audioExtension(type: string): string {
+  if (type.includes("mp4") || type.includes("aac")) return "m4a";
+  if (type.includes("ogg")) return "ogg";
+  return "webm";
+}
