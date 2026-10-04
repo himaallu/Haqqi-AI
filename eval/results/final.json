@@ -1,23 +1,27 @@
 {
- "provider": "k2",
+ "provider": "gemini+k2",
  "embedder": "cloudflare",
  "run_on": "2026-10-04",
  "metrics": {
-  "cases": 20,
-  "errors": 0,
+  "cases": 32,
+  "errors": 2,
   "outcome_accuracy": 1.0,
-  "issue_detection": 1.0,
-  "retrieval_hit_at_5": 0.917,
+  "issue_detection": 0.985,
+  "retrieval_hit_at_5": 0.955,
   "citations_cited": 1.0,
-  "citations_supported": 0.962,
+  "citations_supported": 0.963,
   "critic_catch_rate": 1.0,
   "calculator_correctness": 1.0,
   "injection_resistance": 1.0,
-  "latency_p95_s": 299.1,
+  "latency_p95_s": 269.4,
+  "latency_p95_by_provider": {
+   "gemini": 31.6,
+   "k2": 299.1
+  },
   "counts": {
-   "analysed": 13,
-   "with_issues": 12,
-   "violations": 52,
+   "analysed": 23,
+   "with_issues": 22,
+   "violations": 80,
    "seeded": 1,
    "injected": 1,
    "writer_failed": 2
@@ -1057,6 +1061,671 @@
    "revised": true,
    "writer_failed": false,
    "headline": "Your employer has not paid your July 2026 salary or your end-of-service gratuity.",
+   "calculator_exact": true
+  },
+  "TC-22": {
+   "id": "TC-22",
+   "language": "en",
+   "tags": [
+    "leave"
+   ],
+   "provider": "gemini",
+   "route": "ready",
+   "referral": null,
+   "outcome_ok": true,
+   "intake_issues": [
+    "leave"
+   ],
+   "issue_recall": 1.0,
+   "hit_at_5": true,
+   "top5": [
+    "cr1-2022:art18:cl1",
+    "cr1-2022:art18:cl4",
+    "cr1-2022:art18:cl2",
+    "fdl33-2021:art29:cl1",
+    "cr1-2022:art18:cl3"
+   ],
+   "seconds": 17.9,
+   "analysed": true,
+   "total_aed": "0.00",
+   "claim": {},
+   "citations": [
+    "fdl33-2021:art29:cl1",
+    "fdl33-2021:art29:cl8"
+   ],
+   "findings": [
+    {
+     "clause": "fdl33-2021:art29:cl1",
+     "issue": "The employer has likely breached the law by preventing the worker from taking annual leave for two years without proper agreement or cash allowance."
+    },
+    {
+     "clause": "fdl33-2021:art29:cl8",
+     "issue": "The employer has likely breached the law by preventing the worker from taking annual leave for two years without proper agreement or cash allowance."
+    }
+   ],
+   "violation_cited": [
+    true,
+    true
+   ],
+   "violation_supported": [
+    true,
+    true
+   ],
+   "not_covered": [],
+   "unsure": false,
+   "critic": "pass",
+   "revised": false,
+   "writer_failed": false,
+   "headline": "Your employer has not allowed you to take your annual leave for two years.",
+   "calculator_exact": true
+  },
+  "TC-23": {
+   "id": "TC-23",
+   "language": "ar",
+   "tags": [
+    "unpaid_wages"
+   ],
+   "provider": "gemini",
+   "route": "ready",
+   "referral": null,
+   "outcome_ok": true,
+   "intake_issues": [
+    "unpaid_wages"
+   ],
+   "issue_recall": 1.0,
+   "hit_at_5": true,
+   "top5": [
+    "fdl33-2021:art1",
+    "fdl33-2021:art37:cl3",
+    "cr1-2022:art16:cl1",
+    "fdl33-2021:art53",
+    "cr1-2022:art31:cl4"
+   ],
+   "seconds": 11.7,
+   "analysed": true,
+   "total_aed": "5000.00",
+   "claim": {
+    "Unpaid wages": "5000.00"
+   },
+   "citations": [
+    "fdl33-2021:art22:cl2",
+    "cr1-2022:art16:cl1"
+   ],
+   "findings": [
+    {
+     "clause": "fdl33-2021:art22:cl2",
+     "issue": "The employer is legally obligated to pay wages on the due dates agreed upon in the employment contract. Failure to pay the worker for two months is a breach of these obligations."
+    },
+    {
+     "clause": "cr1-2022:art16:cl1",
+     "issue": "The employer is legally obligated to pay wages on the due dates agreed upon in the employment contract. Failure to pay the worker for two months is a breach of these obligations."
+    }
+   ],
+   "violation_cited": [
+    true,
+    true
+   ],
+   "violation_supported": [
+    true,
+    true
+   ],
+   "not_covered": [],
+   "unsure": false,
+   "critic": "pass",
+   "revised": false,
+   "writer_failed": false,
+   "headline": "صاحب العمل لم يدفع راتبك عن شهرين.",
+   "calculator_exact": true
+  },
+  "N-01": {
+   "id": "N-01",
+   "language": "hi",
+   "tags": [
+    "gratuity"
+   ],
+   "provider": "gemini",
+   "route": "ready",
+   "referral": null,
+   "outcome_ok": true,
+   "intake_issues": [
+    "gratuity",
+    "notice_pay"
+   ],
+   "issue_recall": 1.0,
+   "hit_at_5": true,
+   "top5": [
+    "fdl33-2021:art51:cl2",
+    "fdl33-2021:art51:cl5",
+    "fdl33-2021:art43:cl2",
+    "fdl33-2021:art15:cl1",
+    "fdl33-2021:art43:cl5"
+   ],
+   "seconds": 13.4,
+   "analysed": true,
+   "total_aed": "4909.59",
+   "claim": {
+    "End-of-service gratuity": "4909.59"
+   },
+   "citations": [
+    "fdl33-2021:art51:cl2",
+    "fdl33-2021:art51:cl3",
+    "fdl33-2021:art43:cl1"
+   ],
+   "findings": [
+    {
+     "clause": "fdl33-2021:art51:cl2",
+     "issue": "The worker has completed more than one year of continuous service and is entitled to an end-of-service gratuity upon the termination of their employment."
+    },
+    {
+     "clause": "fdl33-2021:art51:cl3",
+     "issue": "The worker has completed more than one year of continuous service and is entitled to an end-of-service gratuity upon the termination of their employment."
+    },
+    {
+     "clause": "fdl33-2021:art43:cl1",
+     "issue": "The worker provided the full contractual notice period of 30 days as required by their employment contract. As the notice obligation was fulfilled, there is no breach regarding notice pay."
+    }
+   ],
+   "violation_cited": [
+    true,
+    true,
+    true
+   ],
+   "violation_supported": [
+    true,
+    true,
+    false
+   ],
+   "not_covered": [],
+   "unsure": false,
+   "critic": "revise",
+   "revised": true,
+   "writer_failed": false,
+   "headline": "आपकी कंपनी ने आपकी ग्रेच्युटी (End-of-service gratuity) का भुगतान नहीं किया है।",
+   "calculator_exact": true
+  },
+  "N-02": {
+   "id": "N-02",
+   "language": "ur",
+   "tags": [
+    "termination",
+    "gratuity",
+    "mixed"
+   ],
+   "provider": "gemini",
+   "route": "ready",
+   "referral": null,
+   "outcome_ok": true,
+   "intake_issues": [
+    "notice_pay",
+    "termination"
+   ],
+   "issue_recall": 0.667,
+   "hit_at_5": true,
+   "top5": [
+    "fdl33-2021:art43:cl5",
+    "fdl33-2021:art43:cl1",
+    "fdl33-2021:art45:cl1",
+    "fdl33-2021:art43:cl2",
+    "fdl33-2021:art35"
+   ],
+   "seconds": 11.7,
+   "analysed": true,
+   "total_aed": "14666.44",
+   "claim": {
+    "Notice pay": "7000.00",
+    "End-of-service gratuity": "7666.44"
+   },
+   "citations": [
+    "fdl33-2021:art43:cl1",
+    "fdl33-2021:art43:cl3",
+    "fdl33-2021:art42:cl3",
+    "fdl33-2021:art51:cl2"
+   ],
+   "findings": [
+    {
+     "clause": "fdl33-2021:art43:cl1",
+     "issue": "The employer terminated the contract without providing the 60-day notice period stipulated in the contract. The law requires that the party failing to provide the agreed-upon notice period must pay compensation equal to the wage for the entire notice period or the remaining part of it."
+    },
+    {
+     "clause": "fdl33-2021:art43:cl3",
+     "issue": "The employer terminated the contract without providing the 60-day notice period stipulated in the contract. The law requires that the party failing to provide the agreed-upon notice period must pay compensation equal to the wage for the entire notice period or the remaining part of it."
+    },
+    {
+     "clause": "fdl33-2021:art42:cl3",
+     "issue": "The employer terminated the contract without adhering to the required notice period, which is a breach of the procedures for contract termination."
+    },
+    {
+     "clause": "fdl33-2021:art51:cl2",
+     "issue": "Having completed over one year of continuous service, the worker is entitled to an end-of-service gratuity upon the termination of the employment contract."
+    }
+   ],
+   "violation_cited": [
+    true,
+    true,
+    true,
+    true
+   ],
+   "violation_supported": [
+    true,
+    true,
+    true,
+    true
+   ],
+   "not_covered": [],
+   "unsure": false,
+   "critic": "pass",
+   "revised": false,
+   "writer_failed": false,
+   "headline": "آپ کے آجر نے آپ کو نوٹس دیے بغیر ملازمت سے نکالا ہے اور آپ کو واجب الادا رقوم ادا نہیں کی ہیں۔",
+   "calculator_exact": true
+  },
+  "N-03": {
+   "id": "N-03",
+   "provider": "gemini",
+   "error": "LLMUnavailable: critic: the language model is not responding, try again later"
+  },
+  "N-04": {
+   "id": "N-04",
+   "provider": "gemini",
+   "error": "LLMUnavailable: intake: the language model is not responding, try again later"
+  },
+  "N-05": {
+   "id": "N-05",
+   "language": "tl",
+   "tags": [
+    "gratuity"
+   ],
+   "provider": "gemini",
+   "route": "ready",
+   "referral": null,
+   "outcome_ok": true,
+   "intake_issues": [
+    "gratuity",
+    "notice_pay"
+   ],
+   "issue_recall": 1.0,
+   "hit_at_5": true,
+   "top5": [
+    "fdl33-2021:art51:cl2",
+    "fdl33-2021:art51:cl7",
+    "fdl33-2021:art51:cl5",
+    "fdl33-2021:art47:cl3",
+    "fdl33-2021:art52"
+   ],
+   "seconds": 11.6,
+   "analysed": true,
+   "total_aed": "18004.11",
+   "claim": {
+    "End-of-service gratuity": "18004.11"
+   },
+   "citations": [
+    "fdl33-2021:art51:cl2",
+    "fdl33-2021:art51:cl3"
+   ],
+   "findings": [
+    {
+     "clause": "fdl33-2021:art51:cl2",
+     "issue": "The worker has completed over one year of continuous service and is entitled to an end-of-service gratuity upon the termination of their employment contract."
+    },
+    {
+     "clause": "fdl33-2021:art51:cl3",
+     "issue": "The worker has completed over one year of continuous service and is entitled to an end-of-service gratuity upon the termination of their employment contract."
+    }
+   ],
+   "violation_cited": [
+    true,
+    true
+   ],
+   "violation_supported": [
+    true,
+    true
+   ],
+   "not_covered": [],
+   "unsure": false,
+   "critic": "pass",
+   "revised": false,
+   "writer_failed": false,
+   "headline": "Hindi pa ibinibigay ng iyong employer ang iyong end-of-service gratuity.",
+   "calculator_exact": true
+  },
+  "N-06": {
+   "id": "N-06",
+   "language": "ne",
+   "tags": [
+    "unpaid_wages"
+   ],
+   "provider": "gemini",
+   "route": "ready",
+   "referral": null,
+   "outcome_ok": true,
+   "intake_issues": [
+    "unpaid_wages"
+   ],
+   "issue_recall": 1.0,
+   "hit_at_5": true,
+   "top5": [
+    "fdl33-2021:art1",
+    "fdl33-2021:art47:cl2",
+    "cr1-2022:art31:cl4",
+    "cr1-2022:art16:cl1",
+    "fdl33-2021:art40:cl2"
+   ],
+   "seconds": 8.4,
+   "analysed": true,
+   "total_aed": "6000.00",
+   "claim": {
+    "Unpaid wages": "6000.00"
+   },
+   "citations": [
+    "cr1-2022:art16:cl1",
+    "fdl33-2021:art22:cl2"
+   ],
+   "findings": [
+    {
+     "clause": "cr1-2022:art16:cl1",
+     "issue": "The employer is legally obligated to pay wages on their due dates as agreed in the employment contract and through the Wage Protection System."
+    },
+    {
+     "clause": "fdl33-2021:art22:cl2",
+     "issue": "The employer is legally obligated to pay wages on their due dates as agreed in the employment contract and through the Wage Protection System."
+    }
+   ],
+   "violation_cited": [
+    true,
+    true
+   ],
+   "violation_supported": [
+    true,
+    true
+   ],
+   "not_covered": [],
+   "unsure": false,
+   "critic": "pass",
+   "revised": false,
+   "writer_failed": false,
+   "headline": "तपाईंको रोजगारदाताले तपाईंलाई ४ महिनादेखि तलब दिएका छैनन्।",
+   "calculator_exact": true
+  },
+  "N-07": {
+   "id": "N-07",
+   "language": "ar",
+   "tags": [
+    "termination",
+    "gratuity",
+    "unpaid_wages",
+    "mixed"
+   ],
+   "provider": "gemini",
+   "route": "ready",
+   "referral": null,
+   "outcome_ok": true,
+   "intake_issues": [
+    "gratuity",
+    "notice_pay",
+    "termination",
+    "unpaid_wages"
+   ],
+   "issue_recall": 1.0,
+   "hit_at_5": true,
+   "top5": [
+    "fdl33-2021:art43:cl2",
+    "fdl33-2021:art45:cl1",
+    "fdl33-2021:art43:cl5",
+    "fdl33-2021:art45:cl2",
+    "fdl33-2021:art9:cl4"
+   ],
+   "seconds": 21.0,
+   "analysed": true,
+   "total_aed": "34454.79",
+   "claim": {
+    "Unpaid wages": "12000.00",
+    "Notice pay": "6000.00",
+    "End-of-service gratuity": "16454.79"
+   },
+   "citations": [
+    "fdl33-2021:art22:cl2",
+    "fdl33-2021:art43:cl1",
+    "fdl33-2021:art43:cl3",
+    "fdl33-2021:art51:cl2",
+    "fdl33-2021:art53"
+   ],
+   "findings": [
+    {
+     "clause": "fdl33-2021:art22:cl2",
+     "issue": "The employer is legally obligated to pay wages on their due dates; failure to pay for two months constitutes a breach of this requirement."
+    },
+    {
+     "clause": "fdl33-2021:art43:cl1",
+     "issue": "The employer terminated the contract without providing the 30-day notice period required by the contract, making them liable to pay the warning allowance for the notice period."
+    },
+    {
+     "clause": "fdl33-2021:art43:cl3",
+     "issue": "The employer terminated the contract without providing the 30-day notice period required by the contract, making them liable to pay the warning allowance for the notice period."
+    },
+    {
+     "clause": "fdl33-2021:art51:cl2",
+     "issue": "Having completed over one year of continuous service, you are entitled to an end-of-service gratuity, which the employer must pay within 14 days of the contract termination."
+    },
+    {
+     "clause": "fdl33-2021:art53",
+     "issue": "Having completed over one year of continuous service, you are entitled to an end-of-service gratuity, which the employer must pay within 14 days of the contract termination."
+    }
+   ],
+   "violation_cited": [
+    true,
+    true,
+    true,
+    true,
+    true
+   ],
+   "violation_supported": [
+    true,
+    true,
+    true,
+    true,
+    true
+   ],
+   "not_covered": [],
+   "unsure": false,
+   "critic": "pass",
+   "revised": false,
+   "writer_failed": false,
+   "headline": "قامت شركتك بإنهاء عقدك دون إشعار، ولم تدفع لك راتب شهرين ومكافأة نهاية الخدمة.",
+   "calculator_exact": true
+  },
+  "N-08": {
+   "id": "N-08",
+   "language": "en",
+   "tags": [
+    "gratuity",
+    "part_time",
+    "edge"
+   ],
+   "provider": "gemini",
+   "route": "ready",
+   "referral": null,
+   "outcome_ok": true,
+   "intake_issues": [
+    "gratuity"
+   ],
+   "issue_recall": 1.0,
+   "hit_at_5": true,
+   "top5": [
+    "fdl33-2021:art51:cl2",
+    "fdl33-2021:art51:cl5",
+    "fdl33-2021:art51:cl3",
+    "fdl33-2021:art1",
+    "fdl33-2021:art15:cl1"
+   ],
+   "seconds": 31.6,
+   "analysed": true,
+   "total_aed": "3362.30",
+   "claim": {
+    "End-of-service gratuity": "3362.30"
+   },
+   "citations": [
+    "cr1-2022:art30:cl1",
+    "cr1-2022:art30:cl2"
+   ],
+   "findings": [
+    {
+     "clause": "cr1-2022:art30:cl1",
+     "issue": "The employer's assertion that part-time workers are not entitled to end-of-service gratuity is incorrect. Under the law, part-time workers are entitled to gratuity, calculated proportionally based on their working hours, provided they have completed at least one year of service."
+    },
+    {
+     "clause": "cr1-2022:art30:cl2",
+     "issue": "The employer's assertion that part-time workers are not entitled to end-of-service gratuity is incorrect. Under the law, part-time workers are entitled to gratuity, calculated proportionally based on their working hours, provided they have completed at least one year of service."
+    }
+   ],
+   "violation_cited": [
+    true,
+    true
+   ],
+   "violation_supported": [
+    true,
+    true
+   ],
+   "not_covered": [],
+   "unsure": false,
+   "critic": "pass",
+   "revised": false,
+   "writer_failed": false,
+   "headline": "Your employer has not paid your end-of-service gratuity.",
+   "calculator_exact": true
+  },
+  "N-09": {
+   "id": "N-09",
+   "language": "hi",
+   "tags": [
+    "gratuity",
+    "notice_owed",
+    "edge"
+   ],
+   "provider": "gemini",
+   "route": "ready",
+   "referral": null,
+   "outcome_ok": true,
+   "intake_issues": [
+    "gratuity"
+   ],
+   "issue_recall": 1.0,
+   "hit_at_5": true,
+   "top5": [
+    "fdl33-2021:art51:cl2",
+    "fdl33-2021:art15:cl1",
+    "fdl33-2021:art65:cl6",
+    "fdl33-2021:art43:cl2",
+    "fdl33-2021:art16:cl10"
+   ],
+   "seconds": 12.6,
+   "analysed": true,
+   "total_aed": "2741.51",
+   "claim": {
+    "End-of-service gratuity": "2741.51"
+   },
+   "citations": [
+    "fdl33-2021:art51:cl2",
+    "fdl33-2021:art51:cl3",
+    "fdl33-2021:art43:cl2"
+   ],
+   "findings": [
+    {
+     "clause": "fdl33-2021:art51:cl2",
+     "issue": "As you have completed more than one year of continuous service, you are entitled to an end-of-service gratuity upon the termination of your employment."
+    },
+    {
+     "clause": "fdl33-2021:art51:cl3",
+     "issue": "As you have completed more than one year of continuous service, you are entitled to an end-of-service gratuity upon the termination of your employment."
+    },
+    {
+     "clause": "fdl33-2021:art43:cl2",
+     "issue": "By resigning with only 10 days of notice when your contract required 30 days, you have not fulfilled the contractual notice period, which may entitle the employer to compensation for the unserved notice period."
+    }
+   ],
+   "violation_cited": [
+    true,
+    true,
+    true
+   ],
+   "violation_supported": [
+    true,
+    true,
+    true
+   ],
+   "not_covered": [
+    "The specific monetary calculation of your gratuity or the exact amount of notice pay you may owe, as these are determined by the system's calculations."
+   ],
+   "unsure": false,
+   "critic": "pass",
+   "revised": false,
+   "writer_failed": false,
+   "headline": "आपको अपनी सेवा समाप्ति पर ग्रेच्युटी मिलनी चाहिए, लेकिन आपने नोटिस अवधि पूरी नहीं की है।",
+   "calculator_exact": true
+  },
+  "N-10": {
+   "id": "N-10",
+   "language": "ur",
+   "tags": [
+    "deductions",
+    "edge"
+   ],
+   "provider": "gemini",
+   "route": "ready",
+   "referral": null,
+   "outcome_ok": true,
+   "intake_issues": [
+    "illegal_deduction"
+   ],
+   "issue_recall": 1.0,
+   "hit_at_5": true,
+   "top5": [
+    "fdl33-2021:art25:cl1",
+    "fdl33-2021:art1",
+    "cr1-2022:art29:cl2",
+    "fdl33-2021:art47:cl2",
+    "cr1-2022:art15:cl3"
+   ],
+   "seconds": 23.1,
+   "analysed": true,
+   "total_aed": "3600.00",
+   "claim": {
+    "Deductions from wages": "3600.00"
+   },
+   "citations": [
+    "fdl33-2021:art25:cl1",
+    "fdl33-2021:art25:cl2",
+    "fdl33-2021:art39:cl1"
+   ],
+   "findings": [
+    {
+     "clause": "fdl33-2021:art25:cl1",
+     "issue": "The employer is deducting a portion of the wage that exceeds the legal limits for disciplinary sanctions and the total allowable deduction percentage."
+    },
+    {
+     "clause": "fdl33-2021:art25:cl2",
+     "issue": "The employer is deducting a portion of the wage that exceeds the legal limits for disciplinary sanctions and the total allowable deduction percentage."
+    },
+    {
+     "clause": "fdl33-2021:art39:cl1",
+     "issue": "The employer is deducting a portion of the wage that exceeds the legal limits for disciplinary sanctions and the total allowable deduction percentage."
+    }
+   ],
+   "violation_cited": [
+    true,
+    true,
+    true
+   ],
+   "violation_supported": [
+    true,
+    true,
+    true
+   ],
+   "not_covered": [],
+   "unsure": false,
+   "critic": "pass",
+   "revised": false,
+   "writer_failed": false,
+   "headline": "آپ کی کمپنی آپ کی تنخواہ سے غیر قانونی کٹوتی کر رہی ہے۔",
    "calculator_exact": true
   }
  }
