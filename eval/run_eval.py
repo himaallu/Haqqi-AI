@@ -6,7 +6,8 @@ local database and its law index (DATABASE_URL, EMBEDDER). The LLM is K2 by defa
 for eval runs, 4 Oct; production stays on free Gemini); `--provider gemini` uses the free chain.
 
 Each case's result is saved as soon as it finishes, so a stopped run continues where it left off
-(`--rerun` starts again). Writes eval/results/<date>-<provider>.json and prints the metrics table.
+(`--rerun` starts again; `--limit N` stops after N cases, so a run can be split over days or
+providers). Writes eval/results/<date>-<provider>.json and prints the metrics table.
 """
 
 import argparse
@@ -150,6 +151,7 @@ def main() -> int:
     parser.add_argument("ids", nargs="*", help="only these case ids")
     parser.add_argument("--provider", choices=["k2", "gemini"], default="k2")
     parser.add_argument("--rerun", action="store_true", help="ignore saved results for these cases")
+    parser.add_argument("--limit", type=int, help="stop after running this many cases")
     parser.add_argument(
         "--out", type=Path, help="results file (default: results/<date>-<provider>.json)"
     )
@@ -163,10 +165,14 @@ def main() -> int:
     results: dict[str, Any] = saved.get("cases", {})
     llm = make_llm(args.provider)
     embedder = get_embedder(settings)
+    ran = 0
 
     for case in load_cases():
         if (args.ids and case.id not in args.ids) or (case.id in results and not args.rerun):
             continue
+        if args.limit is not None and ran >= args.limit:
+            break
+        ran += 1
         try:
             result = run_case(case, llm, settings.database_url, embedder)
         except LLMError as exc:

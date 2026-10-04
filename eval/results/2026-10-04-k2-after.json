@@ -3,24 +3,24 @@
  "embedder": "cloudflare",
  "run_on": "2026-10-04",
  "metrics": {
-  "cases": 3,
+  "cases": 5,
   "errors": 0,
   "outcome_accuracy": 1.0,
   "issue_detection": 1.0,
-  "retrieval_hit_at_5": 0.667,
+  "retrieval_hit_at_5": 0.8,
   "citations_cited": 1.0,
-  "citations_supported": 1.0,
+  "citations_supported": 0.947,
   "critic_catch_rate": null,
   "calculator_correctness": 1.0,
   "injection_resistance": null,
   "latency_p95_s": 299.1,
   "counts": {
-   "analysed": 3,
-   "with_issues": 3,
-   "violations": 15,
+   "analysed": 5,
+   "with_issues": 5,
+   "violations": 19,
    "seeded": 0,
    "injected": 0,
-   "writer_failed": 1
+   "writer_failed": 2
   }
  },
  "cases": {
@@ -256,6 +256,120 @@
    "revised": false,
    "writer_failed": false,
    "headline": "Your employer's gratuity offer is below the statutory amount for your six years of service.",
+   "calculator_exact": true
+  },
+  "TC-04": {
+   "id": "TC-04",
+   "language": "ml",
+   "tags": [
+    "deductions"
+   ],
+   "route": "ready",
+   "referral": null,
+   "outcome_ok": true,
+   "intake_issues": [
+    "illegal_deduction"
+   ],
+   "issue_recall": 1.0,
+   "hit_at_5": true,
+   "top5": [
+    "fdl33-2021:art25:cl1",
+    "fdl33-2021:art1",
+    "cr1-2022:art15:cl3",
+    "fdl33-2021:art39:cl1",
+    "fdl33-2021:art22:cl3"
+   ],
+   "seconds": 191.7,
+   "analysed": true,
+   "total_aed": "2400.00",
+   "claim": {
+    "Deductions from wages": "2400.00"
+   },
+   "citations": [
+    "fdl33-2021:art25:cl1",
+    "fdl33-2021:art25:cl2"
+   ],
+   "findings": [
+    {
+     "clause": "fdl33-2021:art25:cl1",
+     "issue": "The employer has been deducting 600 AED from the worker's monthly wage for four months with no letter and no written consent. Under fdl33-2021:art25:cl1, no amount may be deducted from a worker's wage except in the listed cases, nearly all of which require the worker's written consent, a court judgment, or Ministry approval (e.g., loan recovery with written consent, excess payments capped at 20%, approved welfare schemes, or damage repairs capped at five days' wages with court approval). None of these conditions is shown by the facts, so the deduction is not permitted. Although the deduction is within the 50% overall cap in fdl33-2021:art25:cl2, that cap does not authorise a deduction that lacks a permitted ground."
+    },
+    {
+     "clause": "fdl33-2021:art25:cl2",
+     "issue": "The employer has been deducting 600 AED from the worker's monthly wage for four months with no letter and no written consent. Under fdl33-2021:art25:cl1, no amount may be deducted from a worker's wage except in the listed cases, nearly all of which require the worker's written consent, a court judgment, or Ministry approval (e.g., loan recovery with written consent, excess payments capped at 20%, approved welfare schemes, or damage repairs capped at five days' wages with court approval). None of these conditions is shown by the facts, so the deduction is not permitted. Although the deduction is within the 50% overall cap in fdl33-2021:art25:cl2, that cap does not authorise a deduction that lacks a permitted ground."
+    }
+   ],
+   "violation_cited": [
+    true,
+    true
+   ],
+   "violation_supported": [
+    true,
+    true
+   ],
+   "not_covered": [
+    "The worker did not raise any issue about unpaid wages, leave, overtime, notice, or end-of-service benefits, so those are not assessed."
+   ],
+   "critic": "pass",
+   "revised": false,
+   "writer_failed": true,
+   "headline": null,
+   "calculator_exact": true
+  },
+  "TC-05": {
+   "id": "TC-05",
+   "language": "tl",
+   "tags": [
+    "documents"
+   ],
+   "route": "ready",
+   "referral": null,
+   "outcome_ok": true,
+   "intake_issues": [
+    "document_retention"
+   ],
+   "issue_recall": 1.0,
+   "hit_at_5": true,
+   "top5": [
+    "fdl33-2021:art1",
+    "fdl33-2021:art9:cl4",
+    "fdl33-2021:art13:cl2",
+    "cr1-2022:art6:cl1",
+    "fdl33-2021:art22:cl3"
+   ],
+   "seconds": 71.4,
+   "analysed": true,
+   "total_aed": "0.00",
+   "claim": {},
+   "citations": [
+    "fdl33-2021:art13:cl2",
+    "cr1-2022:art6:cl1"
+   ],
+   "findings": [
+    {
+     "clause": "fdl33-2021:art13:cl2",
+     "issue": "The employer took the worker's passport at the start of employment and refuses to return it despite repeated requests. This is a clear breach of the employer's obligation not to withhold the worker's official documents."
+    },
+    {
+     "clause": "cr1-2022:art6:cl1",
+     "issue": "The worker wishes to change jobs. The law provides a Work Permit for Transfer, which enables a non-national worker to transfer from and to an establishment registered with the Ministry, as the mechanism for moving to a new employer; the detailed transfer procedure is not set out in the provided law."
+    }
+   ],
+   "violation_cited": [
+    true,
+    true
+   ],
+   "violation_supported": [
+    true,
+    false
+   ],
+   "not_covered": [
+    "The law provided does not specify the penalty or fine for an employer who withholds a worker's passport. A Work Permit for Transfer exists under cr1-2022:art6:cl1(b) as the mechanism for changing employers, but the detailed procedure and conditions for obtaining it are not set out in the provided law."
+   ],
+   "critic": "revise",
+   "revised": true,
+   "writer_failed": false,
+   "headline": "Kinuha ng employer mo ang passport mo at ayaw nilang ibalik kahit hinihingi mo.",
    "calculator_exact": true
   }
  }

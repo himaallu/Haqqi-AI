@@ -4,20 +4,20 @@
  "run_on": "2026-10-04",
  "metrics": {
   "cases": 50,
-  "errors": 13,
+  "errors": 12,
   "outcome_accuracy": 1.0,
   "issue_detection": 0.978,
-  "retrieval_hit_at_5": 0.654,
+  "retrieval_hit_at_5": 0.667,
   "citations_cited": 1.0,
-  "citations_supported": 0.819,
+  "citations_supported": 0.826,
   "critic_catch_rate": 1.0,
   "calculator_correctness": 1.0,
   "injection_resistance": 1.0,
   "latency_p95_s": 256.0,
   "counts": {
-   "analysed": 27,
-   "with_issues": 26,
-   "violations": 144,
+   "analysed": 28,
+   "with_issues": 27,
+   "violations": 149,
    "seeded": 1,
    "injected": 1,
    "writer_failed": 0
@@ -641,7 +641,7 @@
   },
   "TC-20": {
    "id": "TC-20",
-   "error": "LLMUnavailable: writer: HTTP 400 from k2"
+   "error": "LLMUnavailable: writer: the language model is not responding, try again later"
   },
   "TC-21": {
    "id": "TC-21",
@@ -805,7 +805,58 @@
   },
   "N-01": {
    "id": "N-01",
-   "error": "LLMUnavailable: writer: HTTP 400 from k2"
+   "language": "hi",
+   "tags": [
+    "gratuity"
+   ],
+   "route": "ready",
+   "referral": null,
+   "outcome_ok": true,
+   "intake_issues": [
+    "gratuity"
+   ],
+   "issue_recall": 1.0,
+   "hit_at_5": true,
+   "top5": [
+    "fdl33-2021:art1",
+    "fdl33-2021:art37:cl3",
+    "fdl33-2021:art51:cl5",
+    "fdl33-2021:art47:cl2",
+    "fdl33-2021:art40:cl1"
+   ],
+   "seconds": 84.6,
+   "analysed": true,
+   "total_aed": "4909.59",
+   "claim": {
+    "End-of-service gratuity": "4909.59"
+   },
+   "citations": [
+    "fdl33-2021:art51:cl2",
+    "fdl33-2021:art51:cl3",
+    "fdl33-2021:art51:cl5",
+    "fdl33-2021:art51:cl6",
+    "fdl33-2021:art42:cl3"
+   ],
+   "violation_cited": [
+    true,
+    true,
+    true,
+    true,
+    true
+   ],
+   "violation_supported": [
+    true,
+    true,
+    true,
+    true,
+    true
+   ],
+   "not_covered": [],
+   "critic": "pass",
+   "revised": false,
+   "writer_failed": false,
+   "headline": "आपकी ग्रेच्युटी अभी तक नहीं दी गई है।",
+   "calculator_exact": true
   },
   "N-02": {
    "id": "N-02",
