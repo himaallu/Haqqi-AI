@@ -8,8 +8,11 @@ The PDFs are in `docs/arabic_review/`. Each has the Arabic complaint on the righ
 
 | File | Case | Worker's language | Source of the facts paragraph |
 | --- | --- | --- | --- |
-| `tc02_ur.pdf` | TC-02: cashier in Abu Dhabi, terminated the same day without notice | Urdu | Live Writer run (Gemini), 3 Oct |
-| `tc03_en.pdf` | TC-03: hotel worker in Dubai, resigned after six years, gratuity offer too low | English | Live Writer run (Gemini), 3 Oct |
+| `tc02_ur.pdf` | TC-02: cashier in Abu Dhabi, terminated the same day without notice | Urdu | Live Writer run (Gemini), 4 Oct |
+| `tc03_en.pdf` | TC-03: hotel worker in Dubai, resigned after six years, gratuity offer too low | English | Live Writer run (Gemini), 4 Oct |
+
+Regenerated on 4 Oct after the Writer was told to use Western digits (0-9) in the facts paragraph (CHANGES.md 23),
+so dates now match the rest of the letter. Totals: TC-02 AED 6,229.59, TC-03 AED 16,056.85.
 
 The name and employer in the samples ("Sample Worker", "Sample Employer LLC") are placeholders. The labour card line is
 left blank, which is what the worker sees when they leave a field empty.
