@@ -272,3 +272,27 @@ def test_every_provider_parked_is_unavailable() -> None:
         client.complete("intake", ASK, Verdict)
     with pytest.raises(LLMUnavailable, match="over its quota"):
         client.complete("intake", ASK, Verdict)
+
+
+def test_the_correction_retry_has_no_assistant_turn() -> None:
+    # K2 rejects multi-turn history whose assistant messages lack its "thinking" field (HTTP 400,
+    # 4 Oct eval run). The rejected reply is quoted inside one new user turn instead.
+    seen: list[dict[str, object]] = []
+    client, _ = client_for(
+        [reply('{"verdict": "pass"}'), reply('{"verdict": "pass", "score": 1}')], seen
+    )
+
+    assert client.complete("critic", ASK, Verdict).score == 1
+    retry = seen[1]["messages"]
+    assert isinstance(retry, list)
+    assert [m["role"] for m in retry] == ["system", "user", "user"]
+    last = retry[-1]["content"]
+    assert '{"verdict": "pass"}' in last and "score" in last  # the old reply and the reason
+
+
+def test_a_provider_error_message_is_logged(caplog: pytest.LogCaptureFixture) -> None:
+    body = {"error": {"message": "Add a supported thinking field to each assistant message"}}
+    client, _ = client_for([httpx.Response(400, json=body)])
+    with pytest.raises(LLMUnavailable, match="HTTP 400"):
+        client.complete("writer", ASK, Verdict)
+    assert "thinking field" in caplog.text

@@ -120,6 +120,29 @@ class _Retry:
     rate_limited: bool = False
 
 
+PREVIOUS_LIMIT = 4000  # characters of the rejected reply quoted back
+
+
+def correction(messages: Sequence[Message], previous: str, reason: str) -> list[Message]:
+    """The one correction retry, as a single new user turn.
+
+    The rejected reply is quoted as data instead of being sent as an assistant turn: K2's API
+    refuses multi-turn history whose assistant messages lack its "thinking" field (HTTP 400;
+    found in the 4 Oct eval run, where it failed every retry). This works for every provider.
+    """
+    quoted = previous[:PREVIOUS_LIMIT]
+    return [
+        *messages,
+        Message(
+            "user",
+            f"Your previous reply was rejected because {reason}.\n"
+            f"Previous reply (for reference only):\n<<<PREVIOUS_REPLY>>>\n{quoted}\n"
+            "<<<END_PREVIOUS_REPLY>>>\n"
+            "Reply again with ONLY the corrected JSON object.",
+        ),
+    ]
+
+
 class Completer(Protocol):
     """What agents need from a client; `LLMClient` in production, a scripted fake in tests."""
 
@@ -154,15 +177,8 @@ class LLMClient:
             return parse_reply(reply, schema)
         except _ParseFailure as first:
             log.warning("llm %s: invalid output, retrying once (%s)", stage, first)
-            convo += [
-                Message("assistant", reply),
-                Message(
-                    "user",
-                    f"Your reply was not valid for the required JSON format ({first}). "
-                    "Reply again with ONLY the corrected JSON object.",
-                ),
-            ]
-            reply = self._chat(stage, convo)
+            reason = f"it was not valid for the required JSON format ({first})"
+            reply = self._chat(stage, correction(convo, reply, reason))
             try:
                 return parse_reply(reply, schema)
             except _ParseFailure as second:
@@ -226,6 +242,10 @@ class LLMClient:
             log.warning("llm %s: HTTP %s", stage, resp.status_code)
             return _Retry(1.0)
         if resp.status_code != 200:
+            # The provider's own error text says why (e.g. K2's 400 on multi-turn history).
+            log.warning(
+                "llm %s: %s HTTP %s: %s", stage, provider.name, resp.status_code, _error_text(resp)
+            )
             raise LLMUnavailable(f"{stage}: HTTP {resp.status_code} from {provider.name}")
         try:
             body = resp.json()
@@ -243,6 +263,17 @@ class LLMClient:
             usage.get("completion_tokens"),
         )
         return str(text)
+
+
+def _error_text(resp: httpx.Response) -> str:
+    """The provider's error message, shortened. Error bodies carry no request content."""
+    try:
+        body = resp.json()
+        error = body.get("error", body) if isinstance(body, dict) else body
+        text = error.get("message", error) if isinstance(error, dict) else error
+    except ValueError:
+        text = resp.text
+    return " ".join(str(text).split())[:200]
 
 
 def _retry_after(resp: httpx.Response) -> float:

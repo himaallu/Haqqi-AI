@@ -13,7 +13,7 @@ from decimal import Decimal, InvalidOperation
 from haqqi.agents.messages import TOTAL_PLACEHOLDER, amount_placeholder, writer_messages
 from haqqi.agents.schemas import AnalystReply
 from haqqi.core.calculator import CalcResult, money
-from haqqi.llm.client import Completer, LLMOutputError, Message
+from haqqi.llm.client import Completer, LLMOutputError, correction
 from haqqi.models import CaseFacts, WriterOutput
 
 log = logging.getLogger(__name__)
@@ -108,17 +108,13 @@ def run_writer(
     except WriterCheckError as first:
         # The reason names a field and a rule, never the text itself.
         log.warning("writer output rejected, retrying once: %s", first)
-        retry = [
-            *messages,
-            Message("assistant", out.model_dump_json()),
-            Message(
-                "user",
-                f"Rejected: {first}. Write every amount only as its [[AMOUNT_n]] or [[TOTAL]] "
-                "token, write no other money figures, write letter_facts_ar in Arabic, and put "
-                "no amounts or tokens in letter_facts_ar or letter_facts_translation. "
-                "Reply with ONLY the corrected JSON object.",
-            ),
-        ]
+        retry = correction(
+            messages,
+            out.model_dump_json(),
+            f"{first}. Write every amount only as its [[AMOUNT_n]] or [[TOTAL]] token, write no "
+            "other money figures, write letter_facts_ar in Arabic, and put no amounts or tokens "
+            "in letter_facts_ar or letter_facts_translation",
+        )
         out = client.complete("writer", retry, WriterOutput)
         try:
             return fill_and_check(out, calc)
