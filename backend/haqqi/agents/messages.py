@@ -68,6 +68,21 @@ def intake_messages(req: CreateCaseRequest, today: date | None = None) -> list[M
     return [Message("system", system_prompt("intake")), Message("user", user)]
 
 
+def _service(calc: CalcResult) -> str:
+    """Service length as the calculator counted it, so no agent recounts dates (CHANGES.md 24)."""
+    if calc.service_days is None:
+        note = "The job has not ended; end-of-service items are not due yet."
+        return dump_json({"job_ended": False, "note": note})
+    return dump_json(
+        {
+            "job_ended": True,
+            "service_days": calc.service_days,
+            "service_years": round(calc.service_days / 365, 2),
+            "at_least_one_year": calc.service_days >= 365,
+        }
+    )
+
+
 def _claim_items(calc: CalcResult) -> str:
     return dump_json(
         [
@@ -80,15 +95,19 @@ def _claim_items(calc: CalcResult) -> str:
 def analyst_messages(
     facts: CaseFacts, law: Sequence[RetrievedChunk], calc: CalcResult
 ) -> list[Message]:
-    user = f"FACTS:\n{_facts(facts)}\n\nLAW:\n{_law(law)}\n\nCLAIM_ITEMS:\n{_claim_items(calc)}"
+    user = (
+        f"FACTS:\n{_facts(facts)}\n\nSERVICE:\n{_service(calc)}\n\nLAW:\n{_law(law)}\n\n"
+        f"CLAIM_ITEMS:\n{_claim_items(calc)}"
+    )
     return [Message("system", system_prompt("analyst")), Message("user", user)]
 
 
 def critic_messages(
-    facts: CaseFacts, law: Sequence[RetrievedChunk], analysis: AnalystReply
+    facts: CaseFacts, law: Sequence[RetrievedChunk], calc: CalcResult, analysis: AnalystReply
 ) -> list[Message]:
     user = (
-        f"FACTS:\n{_facts(facts)}\n\nLAW:\n{_law(law)}\n\n"
+        f"FACTS:\n{_facts(facts)}\n\nSERVICE:\n{_service(calc)}\n\nLAW:\n{_law(law)}\n\n"
+        f"CLAIM_ITEMS:\n{_claim_items(calc)}\n\n"
         f"ANALYSIS:\n{analysis.model_dump_json(indent=1)}"
     )
     return [Message("system", system_prompt("critic")), Message("user", user)]
@@ -102,7 +121,8 @@ def revision_messages(
     critic: CriticReport,
 ) -> list[Message]:
     user = (
-        f"FACTS:\n{_facts(facts)}\n\nLAW:\n{_law(law)}\n\nCLAIM_ITEMS:\n{_claim_items(calc)}\n\n"
+        f"FACTS:\n{_facts(facts)}\n\nSERVICE:\n{_service(calc)}\n\nLAW:\n{_law(law)}\n\n"
+        f"CLAIM_ITEMS:\n{_claim_items(calc)}\n\n"
         f"YOUR EARLIER ANALYSIS:\n{analysis.model_dump_json(indent=1)}\n\n"
         f"CRITIC FEEDBACK:\n{critic.model_dump_json(indent=1)}"
     )
@@ -141,7 +161,7 @@ def writer_messages(facts: CaseFacts, analysis: AnalystReply, calc: CalcResult) 
         "next_steps": analysis.next_steps,
     }
     user = (
-        f"FACTS:\n{_facts(facts)}\n\n"
+        f"FACTS:\n{_facts(facts)}\n\nSERVICE:\n{_service(calc)}\n\n"
         f"APPROVED ANALYSIS:\n{dump_json(approved)}\n\n"
         f"CLAIMS (total {TOTAL_PLACEHOLDER}):\n{dump_json(claims)}"
     )

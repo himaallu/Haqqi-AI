@@ -77,7 +77,7 @@ def all_messages() -> dict[str, list[Message]]:
     return {
         "intake": m.intake_messages(request, today=date(2026, 10, 4)),
         "analyst": m.analyst_messages(FACTS, LAW, calc),
-        "critic": m.critic_messages(FACTS, LAW, ANALYSIS),
+        "critic": m.critic_messages(FACTS, LAW, calc, ANALYSIS),
         "revision": m.revision_messages(FACTS, LAW, calc, ANALYSIS, CRITIC),
         "writer": m.writer_messages(FACTS, ANALYSIS, calc),
     }

@@ -84,3 +84,21 @@ below has a reason. The rendered prompts are in `backend/tests/agents/snapshots/
     `letter_facts_ar` and `letter_facts_translation` uses 0-9, never Arabic-Indic digits. In the TC-02/TC-03 review
     PDFs the Writer wrote ٢٠٢٦ in the facts while the code-built sections use 2026. It is a consistency rule only:
     the money checks already read both digit forms.
+
+## Sprint 6, task 6.4 (from the 6.3 language check; you approved the fixes on 4 Oct, please review the wording)
+24. **Service length comes from code; no contradicting the calculator.**
+    - The Analyst, Critic, Revision and Writer now get a SERVICE block counted by the calculator: `service_days`,
+      `service_years`, `at_least_one_year`, or `job_ended: false`.
+    - Analyst and Writer: use SERVICE and never recount dates; never say or imply the worker is not entitled to an item
+      code calculated.
+    - Critic: new check 6, anything contradicting SERVICE or CLAIM_ITEMS is always a problem. It now also sees
+      CLAIM_ITEMS.
+    - Code guard (`haqqi/agents/consistency.py`): a not_covered note that denies an item the calculator paid (for
+      example "not entitled to gratuity" next to a calculated gratuity) is dropped and logged.
+    - Reason: in the 6.3 run of TC-02 (Urdu) the Analyst counted 2.3 years as under one year, and the Writer told the
+      worker "Haqqi can't help with your gratuity, your service is under one year" next to AED 3,229.59 gratuity.
+25. **Honest tone.** The Writer must not promise results or say Haqqi will recover money, represent the worker or stay
+    with them ("we will get your salary back", "we are with you"). Haqqi explains the law and prepares a complaint;
+    MOHRE decides. Reason: TC-01 (Hindi) said exactly that.
+26. **Specific headline.** One sentence naming the main problem ("Your employer has not paid your salary for 3
+    months."), never a general title. Reason: TC-06 (Bengali) headline was "Information about your work rights and dues".
