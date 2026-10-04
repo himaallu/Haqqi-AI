@@ -1,0 +1,382 @@
+{
+ "TC-01": {
+  "id": "TC-01",
+  "language": "hi",
+  "expected": [
+   "unpaid_wages"
+  ],
+  "route": "ready",
+  "referral_kind": null,
+  "intake_issues": [
+   "unpaid_wages"
+  ],
+  "intake_summary": "The worker is employed as a helper at a construction company in Ajman. He has been working there since February 2023 and is still currently employed. He reports that he has not received his salary for the last three months. The employer repeatedly promises payment in the following month but has not fulfilled this.",
+  "missing_fields": [],
+  "filled_on_confirm": {},
+  "stages": [
+   "retrieving",
+   "calculating",
+   "analysing",
+   "critiquing",
+   "writing",
+   "done"
+  ],
+  "seconds": 42.4,
+  "total_aed": "5400.00",
+  "claim": {
+   "Unpaid wages": "5400.00"
+  },
+  "citations": [
+   "fdl33-2021:art22:cl2"
+  ],
+  "not_covered": [],
+  "critic": "pass",
+  "revised": false,
+  "writer_failed": false,
+  "headline": "नमस्ते साथी, हम आपकी रुकी हुई तनख्वाह वापस पाने में आपकी पूरी मदद करेंगे।",
+  "worker_text_script": 0.95,
+  "letter_translation_script": 1.0,
+  "letter_facts_ar_script": 1.0,
+  "arabic_indic_digits": false,
+  "pdf_status": 200,
+  "pdf": "docs/language_check/tc-01_hi.pdf",
+  "pdf_fonts": [
+   "Noto-Naskh-Arabic",
+   "Noto-Naskh-Arabic-Bold",
+   "Noto-Sans",
+   "Noto-Sans-Devanagari",
+   "Noto-Sans-Devanagari-Bold"
+  ],
+  "run_on": "2026-10-04"
+ },
+ "TC-04": {
+  "id": "TC-04",
+  "language": "ml",
+  "expected": [
+   "illegal_deduction"
+  ],
+  "route": "ready",
+  "referral_kind": null,
+  "intake_issues": [
+   "illegal_deduction"
+  ],
+  "intake_summary": "The worker has been employed in Dubai mainland since January 10, 2025. They have a basic salary of AED 2,500 and a total salary of AED 3,000. The employer has been deducting AED 600 per month from their salary for the past four months without any written consent or letter. The worker appears to still be employed.",
+  "missing_fields": [],
+  "filled_on_confirm": {},
+  "stages": [
+   "retrieving",
+   "calculating",
+   "analysing",
+   "critiquing",
+   "writing",
+   "done"
+  ],
+  "seconds": 37.4,
+  "total_aed": "2400.00",
+  "claim": {
+   "Deductions from wages": "2400.00"
+  },
+  "citations": [
+   "fdl33-2021:art25:cl1",
+   "fdl33-2021:art39:cl1"
+  ],
+  "not_covered": [],
+  "critic": "pass",
+  "revised": false,
+  "writer_failed": false,
+  "headline": "നിങ്ങളുടെ ശമ്പളത്തിൽ നിന്ന് അനുവാദമില്ലാതെ പണം പിടിക്കുന്നത് നിയമവിരുദ്ധമാണ്.",
+  "worker_text_script": 0.95,
+  "letter_translation_script": 1.0,
+  "letter_facts_ar_script": 1.0,
+  "arabic_indic_digits": false,
+  "pdf_status": 200,
+  "pdf": "docs/language_check/tc-04_ml.pdf",
+  "pdf_fonts": [
+   "Noto-Naskh-Arabic",
+   "Noto-Naskh-Arabic-Bold",
+   "Noto-Sans",
+   "Noto-Sans-Malayalam",
+   "Noto-Sans-Malayalam-Bold"
+  ],
+  "run_on": "2026-10-04"
+ },
+ "TC-05": {
+  "id": "TC-05",
+  "language": "tl",
+  "expected": [
+   "document_retention"
+  ],
+  "route": "ready",
+  "referral_kind": null,
+  "intake_issues": [
+   "document_retention"
+  ],
+  "intake_summary": "The worker is employed in Dubai mainland with a start date of March 1, 2025. Their basic wage is 2,500 AED and total wage is 3,200 AED per month. The employer confiscated the worker's passport upon starting employment and refuses to return it upon request. The worker wishes to change jobs and is currently still employed.",
+  "missing_fields": [],
+  "filled_on_confirm": {},
+  "stages": [
+   "retrieving",
+   "calculating",
+   "analysing",
+   "critiquing",
+   "writing",
+   "done"
+  ],
+  "seconds": 25.5,
+  "total_aed": "0.00",
+  "claim": {},
+  "citations": [
+   "fdl33-2021:art13:cl2"
+  ],
+  "not_covered": [
+   "The specific procedures for changing employers or transferring sponsorship are not detailed in the provided law."
+  ],
+  "critic": "pass",
+  "revised": false,
+  "writer_failed": false,
+  "headline": "Hindi legal na itago ng employer ang iyong passport.",
+  "worker_text_script": 1.0,
+  "letter_translation_script": 1.0,
+  "letter_facts_ar_script": 1.0,
+  "arabic_indic_digits": false,
+  "pdf_status": 200,
+  "pdf": "docs/language_check/tc-05_tl.pdf",
+  "pdf_fonts": [
+   "Noto-Naskh-Arabic",
+   "Noto-Naskh-Arabic-Bold",
+   "Noto-Sans",
+   "Noto-Sans-Bold"
+  ],
+  "run_on": "2026-10-04"
+ },
+ "TC-06": {
+  "id": "TC-06",
+  "language": "bn",
+  "expected": [
+   "overtime",
+   "leave"
+  ],
+  "route": "ready",
+  "referral_kind": null,
+  "intake_issues": [
+   "overtime",
+   "leave"
+  ],
+  "intake_summary": "The worker is employed at a workshop in Fujairah mainland since 15 January 2024. They report working 12 hours daily without receiving overtime pay. Additionally, they state they have not received any annual leave for two years. Their monthly salary consists of a basic wage of AED 1,500 and a total wage of AED 2,000.",
+  "missing_fields": [],
+  "filled_on_confirm": {},
+  "stages": [
+   "retrieving",
+   "calculating",
+   "analysing",
+   "critiquing",
+   "writing",
+   "done"
+  ],
+  "seconds": 16.4,
+  "total_aed": "0.00",
+  "claim": {},
+  "citations": [
+   "cr1-2022:art15:cl3",
+   "fdl33-2021:art17:cl1",
+   "fdl33-2021:art19:cl2",
+   "fdl33-2021:art29:cl1",
+   "fdl33-2021:art29:cl8"
+  ],
+  "not_covered": [],
+  "critic": "pass",
+  "revised": false,
+  "writer_failed": false,
+  "headline": "আপনার কাজের অধিকার এবং পাওনা সম্পর্কে তথ্য।",
+  "worker_text_script": 0.96,
+  "letter_translation_script": 1.0,
+  "letter_facts_ar_script": 1.0,
+  "arabic_indic_digits": false,
+  "pdf_status": 200,
+  "pdf": "docs/language_check/tc-06_bn.pdf",
+  "pdf_fonts": [
+   "Noto-Naskh-Arabic",
+   "Noto-Naskh-Arabic-Bold",
+   "Noto-Sans",
+   "Noto-Sans-Bengali",
+   "Noto-Sans-Bengali-Bold"
+  ],
+  "run_on": "2026-10-04"
+ },
+ "TC-23": {
+  "id": "TC-23",
+  "language": "ar",
+  "expected": [
+   "unpaid_wages"
+  ],
+  "route": "ready",
+  "referral_kind": null,
+  "intake_issues": [
+   "unpaid_wages"
+  ],
+  "intake_summary": "The worker is employed in a construction company in Ras Al Khaimah since January 15, 2024. They are currently still employed. The worker reports two months of unpaid wages for July and August. The basic wage is 1800 AED and the total wage is 2500 AED.",
+  "missing_fields": [],
+  "filled_on_confirm": {},
+  "stages": [
+   "retrieving",
+   "calculating",
+   "analysing",
+   "critiquing",
+   "writing",
+   "done"
+  ],
+  "seconds": 33.7,
+  "total_aed": "5000.00",
+  "claim": {
+   "Unpaid wages": "5000.00"
+  },
+  "citations": [
+   "fdl33-2021:art22:cl2"
+  ],
+  "not_covered": [],
+  "critic": "pass",
+  "revised": false,
+  "writer_failed": false,
+  "headline": "حقك في الحصول على أجورك المتأخرة",
+  "worker_text_script": 1.0,
+  "letter_translation_script": 1.0,
+  "letter_facts_ar_script": 1.0,
+  "arabic_indic_digits": false,
+  "pdf_status": 200,
+  "pdf": "docs/language_check/tc-23_ar.pdf",
+  "pdf_fonts": [
+   "Noto-Naskh-Arabic",
+   "Noto-Naskh-Arabic-Bold",
+   "Noto-Sans"
+  ],
+  "within_max_total": true,
+  "run_on": "2026-10-04"
+ },
+ "TC-08": {
+  "id": "TC-08",
+  "language": "ne",
+  "expected": [],
+  "route": "out_of_scope",
+  "referral_kind": "domestic",
+  "intake_issues": [
+   "unpaid_wages"
+  ],
+  "intake_summary": "The worker is employed as a domestic worker in Dubai. They started their employment on 2025-06-01. The worker reports that they have not received their salary for the past two months. They are currently still employed.",
+  "missing_fields": [],
+  "seconds": 11.7,
+  "run_on": "2026-10-04"
+ },
+ "TC-02": {
+  "id": "TC-02",
+  "language": "ur",
+  "expected": [
+   "termination",
+   "notice_pay"
+  ],
+  "route": "ready",
+  "referral_kind": null,
+  "intake_issues": [
+   "termination",
+   "notice_pay"
+  ],
+  "intake_summary": "The worker was employed as a cashier in a supermarket in Abu Dhabi. The employer terminated the worker's employment on 20 September 2026 without providing the contractually required 30-day notice period. The worker is seeking assistance regarding this termination.",
+  "missing_fields": [],
+  "filled_on_confirm": {},
+  "stages": [
+   "retrieving",
+   "calculating",
+   "analysing",
+   "critiquing",
+   "revising",
+   "writing",
+   "done"
+  ],
+  "seconds": 49.4,
+  "total_aed": "6229.59",
+  "claim": {
+   "Notice pay": "3000.00",
+   "End-of-service gratuity": "3229.59"
+  },
+  "citations": [
+   "fdl33-2021:art43:cl2",
+   "fdl33-2021:art43:cl3"
+  ],
+  "not_covered": [
+   "The worker is not entitled to end-of-service gratuity because they have not completed one year of continuous service as required by fdl33-2021:art51:cl2."
+  ],
+  "critic": "revise",
+  "revised": true,
+  "writer_failed": false,
+  "headline": "آپ کی ملازمت کے خاتمے کے حقوق",
+  "worker_text_script": 0.97,
+  "letter_translation_script": 1.0,
+  "letter_facts_ar_script": 1.0,
+  "arabic_indic_digits": false,
+  "pdf_status": 200,
+  "pdf": "docs/language_check/tc-02_ur.pdf",
+  "pdf_fonts": [
+   "Noto-Naskh-Arabic",
+   "Noto-Naskh-Arabic-Bold",
+   "Noto-Nastaliq-Urdu",
+   "Noto-Nastaliq-Urdu-Bold",
+   "Noto-Sans"
+  ],
+  "total_matches_cases_md": true,
+  "run_on": "2026-10-04"
+ },
+ "TC-03": {
+  "id": "TC-03",
+  "language": "en",
+  "expected": [
+   "gratuity"
+  ],
+  "route": "ready",
+  "referral_kind": null,
+  "intake_issues": [
+   "gratuity"
+  ],
+  "intake_summary": "The worker was employed in a hotel in Dubai from August 2020 until August 2026. They resigned from the position. The worker disputes the end-of-service gratuity amount offered by the employer.",
+  "missing_fields": [],
+  "filled_on_confirm": {},
+  "stages": [
+   "retrieving",
+   "calculating",
+   "analysing",
+   "critiquing",
+   "revising",
+   "writing",
+   "done"
+  ],
+  "seconds": 26.2,
+  "total_aed": "16056.85",
+  "claim": {
+   "End-of-service gratuity": "16056.85"
+  },
+  "citations": [
+   "fdl33-2021:art42:cl3",
+   "fdl33-2021:art51:cl2",
+   "fdl33-2021:art51:cl3",
+   "fdl33-2021:art51:cl5",
+   "fdl33-2021:art51:cl7"
+  ],
+  "not_covered": [],
+  "critic": "revise",
+  "revised": true,
+  "writer_failed": false,
+  "headline": "You are entitled to an end-of-service gratuity based on your years of work.",
+  "worker_text_script": 1.0,
+  "letter_translation_script": 1.0,
+  "letter_facts_ar_script": 1.0,
+  "arabic_indic_digits": false,
+  "pdf_status": 200,
+  "pdf": "docs/language_check/tc-03_en.pdf",
+  "pdf_fonts": [
+   "Noto-Naskh-Arabic",
+   "Noto-Naskh-Arabic-Bold",
+   "Noto-Sans",
+   "Noto-Sans-Bold"
+  ],
+  "total_matches_cases_md": true,
+  "run_on": "2026-10-04"
+ }
+}

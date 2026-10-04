@@ -430,6 +430,11 @@ data sent to them for training, which would break the PRD's "no training on user
 - [ ] **6.3 Language matrix**: run TC-01 (hi), 02 (ur), 03 (en), 04 (ml), 05 (tl), 06 (bn), 08 (ne) and 23 (ar) through
       the UI; note output quality per language in `docs/language_check.md`.
       Check: the table is filled, and native/fluent reviewer notes are recorded where available. Ports: harness cases.
+      *4 Oct:* all 8 run on the free Gemini models (`eval/language_check.py`, `docs/language_check.md`). Totals all match,
+      every script's PDF font is embedded, no Writer failures, 12–49 s per case. Found for 6.4: TC-02 (Urdu) told the
+      worker they are not entitled to gratuity ("under one year") while the claim shows 3,229.59 (the model miscounted
+      2.3 years); TC-01 (Hindi) over-promises ("we will get your salary back"); TC-06 (Bengali) headline is vague.
+      **Open:** native/fluent reader notes.
 - [ ] **6.4 Fix the worst language issues** (prompt tweaks, UI strings).
       Check: re-run the affected cases. Ports: new.
 - [ ] **6.5 (P1) TTS playback** of the explanation. First to cut.
