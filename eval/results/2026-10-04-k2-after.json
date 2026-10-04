@@ -3,21 +3,21 @@
  "embedder": "cloudflare",
  "run_on": "2026-10-04",
  "metrics": {
-  "cases": 18,
-  "errors": 0,
+  "cases": 20,
+  "errors": 1,
   "outcome_accuracy": 1.0,
   "issue_detection": 1.0,
-  "retrieval_hit_at_5": 0.7,
+  "retrieval_hit_at_5": 0.727,
   "citations_cited": 1.0,
-  "citations_supported": 0.973,
+  "citations_supported": 0.957,
   "critic_catch_rate": 1.0,
   "calculator_correctness": 1.0,
   "injection_resistance": 1.0,
   "latency_p95_s": 299.1,
   "counts": {
-   "analysed": 11,
-   "with_issues": 10,
-   "violations": 37,
+   "analysed": 12,
+   "with_issues": 11,
+   "violations": 47,
    "seeded": 1,
    "injected": 1,
    "writer_failed": 2
@@ -527,12 +527,12 @@
    "hit_at_5": false,
    "top5": [
     "fdl33-2021:art1",
-    "fdl33-2021:art37:cl3",
+    "cr1-2022:art29:cl2",
     "fdl33-2021:art47:cl2",
-    "fdl33-2021:art43:cl5",
-    "fdl33-2021:art25:cl1"
+    "fdl33-2021:art37:cl3",
+    "cr1-2022:art16:cl1"
    ],
-   "seconds": 144.1,
+   "seconds": 41.3,
    "analysed": true,
    "total_aed": "5000.00",
    "claim": {
@@ -545,11 +545,11 @@
    "findings": [
     {
      "clause": "cr1-2022:art16:cl1",
-     "issue": "The employer has failed to pay the worker's salary for 2 months while the worker remains employed. The law obligates the employer to pay wages on their due dates in the manner agreed in the contract and through the Wage Protection System or another Ministry-approved system, so this non-payment is a likely breach."
+     "issue": "The employer has failed to pay the worker's wages for two months, which breaches the obligation to pay wages on their due dates through the Wage Protection System or another Ministry-approved system."
     },
     {
      "clause": "fdl33-2021:art22:cl2",
-     "issue": "The employer has failed to pay the worker's salary for 2 months while the worker remains employed. The law obligates the employer to pay wages on their due dates in the manner agreed in the contract and through the Wage Protection System or another Ministry-approved system, so this non-payment is a likely breach."
+     "issue": "The employer has failed to pay the worker's wages for two months, which breaches the obligation to pay wages on their due dates through the Wage Protection System or another Ministry-approved system."
     }
    ],
    "violation_cited": [
@@ -561,7 +561,7 @@
     true
    ],
    "not_covered": [
-    "The worker's demand for AED 1,000,000 in compensation is not supported by any provision in the provided law; no clause entitles a worker to a fixed compensation of that nature for unpaid wages, and the law caps certain compensations (e.g., unlawful dismissal compensation is capped at three months' wage under fdl33-2021:art47:cl2)."
+    "The worker's demand for AED 1,000,000 in compensation is not supported by the provided law: the only compensation clause available (fdl33-2021:art47:cl2) applies to unlawful dismissal and is capped at three months' wage, and no dismissal has occurred here. No money amounts are stated or calculated in this analysis."
    ],
    "critic": "pass",
    "revised": false,
@@ -857,6 +857,130 @@
    "writer_failed": false,
    "headline": "Your employer ended your job on 10 September 2026 without giving the 30 days' notice your contract requires.",
    "calculator_exact": true
+  },
+  "TC-20": {
+   "id": "TC-20",
+   "language": "en",
+   "tags": [
+    "termination",
+    "gratuity",
+    "mixed",
+    "cap"
+   ],
+   "route": "ready",
+   "referral": null,
+   "outcome_ok": true,
+   "intake_issues": [
+    "gratuity",
+    "notice_pay",
+    "termination",
+    "unpaid_wages"
+   ],
+   "issue_recall": 1.0,
+   "hit_at_5": true,
+   "top5": [
+    "fdl33-2021:art43:cl2",
+    "fdl33-2021:art37:cl3",
+    "fdl33-2021:art1",
+    "fdl33-2021:art43:cl5",
+    "fdl33-2021:art51:cl2"
+   ],
+   "seconds": 269.4,
+   "analysed": true,
+   "total_aed": "600000.00",
+   "claim": {
+    "Unpaid wages": "30000.00",
+    "Notice pay": "90000.00",
+    "End-of-service gratuity": "480000.00"
+   },
+   "citations": [
+    "fdl33-2021:art22:cl2",
+    "fdl33-2021:art53",
+    "fdl33-2021:art42:cl3",
+    "fdl33-2021:art43:cl1",
+    "fdl33-2021:art43:cl3",
+    "fdl33-2021:art43:cl4",
+    "fdl33-2021:art51:cl2",
+    "fdl33-2021:art51:cl3",
+    "fdl33-2021:art51:cl5",
+    "fdl33-2021:art51:cl6"
+   ],
+   "findings": [
+    {
+     "clause": "fdl33-2021:art22:cl2",
+     "issue": "The employer is obligated to pay wages on their due dates under art22:cl2 and to pay all wages and entitlements within 14 days of the end of the contract under art53. The unpaid August salary is a likely breach."
+    },
+    {
+     "clause": "fdl33-2021:art53",
+     "issue": "The employer is obligated to pay wages on their due dates under art22:cl2 and to pay all wages and entitlements within 14 days of the end of the contract under art53. The unpaid August salary is a likely breach."
+    },
+    {
+     "clause": "fdl33-2021:art42:cl3",
+     "issue": "The employer terminated the worker with immediate effect and gave no notice, contrary to the 90-day warning period required by the contract and by art42:cl3 and art43:cl1. This is a likely breach of the notice requirement."
+    },
+    {
+     "clause": "fdl33-2021:art43:cl1",
+     "issue": "The employer terminated the worker with immediate effect and gave no notice, contrary to the 90-day warning period required by the contract and by art42:cl3 and art43:cl1. This is a likely breach of the notice requirement."
+    },
+    {
+     "clause": "fdl33-2021:art43:cl3",
+     "issue": "Because the employer did not serve the 90-day warning period, the worker is likely entitled to a warning allowance equal to the wage for the entire warning period under art43:cl3, calculated according to the last wage under art43:cl4."
+    },
+    {
+     "clause": "fdl33-2021:art43:cl4",
+     "issue": "Because the employer did not serve the 90-day warning period, the worker is likely entitled to a warning allowance equal to the wage for the entire warning period under art43:cl3, calculated according to the last wage under art43:cl4."
+    },
+    {
+     "clause": "fdl33-2021:art51:cl2",
+     "issue": "The worker has 28.68 years of continuous service and at least one year, so the end-of-service gratuity under art51:cl2 and cl3 is likely due, calculated on the last basic wage under art51:cl5 and subject to the two-year cap under art51:cl6."
+    },
+    {
+     "clause": "fdl33-2021:art51:cl3",
+     "issue": "The worker has 28.68 years of continuous service and at least one year, so the end-of-service gratuity under art51:cl2 and cl3 is likely due, calculated on the last basic wage under art51:cl5 and subject to the two-year cap under art51:cl6."
+    },
+    {
+     "clause": "fdl33-2021:art51:cl5",
+     "issue": "The worker has 28.68 years of continuous service and at least one year, so the end-of-service gratuity under art51:cl2 and cl3 is likely due, calculated on the last basic wage under art51:cl5 and subject to the two-year cap under art51:cl6."
+    },
+    {
+     "clause": "fdl33-2021:art51:cl6",
+     "issue": "The worker has 28.68 years of continuous service and at least one year, so the end-of-service gratuity under art51:cl2 and cl3 is likely due, calculated on the last basic wage under art51:cl5 and subject to the two-year cap under art51:cl6."
+    }
+   ],
+   "violation_cited": [
+    true,
+    true,
+    true,
+    true,
+    true,
+    true,
+    true,
+    true,
+    true,
+    true
+   ],
+   "violation_supported": [
+    false,
+    true,
+    true,
+    true,
+    true,
+    true,
+    true,
+    true,
+    true,
+    true
+   ],
+   "not_covered": [],
+   "critic": "pass",
+   "revised": false,
+   "writer_failed": false,
+   "headline": "Your employer ended your job without notice and has not paid your August salary or gratuity.",
+   "calculator_exact": true
+  },
+  "TC-21": {
+   "id": "TC-21",
+   "error": "LLMOutputError: analyst: invalid JSON after one retry (no JSON object in the reply)"
   }
  }
 }
