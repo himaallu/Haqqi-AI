@@ -1,6 +1,6 @@
 "use client";
 
-import { FileDown } from "lucide-react";
+import { FileDown, Share2 } from "lucide-react";
 import { useState } from "react";
 
 import { Button } from "@/components/ui/button";
@@ -9,6 +9,9 @@ import { ApiError, type ComplaintIdentity, downloadComplaint } from "@/lib/api";
 import { errorMessageKey } from "@/lib/errors";
 import { useI18n } from "@/lib/i18n/provider";
 import type { MessageKey } from "@/lib/i18n/translate";
+import { canShareFile, pdfFile, saveFile, shareFile } from "@/lib/share";
+
+const FILENAME = "haqqi-complaint.pdf";
 
 const FIELDS: { name: keyof ComplaintIdentity; label: MessageKey; maxLength: number }[] = [
   { name: "name", label: "complaint.name", maxLength: 120 },
@@ -25,16 +28,30 @@ export function ComplaintDownload({ caseId }: { caseId: string }) {
   const [identity, setIdentity] = useState<ComplaintIdentity>({});
   const [busy, setBusy] = useState(false);
   const [error, setError] = useState<MessageKey | null>(null);
+  // Phones: the PDF waits here for the "Save or share" tap (see lib/share.ts).
+  const [ready, setReady] = useState<File | null>(null);
 
   async function download() {
     setBusy(true);
     setError(null);
+    setReady(null);
     try {
-      saveBlob(await downloadComplaint(caseId, identity), "haqqi-complaint.pdf");
+      const file = pdfFile(await downloadComplaint(caseId, identity), FILENAME);
+      if (canShareFile(file)) setReady(file);
+      else saveFile(file);
     } catch (err) {
       setError(err instanceof ApiError && err.status === 409 ? "complaint.unavailable" : errorMessageKey(err));
     } finally {
       setBusy(false);
+    }
+  }
+
+  async function share(file: File) {
+    setError(null);
+    try {
+      await shareFile(file);
+    } catch {
+      saveFile(file); // the share sheet was refused: fall back to opening the PDF
     }
   }
 
@@ -52,7 +69,10 @@ export function ComplaintDownload({ caseId }: { caseId: string }) {
             autoComplete="off"
             maxLength={field.maxLength}
             value={identity[field.name] ?? ""}
-            onChange={(e) => setIdentity({ ...identity, [field.name]: e.target.value })}
+            onChange={(e) => {
+              setIdentity({ ...identity, [field.name]: e.target.value });
+              setReady(null); // the prepared letter no longer matches the fields
+            }}
           />
         </div>
       ))}
@@ -61,6 +81,19 @@ export function ComplaintDownload({ caseId }: { caseId: string }) {
         <FileDown aria-hidden />
         {busy ? t("complaint.downloading") : t("complaint.download")}
       </Button>
+      {ready && (
+        <div className="flex flex-col gap-3 rounded-md border bg-muted/40 p-3" data-testid="complaint-ready">
+          <p className="font-medium">{t("complaint.ready")}</p>
+          <Button onClick={() => share(ready)} data-testid="complaint-share">
+            <Share2 aria-hidden />
+            {t("complaint.share")}
+          </Button>
+          <Button variant="outline" onClick={() => saveFile(ready)}>
+            {t("complaint.open")}
+          </Button>
+          <p className="text-xs text-muted-foreground">{t("complaint.saveHint")}</p>
+        </div>
+      )}
       {error && (
         <p role="alert" className="rounded-md bg-warning-bg px-3 py-2 text-sm text-warning-fg">
           {t(error)}
@@ -68,16 +101,4 @@ export function ComplaintDownload({ caseId }: { caseId: string }) {
       )}
     </section>
   );
-}
-
-function saveBlob(blob: Blob, filename: string) {
-  const url = URL.createObjectURL(blob);
-  const link = document.createElement("a");
-  link.href = url;
-  link.download = filename;
-  document.body.appendChild(link);
-  link.click();
-  link.remove();
-  // iOS Safari reads the URL after click() returns; revoke it later.
-  setTimeout(() => URL.revokeObjectURL(url), 60_000);
 }

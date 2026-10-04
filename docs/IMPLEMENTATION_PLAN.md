@@ -398,6 +398,12 @@ data sent to them for training, which would break the PRD's "no training on user
       still load). The results page has a download card (`docs/screens/s5-complaint-card-ur.png`). Live runs on the local
       server (Gemini): TC-02 ur → 6,229.59, TC-03 en → 16,056.85, PDFs in `docs/arabic_review/`. Chromium at 375 px
       downloads the file. **Left open until the phone check** on the public URL after deploy.
+      *4 Oct, phone check (iPhone, public URL):* the PDF is right (TC-02: 6,229.59, Western digits, RTL Arabic joined;
+      `docs/screens/s5-phone-complaint-p1.jpg`, `-p2.jpg`), but the button **opened** it instead of saving it: iOS Safari
+      ignores `<a download>` for a blob PDF. Fix (your choice): on phones the button prepares the PDF, then **"Save or
+      share PDF"** opens the system share sheet (Save to Files, WhatsApp, Print), with an "Open PDF" fallback and an
+      iPhone hint (`lib/share.ts`, `docs/screens/s5-complaint-share-ur.png`). Desktop still downloads directly.
+      Waiting for one more phone try before ticking.
 - [ ] **5.6 Arabic reader review**.
       Check: a named reviewer signs off (tone + correctness), and notes go in `docs/arabic_review.md`. Ports: new.
       *3 Oct:* the review pack is ready (`docs/arabic_review.md`, with the TC-02 and TC-03 PDFs). Waiting for a reviewer.
