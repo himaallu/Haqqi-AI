@@ -5,7 +5,6 @@ from pathlib import Path
 from string import Template
 
 PROMPT_DIR = Path(__file__).resolve().parent
-TEMPLATE_AR_FILE = PROMPT_DIR.parents[1] / "pdf" / "template_ar.txt"
 
 
 @cache
@@ -18,8 +17,3 @@ def system_prompt(name: str, **values: str) -> str:
     if name == "revision":
         return _read("analyst") + _read("revision")
     return Template(_read(name)).substitute(values)
-
-
-@cache
-def template_ar() -> str:
-    return TEMPLATE_AR_FILE.read_text(encoding="utf-8")

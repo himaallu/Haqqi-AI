@@ -82,8 +82,8 @@ export type WriterOutput = {
   explanation: string;
   amount_lines: string[];
   checklist: string[];
-  arabic_letter: string;
-  letter_translation: string;
+  letter_facts_ar: string;
+  letter_facts_translation: string;
 };
 
 export type Analysis = {

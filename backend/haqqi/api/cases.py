@@ -4,8 +4,11 @@ POST   /v1/cases               story + form → Intake agent → routing; stores
 GET    /v1/cases/{id}          the case as stored (no story), plus its Analysis once analysed
 PATCH  /v1/cases/{id}          the worker confirms or edits the facts → strict CaseFacts
 POST   /v1/cases/{id}/analyze  Server-Sent Events: one event per stage, then the Analysis
+POST   /v1/cases/{id}/complaint the complaint PDF (Arabic + the worker's language), not stored
 
 The story is stored only for the analysis and expires with the case (7 days); it is never logged.
+The complaint's identity fields (name, labour card, employer) are printed into the PDF and dropped:
+never stored or logged (flag 8).
 """
 
 import json
@@ -13,23 +16,25 @@ import logging
 import queue
 import threading
 from collections.abc import Iterator, Sequence
+from datetime import datetime, timedelta, timezone
 from functools import cache
 from typing import Annotated, Any, Literal
 from uuid import UUID
 
 import psycopg
 from fastapi import APIRouter, Depends, HTTPException
-from fastapi.responses import StreamingResponse
+from fastapi.responses import Response, StreamingResponse
 from psycopg.types.json import Jsonb
 from pydantic import BaseModel, ValidationError
 
 from haqqi.agents.intake import run_intake
 from haqqi.agents.pipeline import Search, analyze_case
-from haqqi.api.schemas import CreateCaseRequest
+from haqqi.api.schemas import ComplaintRequest, CreateCaseRequest
 from haqqi.config import get_settings
 from haqqi.core.routing import MISSING_FIELDS, Referral, RouteDecision, route_case
 from haqqi.llm.client import Completer, LLMClient, LLMError, LLMUnavailable
 from haqqi.models import Analysis, CaseFacts, ExtractedFacts, IssueType
+from haqqi.pdf.letter import Identity, LetterError, build_letter, render_pdf
 from haqqi.rag.embed import Embedder, get_embedder
 from haqqi.rag.lawdata import load_law_pack
 from haqqi.rag.retrieve import RetrievedChunk, retrieve
@@ -41,6 +46,7 @@ Status = Literal["out_of_scope", "need_info", "ready", "confirmed", "analysed"]
 # Stop proxies (Render, nginx) from buffering the stream, so stages reach the browser live.
 SSE_HEADERS = {"Cache-Control": "no-cache", "X-Accel-Buffering": "no"}
 NOT_EDITABLE = {"story", "contract_text", "language"}
+UAE = timezone(timedelta(hours=4), "GST")  # the complaint's date; the UAE has no DST
 
 
 class CaseView(BaseModel):
@@ -243,6 +249,30 @@ def analyze(
         _run_streamed(case_id, facts, query, llm, search, db_url, seed_bad_citation and test_hooks),
         media_type="text/event-stream",
         headers=SSE_HEADERS,
+    )
+
+
+@router.post("/{case_id}/complaint")
+def complaint(case_id: UUID, req: ComplaintRequest, db_url: DbUrl) -> Response:
+    status, data, analysis = _load_full(db_url, case_id)
+    if status != "analysed" or analysis is None:
+        raise HTTPException(409, "analyse the case first (POST /v1/cases/{id}/analyze)")
+    try:
+        letter = build_letter(
+            CaseFacts.model_validate(data["confirmed"]),
+            Analysis.model_validate(analysis),
+            Identity(name=req.name, labour_card=req.labour_card, employer=req.employer),
+            datetime.now(UAE).date(),
+        )
+    except LetterError as exc:
+        raise HTTPException(409, str(exc)) from None
+    return Response(
+        render_pdf(letter),
+        media_type="application/pdf",
+        headers={
+            "Content-Disposition": 'attachment; filename="haqqi-complaint.pdf"',
+            "Cache-Control": "no-store",
+        },
     )
 
 

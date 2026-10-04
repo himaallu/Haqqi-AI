@@ -1,4 +1,4 @@
-.PHONY: dev down test test-live db lint format eval
+.PHONY: dev down test test-live db lint format eval pdf-smoke
 
 BACKEND := cd backend &&
 FRONTEND := cd frontend &&
@@ -33,6 +33,12 @@ lint:
 
 format:
 	$(BACKEND) uv run ruff check --fix . && uv run ruff format .
+
+## Render a fixed Arabic paragraph in the backend image → out/smoke.pdf (task 5.1); open it and look
+pdf-smoke:
+	docker compose build backend
+	mkdir -p out
+	docker run --rm --user "$$(id -u):$$(id -g)" -v "$$PWD/out:/out" haqqi-backend:dev python -m haqqi.pdf.smoke /out/smoke.pdf
 
 ## Evaluation over eval/cases.jsonl (built in Sprint 7)
 eval:

@@ -63,3 +63,24 @@ below has a reason. The rendered prompts are in `backend/tests/agents/snapshots/
     "null unless the year is clear", but the model ignored it and guessed: the TC-02 story ("20 September") was filled
     in as 2024-09-20, a date before the start date. The worker still confirms every date on the form.
     **Approved 4 Oct.**
+
+## Sprint 5 (you approved the approach on 3 Oct; please review the wording)
+22. **The Writer writes only the letter's facts section.** `arabic_letter` and `letter_translation` are replaced by
+    `letter_facts_ar` (formal Arabic, dated, 3–6 sentences) and `letter_facts_translation` (the same in the worker's
+    language). Code builds every other section of the complaint (`haqqi/pdf/letter.py`): addressee, subject, worker
+    data from the confirmed form, legal basis from the checked citations, claims and total from the calculator,
+    fixed requests, a standard attachments list, date and signature. Reason: task 5.3 (deterministic fill), the
+    wrong-year slip in an earlier letter, and fewer output tokens per case (free-tier quotas, flag 18).
+    - The Writer no longer gets `TEMPLATE_AR` or the Arabic references (`references_ar`); `haqqi/pdf/template_ar.txt`
+      is replaced by `haqqi/pdf/letter.html.j2`.
+    - Supersedes 16 (`letter_translation`) and 17 (identity placeholders are now printed by code at download, flag 8).
+    - **No amounts in the facts section**, enforced in code (no tokens, no money figures; one retry, then the usual
+      error). In the first live TC-03 run the Writer put the claim token where the employer's offer belonged, so the
+      letter said the employer offered AED 16,056.85 (what the worker is owed) instead of 6,000. The claims section
+      prints every amount; the facts describe amounts in words ("less than the law gives").
+    - The other fields' money check is unchanged: amounts only as `[[AMOUNT_n]]`/`[[TOTAL]]`, and the facts section
+      must contain Arabic.
+23. **Western digits in the facts section** (you asked for this, 4 Oct). One prompt line: every number and date in
+    `letter_facts_ar` and `letter_facts_translation` uses 0-9, never Arabic-Indic digits. In the TC-02/TC-03 review
+    PDFs the Writer wrote ٢٠٢٦ in the facts while the code-built sections use 2026. It is a consistency rule only:
+    the money checks already read both digit forms.

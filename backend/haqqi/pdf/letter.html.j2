@@ -1,0 +1,107 @@
+<!doctype html>
+{#
+  The complaint letter (task 5.2). Right column: the Arabic complaint the worker submits.
+  Left column: the same letter in the worker's language. Every value comes from haqqi/pdf/letter.py.
+#}
+{% set two = letter.two_columns %}
+{% macro row(p, cls="") %}
+<tr{% if cls %} class="{{ cls }}"{% endif %}>
+  <td class="ar">{{ p.ar }}</td>
+  {% if two %}<td class="tr" dir="{{ letter.tr_dir }}" lang="{{ letter.lang }}">{{ p.tr }}</td>{% endif %}
+</tr>
+{% endmacro %}
+{% macro heading(key) %}
+<tr class="heading">
+  <td class="ar">{{ letter.s_ar[key] }}</td>
+  {% if two %}<td class="tr" dir="{{ letter.tr_dir }}" lang="{{ letter.lang }}">{{ letter.s_tr[key] }}</td>{% endif %}
+</tr>
+{% endmacro %}
+{% macro labelled(label, value, cls="") %}
+<tr{% if cls %} class="{{ cls }}"{% endif %}>
+  <td class="ar"><span class="label">{{ label.ar }}:</span> {{ value.ar }}</td>
+  {% if two %}<td class="tr" dir="{{ letter.tr_dir }}" lang="{{ letter.lang }}"><span class="label">{{ label.tr }}:</span> {{ value.tr }}</td>{% endif %}
+</tr>
+{% endmacro %}
+<html lang="ar" dir="rtl">
+<head>
+<meta charset="utf-8">
+<title>{{ letter.s_ar.title }}</title>
+<style>
+{% for family, file in families.items() %}
+@font-face { font-family: "{{ family }}"; src: url("{{ file }}"); }
+{% endfor %}
+@page {
+  size: A4;
+  margin: 16mm 14mm 20mm 14mm;
+  @bottom-center {
+    content: counter(page);
+    font-family: "Noto Sans";
+    font-size: 8pt;
+    color: #666;
+  }
+}
+body { font-family: "Noto Naskh Arabic", "Noto Sans"; font-size: 11pt; line-height: 1.6; color: #111; margin: 0; }
+table { width: 100%; border-collapse: collapse; table-layout: fixed; }
+td { vertical-align: top; padding: 2pt 6pt; }
+td.ar { text-align: right; {% if two %}width: 55%; border-left: 0.5pt solid #bbb;{% endif %} }
+td.tr { width: 45%; font-family: {{ letter.tr_font | safe }}; font-size: 9.5pt; color: #333; text-align: start; }
+{% if letter.lang == "ur" %}
+td.tr { line-height: 2.1; }
+{% endif %}
+tr.title td { font-size: 15pt; font-weight: bold; padding-bottom: 6pt; }
+tr.title td.tr { font-size: 12pt; }
+tr.heading td { font-weight: bold; padding-top: 10pt; border-bottom: 0.5pt solid #bbb; }
+tr.total td { font-weight: bold; border-top: 0.5pt solid #bbb; }
+tr.prose td { white-space: pre-line; }
+tr.sign td { padding-top: 14pt; }
+.label { font-weight: bold; }
+.note td { font-size: 8pt; color: #555; padding-top: 14pt; }
+tr { page-break-inside: avoid; }
+</style>
+</head>
+<body>
+<table>
+  {{ row({"ar": letter.s_ar.title, "tr": letter.s_tr.title}, "title") }}
+  {{ row({"ar": letter.s_ar.to, "tr": letter.s_tr.to}) }}
+  {{ labelled({"ar": letter.s_ar.subject, "tr": letter.s_tr.subject}, letter.subject) }}
+  {{ row({"ar": letter.s_ar.greeting, "tr": letter.s_tr.greeting}) }}
+
+  {{ heading("worker_data") }}
+  {% for label, value in letter.worker_rows %}
+  {{ labelled(label, value) }}
+  {% endfor %}
+
+  {{ heading("facts") }}
+  {{ row(letter.facts, "prose") }}
+
+  {{ heading("legal_basis") }}
+  {% for ref in letter.legal_basis %}
+  {{ row({"ar": loop.index ~ ". " ~ ref.ar, "tr": loop.index ~ ". " ~ ref.tr}) }}
+  {% endfor %}
+
+  {{ heading("claims") }}
+  {% for claim in letter.claims %}
+  {{ labelled(claim.item, claim.amount) }}
+  {% endfor %}
+  {% if letter.total %}
+  {{ labelled({"ar": letter.s_ar.total, "tr": letter.s_tr.total}, letter.total, "total") }}
+  {% endif %}
+
+  {{ heading("requests") }}
+  {% for request in letter.requests %}
+  {{ row({"ar": loop.index ~ ". " ~ request.ar, "tr": loop.index ~ ". " ~ request.tr}) }}
+  {% endfor %}
+
+  {{ heading("attachments") }}
+  {% for item in letter.attachments %}
+  {{ row({"ar": loop.index ~ ". " ~ item.ar, "tr": loop.index ~ ". " ~ item.tr}) }}
+  {% endfor %}
+
+  {{ row({"ar": letter.s_ar.closing, "tr": letter.s_tr.closing}, "sign") }}
+  {{ labelled({"ar": letter.s_ar.date, "tr": letter.s_tr.date}, {"ar": letter.date, "tr": letter.date}) }}
+  {{ labelled({"ar": letter.s_ar.signature, "tr": letter.s_tr.signature}, {"ar": letter.blank, "tr": letter.blank}, "sign") }}
+
+  {{ row({"ar": letter.s_ar.footer, "tr": (letter.s_tr.translation_note ~ " " ~ letter.s_tr.footer) | trim}, "note") }}
+</table>
+</body>
+</html>

@@ -8,6 +8,11 @@ ENV PYTHONDONTWRITEBYTECODE=1 \
     PATH="/app/.venv/bin:$PATH" \
     LAW_DATA_DIR=/app/data/law
 
+# Pango and HarfBuzz for WeasyPrint (complaint PDF); the fonts ship in haqqi/pdf/fonts.
+RUN apt-get update \
+    && apt-get install -y --no-install-recommends libpango-1.0-0 libpangoft2-1.0-0 libharfbuzz-subset0 \
+    && rm -rf /var/lib/apt/lists/*
+
 RUN pip install --no-cache-dir uv==0.8.*
 
 WORKDIR /app
@@ -20,6 +25,8 @@ RUN uv sync --frozen --no-dev
 # Law text and the Law Pack: retrieval and citation checks read them at runtime.
 COPY data/law/*.json ./data/law/
 RUN python -c "from haqqi.rag.lawdata import load_chunks, load_law_pack; load_law_pack(); assert load_chunks()"
+# Fail the build if the PDF stack can't render Arabic.
+RUN python -m haqqi.pdf.smoke /tmp/smoke.pdf && rm /tmp/smoke.pdf
 
 # Hosts such as Render set PORT; 8000 is the local default.
 ENV PORT=8000

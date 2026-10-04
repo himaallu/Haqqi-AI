@@ -364,20 +364,43 @@ data sent to them for training, which would break the PRD's "no training on user
 
 ## Sprint 5 — Arabic complaint (PRD Block 5)
 
-- [ ] **5.1 PDF smoke test first**: WeasyPrint + Noto Naskh Arabic in the Docker image renders a fixed Arabic paragraph.
+- [x] **5.1 PDF smoke test first**: WeasyPrint + Noto Naskh Arabic in the Docker image renders a fixed Arabic paragraph.
       Check: `make pdf-smoke` → `out/smoke.pdf`; letters are joined and RTL (open and look); `pdffonts` shows NotoNaskhArabic. Ports: new.
-- [ ] **5.2 HTML/Jinja template**: the n8n TEMPLATE_AR sections (to MOHRE, subject, worker data, facts, legal basis, claims,
+      *Done 3 Oct:* the Noto fonts (Naskh Arabic, Nastaliq Urdu, Devanagari, Malayalam, Bengali, Sans; OFL, about 4.6 MB)
+      are committed in `haqqi/pdf/fonts/`, so every machine renders the same glyphs. The image installs Pango/HarfBuzz and
+      **fails to build** if the smoke PDF doesn't embed Naskh. The script lists the embedded fonts itself (the image has no
+      poppler `pdffonts`). Letters joined and RTL (checked by eye). Peak memory is 62 MB in the image, well under Render's 512 MB.
+- [x] **5.2 HTML/Jinja template**: the n8n TEMPLATE_AR sections (to MOHRE, subject, worker data, facts, legal basis, claims,
       requests, attachments, date/signature) with Arabic on one side and the translation on the other.
       Check: a golden-file test on the rendered HTML; the PDF of TC-03 is visually OK. Ports: `TEMPLATE_AR` in `Build Writer Prompt`.
-- [ ] **5.3 Deterministic fill**: claims and amounts come from the calculator, articles from the citations, and prose (facts section)
+      *Done 3 Oct:* `haqqi/pdf/letter.html.j2` + `letter.py`. Arabic is on the right and the worker's language on the left;
+      Arabic-language cases get one column. Fixed text lives in `haqqi/pdf/strings/<lang>.json`. The non-English catalogs
+      are **drafts for native review in 6.3**. Golden HTML for TC-03 in en, ur and ar (`UPDATE_GOLDEN=1` to refresh). A test
+      checks that each script's font is embedded; it caught Urdu falling back to Naskh. Your choices: references only
+      (no clause quotes), and the worker-owes line is left out of the complaint.
+- [x] **5.3 Deterministic fill**: claims and amounts come from the calculator, articles from the citations, and prose (facts section)
       from the Writer.
       Check: a test proves every number in the PDF text equals a `ClaimLine.amount_aed`. Ports: `Build Writer Prompt` (claims rule).
-- [ ] **5.4 Identity fields at download** (flag 8): name, labour card and employer are rendered but never stored or logged.
+      *Done 3 Oct:* the Writer now returns only `letter_facts_ar` + `letter_facts_translation` (CHANGES.md 22, **for your
+      review**); code builds the rest. The PDF text test checks every money figure is a claim amount, the total, or a
+      confirmed wage (wages come from the form, not the calculator, and the worker data block prints them). The
+      first live TC-03 run showed why the facts section must carry **no amounts**: the claim token stood in for the employer's
+      offer, so the letter said the employer offered 16,056.85. Code now rejects any amount or token there (one retry).
+- [x] **5.4 Identity fields at download** (flag 8): name, labour card and employer are rendered but never stored or logged.
       Check: after download, a DB row check and log grep show none of the 3 values. Ports: placeholders in `TEMPLATE_AR`.
+      *Done 3 Oct:* `ComplaintRequest` (all optional, one line, max 120/40/160 characters, no extra keys). A live API test
+      checks the `cases` row and captured logs at DEBUG. A browser run against a local server found none of the values in
+      the backend or frontend logs. An empty field prints a dotted line to fill in by hand.
 - [ ] **5.5 `POST /v1/cases/{id}/complaint`** streams the PDF (or a short-lived signed URL).
       Check: `curl -o c.pdf` → valid PDF; the UI download button works on the phone. Ports: new.
+      *3 Oct:* returns `application/pdf` (attachment, `no-store`); nothing is stored. Returns 409 before analysis, for
+      out-of-scope cases, and when there's no Writer facts section (also for analyses saved before CHANGES.md 22, which
+      still load). The results page has a download card (`docs/screens/s5-complaint-card-ur.png`). Live runs on the local
+      server (Gemini): TC-02 ur → 6,229.59, TC-03 en → 16,056.85, PDFs in `docs/arabic_review/`. Chromium at 375 px
+      downloads the file. **Left open until the phone check** on the public URL after deploy.
 - [ ] **5.6 Arabic reader review**.
       Check: a named reviewer signs off (tone + correctness), and notes go in `docs/arabic_review.md`. Ports: new.
+      *3 Oct:* the review pack is ready (`docs/arabic_review.md`, with the TC-02 and TC-03 PDFs). Waiting for a reviewer.
 
 ## Sprint 6 — Voice and languages (PRD Block 6)
 

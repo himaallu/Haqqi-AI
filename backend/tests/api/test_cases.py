@@ -3,7 +3,9 @@
 Live tests: run `make dev` (or the db service), then `make test-live`.
 """
 
+import io
 import json
+import logging
 from collections.abc import Iterator
 from decimal import Decimal
 from typing import Any
@@ -11,6 +13,7 @@ from typing import Any
 import psycopg
 import pytest
 from fastapi.testclient import TestClient
+from pypdf import PdfReader
 
 from haqqi.api import cases
 from haqqi.api.main import create_app
@@ -73,9 +76,7 @@ def test_tc01_create_confirm_analyze_streams_stages_then_analysis(db: str) -> No
             "intake": [TC01_EXTRACTED],
             "analyst": [reply(WAGES)],
             "critic": [PASS],
-            "writer": [
-                writer(arabic_letter="إلى الوزارة: المطالبة [[AMOUNT_1]]", amount_lines=WAGE_LINE)
-            ],
+            "writer": [writer(letter_facts_ar="لم أتقاضَ أجري", amount_lines=WAGE_LINE)],
         }
     )
     client = client_with(llm, db)
@@ -107,7 +108,7 @@ def test_tc01_create_confirm_analyze_streams_stages_then_analysis(db: str) -> No
     analysis = Analysis.model_validate(got[-1][1])
     assert analysis.total_aed == Decimal("5400.00")
     assert analysis.violations and analysis.writer
-    assert "5,400.00 درهم" in analysis.writer.arabic_letter
+    assert analysis.writer.amount_lines == ["Unpaid wages: AED 5,400.00"]
 
     with psycopg.connect(db) as conn:
         row = conn.execute("SELECT status FROM cases WHERE id = %s", (case["id"],)).fetchone()
@@ -174,9 +175,7 @@ def test_seeded_bad_citation_needs_the_test_hooks_setting(db: str) -> None:
                 "intake": [TC01_EXTRACTED],
                 "analyst": [reply(WAGES)],
                 "critic": [PASS],
-                "writer": [
-                    writer(arabic_letter="إلى الوزارة: [[AMOUNT_1]]", amount_lines=WAGE_LINE)
-                ],
+                "writer": [writer(letter_facts_ar="لم أتقاضَ أجري", amount_lines=WAGE_LINE)],
             }
         )
         client = client_with(llm, db, hooks=hooks)
@@ -187,3 +186,72 @@ def test_seeded_bad_citation_needs_the_test_hooks_setting(db: str) -> None:
 
     assert "art54:cl9" not in run(hooks=False)
     assert "art54:cl9" in run(hooks=True)
+
+
+IDENTITY = {"name": "Ramesh Testname", "labour_card": "LC-98765432", "employer": "Acme Build LLC"}
+
+
+def analysed_tc01(client: TestClient) -> str:
+    case_id: str = client.post("/v1/cases", json=TC01).json()["id"]
+    client.patch(f"/v1/cases/{case_id}", json={"months_unpaid": 3})
+    client.post(f"/v1/cases/{case_id}/analyze")
+    return case_id
+
+
+def tc01_llm() -> FakeLLM:
+    return FakeLLM(
+        {
+            "intake": [TC01_EXTRACTED],
+            "analyst": [reply(WAGES)],
+            "critic": [PASS],
+            "writer": [writer(letter_facts_ar="لم أتقاضَ أجري", amount_lines=WAGE_LINE)],
+        }
+    )
+
+
+def test_complaint_pdf_prints_identity_but_never_stores_or_logs_it(
+    db: str, caplog: pytest.LogCaptureFixture
+) -> None:
+    client = client_with(tc01_llm(), db)
+    case_id = analysed_tc01(client)
+    caplog.set_level(logging.DEBUG)
+
+    pdf = client.post(f"/v1/cases/{case_id}/complaint", json=IDENTITY)
+
+    assert pdf.status_code == 200, pdf.text
+    assert pdf.headers["content-type"] == "application/pdf"
+    assert pdf.headers["content-disposition"].startswith("attachment;")
+    assert pdf.headers["cache-control"] == "no-store"
+    text = "\n".join(p.extract_text() for p in PdfReader(io.BytesIO(pdf.content)).pages)
+    assert "5,400.00" in text  # 3 × 1,800 from the calculator
+    assert all(value in text for value in IDENTITY.values())
+
+    with psycopg.connect(db) as conn:
+        row = conn.execute("SELECT cases::text FROM cases WHERE id = %s", (case_id,)).fetchone()
+    assert row is not None
+    logs = "\n".join(r.getMessage() for r in caplog.records)
+    for value in IDENTITY.values():
+        assert value not in row[0]
+        assert value not in logs
+
+
+def test_complaint_guards(db: str) -> None:
+    client = client_with(tc01_llm(), db)
+    case_id = client.post("/v1/cases", json=TC01).json()["id"]
+    assert client.post(f"/v1/cases/{case_id}/complaint", json={}).status_code == 409
+
+    client.patch(f"/v1/cases/{case_id}", json={"months_unpaid": 3})
+    client.post(f"/v1/cases/{case_id}/analyze")
+    url = f"/v1/cases/{case_id}/complaint"
+    assert client.post(url, json={"passport": "X"}).status_code == 422
+    assert client.post(url, json={"name": "x" * 121}).status_code == 422
+    assert client.post(url, json={}).status_code == 200  # every identity field is optional
+    unknown = "00000000-0000-4000-8000-000000000000"
+    assert client.post(f"/v1/cases/{unknown}/complaint", json={}).status_code == 404
+
+
+def test_complaint_for_out_of_scope_case_is_refused(db: str) -> None:
+    llm = FakeLLM({"intake": [ExtractedFacts(zone="difc", issue_types=["unpaid_wages"])]})
+    client = client_with(llm, db)
+    case = client.post("/v1/cases", json={"language": "en", "story": "DIFC firm ended my job."})
+    assert client.post(f"/v1/cases/{case.json()['id']}/complaint", json={}).status_code == 409
