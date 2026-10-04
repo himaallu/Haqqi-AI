@@ -1,4 +1,4 @@
-.PHONY: dev down test test-live db lint format eval eval-validate pdf-smoke
+.PHONY: dev down test test-live db lint format eval eval-offline eval-validate pdf-smoke
 
 BACKEND := cd backend &&
 FRONTEND := cd frontend &&
@@ -45,6 +45,11 @@ pdf-smoke:
 eval-validate:
 	$(BACKEND) PYTHONPATH=.. uv run python -m eval.validate
 
-## Evaluation over eval/cases.jsonl (built in Sprint 7)
+## Full evaluation over eval/cases.jsonl on a local database with the law index (task 7.3).
+## K2 by default (EVAL_ARGS="--provider gemini" for the free Gemini chain); resumable.
 eval:
-	@echo "make eval: not implemented yet; the evaluation runner arrives in Sprint 7."
+	$(BACKEND) PYTHONPATH=.. uv run python -m eval.run_eval $(EVAL_ARGS)
+
+## No-LLM subset (task 7.4): calculator correctness (fails below 100%) + retrieval hit@5 if a DB is up
+eval-offline:
+	$(BACKEND) PYTHONPATH=.. uv run python -m eval.offline
