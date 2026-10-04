@@ -80,3 +80,7 @@ below has a reason. The rendered prompts are in `backend/tests/agents/snapshots/
       prints every amount; the facts describe amounts in words ("less than the law gives").
     - The other fields' money check is unchanged: amounts only as `[[AMOUNT_n]]`/`[[TOTAL]]`, and the facts section
       must contain Arabic.
+23. **Western digits in the facts section** (you asked for this, 4 Oct). One prompt line: every number and date in
+    `letter_facts_ar` and `letter_facts_translation` uses 0-9, never Arabic-Indic digits. In the TC-02/TC-03 review
+    PDFs the Writer wrote ٢٠٢٦ in the facts while the code-built sections use 2026. It is a consistency rule only:
+    the money checks already read both digit forms.
