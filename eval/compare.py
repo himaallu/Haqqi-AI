@@ -1,8 +1,8 @@
 """Before/after metrics on the same cases (task 7.5): `python -m eval.compare BEFORE AFTER`.
 
 Only cases present in both files are scored (errors included, so each side's error count shows).
-"Supported" is re-scored on both sides against today's labels in cases.jsonl, so a label change
-never shows up as an improvement. Prints a Markdown table for eval/CHANGELOG.md.
+Hit@5 and "supported" are re-scored on both sides against today's labels in cases.jsonl, so a
+label change never shows up as an improvement. Prints a Markdown table for eval/CHANGELOG.md.
 """
 
 import argparse
@@ -11,17 +11,15 @@ from pathlib import Path
 from typing import Any
 
 from eval.cases_io import load_cases
-from eval.metrics import TARGETS, summarize
+from eval.metrics import TARGETS, rescore, summarize
 
 
 def load(path: Path) -> dict[str, Any]:
     cases: dict[str, Any] = json.loads(path.read_text())["cases"]
-    labels = {c.id: c.expected.supporting_articles for c in load_cases()}
+    expected = {c.id: c.expected for c in load_cases()}
     for result in cases.values():
-        if "citations" in result:
-            result["violation_supported"] = [
-                c.split(":cl")[0] in labels[result["id"]] for c in result["citations"]
-            ]
+        exp = expected[result["id"]]
+        rescore(result, exp.key_clauses, exp.supporting_articles)
     return cases
 
 

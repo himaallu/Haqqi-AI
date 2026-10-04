@@ -476,8 +476,9 @@ data sent to them for training, which would break the PRD's "no training on user
 - [x] **7.5 Fix the worst failures** (top 3 by metric gap).
       Check: before/after table in `eval/CHANGELOG.md`. Ports: new.
       *Done 4 Oct (20 cases, K2):*
-      - Retrieval hit@5 went from 50% to 75%: issue words are added to the search query. The 3 remaining misses are
-        unpaid wages, where CR 16 ranks above Art. 22; **your call whether CR 16 counts**.
+      - Retrieval hit@5 went from 50% to 75%: issue words are added to the search query. The 3 remaining misses were
+        unpaid wages, where CR 16 ranks above Art. 22. **Your call (4 Oct): CR 16(1) counts as a hit.** Re-scored on
+        the same 20 cases, that is 60% before and **92%** after. One miss is left (TC-11).
       - No false notice breaches: CHANGES.md 27, approved. In TC-21 the false finding is gone.
       - Support labels widened by documented rules. Re-scored on the same labels, support is 98% before and 96% after.
       - The K2 retry fix: 0 cases lost.

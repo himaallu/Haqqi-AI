@@ -1,8 +1,22 @@
 # Evaluation changelog
 
 Scores come from `make eval` (`eval/run_eval.py`). Before/after tables come from `python -m eval.compare BEFORE AFTER`,
-which scores both runs on the same cases and re-scores "supported" against today's labels, so a label change never
-counts as an improvement.
+which scores both runs on the same cases and re-scores hit@5 and "supported" against today's labels, so a label
+change never counts as an improvement. `make eval EVAL_ARGS="--rescore --out <file>"` re-scores a saved run the same
+way, with no LLM calls.
+
+## 4 Oct 2026: CR 16 counts as a retrieval hit for unpaid wages (your call)
+
+CR 1/2022 Art. 16(1) is the executive rule that wages are paid on their due date. It now counts as finding the right
+law next to FDL Art. 22(2), in the key clauses of all 13 unpaid-wages cases. Both runs were re-scored, on the same 20
+cases:
+
+| Metric | Before | After | Target |
+| --- | --- | --- | --- |
+| Retrieval hit@5 | 60% | **92%** (12/13) | ≥ 90% |
+
+The one miss left is TC-11: its top 5 has neither article. The Law Pack still gives the Analyst Art. 22. The table below
+was scored before this label change.
 
 ## 4 Oct 2026: task 7.5, first fixes (K2, 20 of 50 cases)
 
@@ -34,7 +48,7 @@ What changed:
    - The 3 remaining misses are all unpaid-wages stories (TC-01, TC-10, TC-11). Art. 22(2) is outside the top 5,
      and CR 16(1) (wages paid on their due date) is often inside it.
    - In the app the unpaid-wages Law Pack always adds Art. 22, so the Analyst still cites it.
-   - **Open question for you:** should CR 16 count as a hit?
+   - Since then, CR 16 counts as a hit (your call, see above).
 3. **No breach the facts rule out** (CHANGES.md 27, `d469d1b`). The Analyst and Critic no longer flag notice when the
    full notice was served. In TC-21 the false Art. 43(2) finding is gone, and all its citations are now supported.
    Most of the cases this targets (N-03, N-09, N-11, N-12, N-18) are in the 30 still to run.

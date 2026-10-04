@@ -24,7 +24,7 @@ from typing import Any
 import psycopg
 
 from eval.cases_io import confirmed_facts, create_request, load_cases
-from eval.metrics import summarize, table
+from eval.metrics import article_of, rescore, summarize, table
 from eval.schema import Case
 from haqqi.agents.analysis import SEEDED_BAD_CITATION
 from haqqi.agents.intake import run_intake
@@ -40,10 +40,6 @@ from haqqi.rag.retrieve import RetrievedChunk, fused_ranking, retrieve
 
 RESULTS_DIR = Path(__file__).with_name("results")
 DIGITS = str.maketrans("٠١٢٣٤٥٦٧٨٩۰۱۲۳۴۵۶۷۸۹", "01234567890123456789")
-
-
-def article_of(clause_id: str) -> str:
-    return clause_id.split(":cl")[0]
 
 
 def make_llm(provider: str) -> Completer:
@@ -154,6 +150,11 @@ def main() -> int:
     parser.add_argument("--rerun", action="store_true", help="ignore saved results for these cases")
     parser.add_argument("--limit", type=int, help="stop after running this many cases")
     parser.add_argument(
+        "--rescore",
+        action="store_true",
+        help="re-score the saved results against today's labels (no LLM calls), then exit",
+    )
+    parser.add_argument(
         "--out", type=Path, help="results file (default: results/<date>-<provider>.json)"
     )
     args = parser.parse_args()
@@ -164,6 +165,20 @@ def main() -> int:
     path = args.out or RESULTS_DIR / f"{date.today().isoformat()}-{args.provider}.json"
     saved: dict[str, Any] = json.loads(path.read_text()) if path.exists() else {}
     results: dict[str, Any] = saved.get("cases", {})
+    if args.rescore:
+        expected = {c.id: c.expected for c in load_cases()}
+        for result in results.values():
+            exp = expected[result["id"]]
+            rescore(result, exp.key_clauses, exp.supporting_articles)
+        metrics = summarize(list(results.values()))
+        path.write_text(
+            json.dumps(
+                {**saved, "metrics": metrics, "cases": results}, ensure_ascii=False, indent=1
+            )
+            + "\n"
+        )
+        print(table(metrics))
+        return 0
     llm = make_llm(args.provider)
     embedder = get_embedder(settings)
     ran = 0

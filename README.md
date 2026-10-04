@@ -20,7 +20,7 @@ TC-21), measured on **K2**. Production uses free Gemini models. The remaining 30
 | --- | --- | --- |
 | Outcome accuracy (analyse / refer / ask for info) | 100% | ≥ 95% |
 | Issue detection | 100% | ≥ 85% |
-| Retrieval hit@5 | 75% | ≥ 90% |
+| Retrieval hit@5 | 92% | ≥ 90% |
 | Citations cited (from the retrieved law) | 100% | 100% |
 | Citations supported (hand labels) | 96% | ≥ 90% |
 | Critic catch rate (seeded bad citation) | 100% (1/1) | ≥ 90% |
