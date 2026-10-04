@@ -192,3 +192,13 @@ def test_footer_disclaimer_is_in_the_pdf_text() -> None:
     pdf = render_pdf(build_letter(facts, analysis_for(facts), Identity(), TODAY))
     text = "\n".join(page.extract_text() for page in PdfReader(io.BytesIO(pdf)).pages)
     assert "not legal advice" in text and "80084" in text
+
+
+def test_no_letter_when_haqqi_is_not_sure() -> None:
+    facts = tc03("en")
+    sure = analysis_for(facts)
+    low = sure.violations[0].model_copy(update={"confidence": "low"})
+    unsure = Analysis.model_validate({**sure.model_dump(), "violations": [low.model_dump()]})
+    assert unsure.unsure and unsure.claim  # the amounts are still there
+    with pytest.raises(LetterError, match="not sure"):
+        build_letter(facts, unsure, Identity(), TODAY)

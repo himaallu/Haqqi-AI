@@ -181,6 +181,8 @@ class Analysis(_Model):
     revised: bool = False
     writer: WriterOutput | None = None  # worker-language text and the Arabic letter
     writer_failed: bool = False  # the Writer's output failed our checks; the rest is still valid
+    # Task 8.5: no finding of medium or high confidence. Always recomputed from the findings.
+    unsure: bool = False
 
     @model_validator(mode="before")
     @classmethod
@@ -198,3 +200,11 @@ class Analysis(_Model):
                 writer.setdefault("letter_facts_translation", "")
                 data = {**data, "writer": writer}
         return data
+
+    @model_validator(mode="after")
+    def _set_unsure(self) -> Self:
+        """'I'm not sure' (task 8.5): in scope, but no finding is more than a possibility."""
+        self.unsure = self.in_scope and not any(
+            v.confidence in ("high", "medium") for v in self.violations
+        )
+        return self

@@ -103,6 +103,7 @@ export type Analysis = {
   revised: boolean;
   writer: WriterOutput | null;
   writer_failed: boolean;
+  unsure: boolean; // no finding above "low" confidence (task 8.5)
 };
 
 export type CaseView = {

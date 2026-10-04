@@ -500,8 +500,24 @@ data sent to them for training, which would break the PRD's "no training on user
       over 64 KB (3 MB + 64 KB for audio) get 413 before they are read; chunked bodies with no length get 411. The
       story, contract and complaint-field caps were already in place (3.4, 5.4, 6.1). Test: 30 rapid creates → 10
       reach the app, then 20 × 429 with Retry-After and CORS headers.
-- [ ] **8.5 Low-confidence route**: weak retrieval or all-low confidence → "I'm not sure" + MOHRE contacts.
+- [x] **8.5 Low-confidence route**: weak retrieval or all-low confidence → "I'm not sure" + MOHRE contacts.
       Check: TC-12 shows the not-covered/unsure path with contacts. Ports: `not_covered` handling in `Build Writer Prompt`.
+      *Done 4 Oct (your choice: notice + keep the amounts):* code decides, with no prompt change.
+      `Analysis.unsure` = in scope and no finding of medium or high confidence (no findings at all counts, like
+      TC-12). It is always recomputed from the findings, so saved analyses get it too. The results page then:
+      - leads with "Haqqi isn't sure about your case… call 80084, use the MOHRE app, or visit mohre.gov.ae" and a
+        tap-to-call button (shared with the referral page);
+      - titles the findings "Possible issues (low confidence)" and the amounts "if the law applies";
+      - hides the complaint card. The server also refuses the PDF (409), so it isn't only hidden in the UI.
+
+      "Weak retrieval" is not used as a signal: RRF ranks aren't calibrated scores, and the Law Pack always tops up
+      the law. The new strings in the 7 non-English catalogs are drafts for review. Tests:
+      - the rule table;
+      - the PDF refusal;
+      - a live API test (low finding → `unsure`, complaint 409);
+      - the catalog 80084 check;
+      - a browser run at iPhone width with the API mocked (`docs/screens/s8-unsure-en.png`, `-ur.png`), where a
+        confident case is unchanged.
 - [ ] **8.6 7-day auto-delete** (flag 21): a scheduled purge job.
       Check: a test inserts a case dated 8 days ago → purge removes it; the job is visible in the host scheduler. Ports: new.
       *4 Oct:* Render's free plan has no cron jobs and the backend sleeps, so the schedule lives in the database:

@@ -121,6 +121,7 @@ def run_case(case: Case, llm: Completer, db_url: str, embedder: Embedder) -> dic
         "violation_cited": [c in allowed for c in cited],
         "violation_supported": [article_of(c) in exp.supporting_articles for c in cited],
         "not_covered": analysis.not_covered,
+        "unsure": analysis.unsure,
         "critic": analysis.critic_verdict,
         "revised": analysis.revised,
         "writer_failed": analysis.writer_failed,

@@ -81,3 +81,36 @@ def test_analysis_saved_before_the_facts_only_writer_still_loads() -> None:
     assert analysis.writer is not None
     assert analysis.writer.explanation == "e"
     assert analysis.writer.letter_facts_ar == ""  # the complaint download asks for a new analysis
+
+
+def _finding(confidence: str) -> dict[str, object]:
+    return {
+        "issue": "Deduction may break Art. 25",
+        "article": {
+            "chunk_id": "fdl33-2021:art25:cl1",
+            "law_id": "fdl33-2021",
+            "article_no": 25,
+            "clause_no": 1,
+            "quote": "…",
+        },
+        "confidence": confidence,
+    }
+
+
+@pytest.mark.parametrize(
+    ("in_scope", "confidences", "unsure"),
+    [
+        (True, [], True),  # nothing found (TC-12)
+        (True, ["low", "low"], True),  # only possibilities
+        (True, ["low", "medium"], False),
+        (True, ["high"], False),
+        (False, [], False),  # out of scope gets a referral, not the unsure notice
+    ],
+)
+def test_unsure_is_computed_from_the_findings(
+    in_scope: bool, confidences: list[str], unsure: bool
+) -> None:
+    data = {"in_scope": in_scope, "violations": [_finding(c) for c in confidences]}
+    assert Analysis.model_validate(data).unsure is unsure
+    # Stored analyses, older ones without the field or with a stale value, get it recomputed.
+    assert Analysis.model_validate({**data, "unsure": not unsure}).unsure is unsure

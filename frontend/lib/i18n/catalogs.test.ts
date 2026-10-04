@@ -17,10 +17,11 @@ describe("catalogs", () => {
     }
   });
 
-  it("keeps MOHRE's number in every disclaimer and referral contact line", () => {
+  it("keeps MOHRE's number in every disclaimer, referral and unsure contact line", () => {
     for (const catalog of Object.values(CATALOGS)) {
       expect(catalog["disclaimer.text"]).toContain("80084");
       expect(catalog["referral.mohre"]).toContain("80084");
+      expect(catalog["results.unsure"]).toContain("80084");
     }
   });
 });
