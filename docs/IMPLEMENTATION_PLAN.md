@@ -442,16 +442,24 @@ data sent to them for training, which would break the PRD's "no training on user
       not_covered note; the Writer must not promise results and the headline must name the problem. Re-run: TC-02 now
       says gratuity is due (6,229.59), TC-01 no longer promises, TC-06 headline names both issues
       (`docs/language_check.md`).
-- [ ] **6.5 (P1) TTS playback** of the explanation. First to cut.
+- [ ] **6.5 (P1) TTS playback** of the explanation. First to cut. **Skipped (your call, 4 Oct).**
       Check: play button reads the Hindi explanation. Ports: new (F9).
 
 ## Sprint 7 — Evaluation (PRD Block 7)
 
-- [ ] **7.1 Port the harness cases**: all 22 n8n cases → `eval/cases.jsonl` (story, form fields, expected outcome,
+- [x] **7.1 Port the harness cases**: all 22 n8n cases → `eval/cases.jsonl` (story, form fields, expected outcome,
       issues, articles, hand-calculated claim, `max_total`, `expect_revise`, `expect_not_covered`).
       Check: `python -m eval.validate` → 22 valid rows. Ports: `Test Cases`.
-- [ ] **7.2 Add 28 cases** (to 50), weighted toward termination, gratuity and mixed issues, each with hand-worked claims.
+      *Done 4 Oct:* `eval/cases.jsonl` (format in `eval/schema.py`). Each row has the story, form, confirm-form answers,
+      expected route/referral, issues, key clauses (for hit@5), supporting articles (flag 24), and hand-worked claim
+      lines and total (`eval/CASES.md`); TC-10/TC-14 carry injected amounts, TC-11 a seeded citation. `make eval-validate`.
+- [x] **7.2 Add 28 cases** (to 50), weighted toward termination, gratuity and mixed issues, each with hand-worked claims.
       Check: validator → 50 rows; issue-type histogram printed. Ports: new.
+      *Done 4 Oct:* N-01–N-28 in all 8 languages, with the edge cases: exactly 1 year, 364 days, exactly 5 × 365, the cap,
+      part-time, flexible, unpaid absence, notice clamp, resigned short of notice, deductions over 50%, leave at the
+      end of a job, above the 50,000 limit, injection, a second seeded citation, need-info, and free zone/ADGM. The
+      validator shows 50 rows (40 ready, 6 out of scope, 4 need-info), with gratuity 23, unpaid wages 13, termination 11,
+      notice 11. The app's calculator matches the independent hand arithmetic on all 40.
 - [ ] **7.3 `eval/run_eval.py`**: runs the pipeline per case and computes the 8 PRD metrics (outcome, issue detection,
       hit@5, citation validity, critic catch, calculator exact, injection resistance, p95 latency).
       Check: `make eval` prints the metrics table and writes `eval/results/<date>.json`. Ports: `Loop Over Items`, `Run Haqqi`, `Check Result`, `Summary`, `Is Test Run?`, `Return to Tests`, `When Executed by Another Workflow`.

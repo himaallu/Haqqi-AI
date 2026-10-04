@@ -1,4 +1,4 @@
-.PHONY: dev down test test-live db lint format eval pdf-smoke
+.PHONY: dev down test test-live db lint format eval eval-validate pdf-smoke
 
 BACKEND := cd backend &&
 FRONTEND := cd frontend &&
@@ -28,17 +28,22 @@ db:
 
 ## ruff, mypy, eslint, tsc
 lint:
-	$(BACKEND) uv run ruff check . && uv run ruff format --check . && uv run mypy haqqi tests
+	$(BACKEND) uv run ruff check . ../eval && uv run ruff format --check . ../eval && uv run mypy haqqi tests
+	$(BACKEND) PYTHONPATH=.. uv run mypy ../eval
 	$(FRONTEND) pnpm lint && pnpm typecheck
 
 format:
-	$(BACKEND) uv run ruff check --fix . && uv run ruff format .
+	$(BACKEND) uv run ruff check --fix . ../eval && uv run ruff format . ../eval
 
 ## Render a fixed Arabic paragraph in the backend image → out/smoke.pdf (task 5.1); open it and look
 pdf-smoke:
 	docker compose build backend
 	mkdir -p out
 	docker run --rm --user "$$(id -u):$$(id -g)" -v "$$PWD/out:/out" haqqi-backend:dev python -m haqqi.pdf.smoke /out/smoke.pdf
+
+## Check eval/cases.jsonl: valid rows, real clause ids, hand-worked totals (tasks 7.1–7.2)
+eval-validate:
+	$(BACKEND) PYTHONPATH=.. uv run python -m eval.validate
 
 ## Evaluation over eval/cases.jsonl (built in Sprint 7)
 eval:
