@@ -3,11 +3,11 @@
  "embedder": "cloudflare",
  "run_on": "2026-10-04",
  "metrics": {
-  "cases": 2,
+  "cases": 3,
   "errors": 0,
   "outcome_accuracy": 1.0,
   "issue_detection": 1.0,
-  "retrieval_hit_at_5": 0.5,
+  "retrieval_hit_at_5": 0.667,
   "citations_cited": 1.0,
   "citations_supported": 1.0,
   "critic_catch_rate": null,
@@ -15,9 +15,9 @@
   "injection_resistance": null,
   "latency_p95_s": 299.1,
   "counts": {
-   "analysed": 2,
-   "with_issues": 2,
-   "violations": 11,
+   "analysed": 3,
+   "with_issues": 3,
+   "violations": 15,
    "seeded": 0,
    "injected": 0,
    "writer_failed": 1
@@ -186,6 +186,76 @@
    "revised": false,
    "writer_failed": true,
    "headline": null,
+   "calculator_exact": true
+  },
+  "TC-03": {
+   "id": "TC-03",
+   "language": "en",
+   "tags": [
+    "gratuity"
+   ],
+   "route": "ready",
+   "referral": null,
+   "outcome_ok": true,
+   "intake_issues": [
+    "gratuity"
+   ],
+   "issue_recall": 1.0,
+   "hit_at_5": true,
+   "top5": [
+    "fdl33-2021:art51:cl5",
+    "fdl33-2021:art51:cl2",
+    "fdl33-2021:art51:cl6",
+    "fdl33-2021:art37:cl3",
+    "fdl33-2021:art51:cl7"
+   ],
+   "seconds": 69.1,
+   "analysed": true,
+   "total_aed": "16056.85",
+   "claim": {
+    "End-of-service gratuity": "16056.85"
+   },
+   "citations": [
+    "fdl33-2021:art51:cl2",
+    "fdl33-2021:art51:cl5",
+    "fdl33-2021:art51:cl3",
+    "fdl33-2021:art51:cl7"
+   ],
+   "findings": [
+    {
+     "clause": "fdl33-2021:art51:cl2",
+     "issue": "The worker completed over six years of continuous full-time service, so the statutory gratuity formula applies: 21 days' basic wage for each of the first five years and 30 days for each year beyond that, calculated on the last basic wage received. The company's stated gratuity figure appears materially below what this formula yields for 6.09 years of service, so an underpayment is likely unless the employer can justify deductions permitted by law or a judgment."
+    },
+    {
+     "clause": "fdl33-2021:art51:cl5",
+     "issue": "The worker completed over six years of continuous full-time service, so the statutory gratuity formula applies: 21 days' basic wage for each of the first five years and 30 days for each year beyond that, calculated on the last basic wage received. The company's stated gratuity figure appears materially below what this formula yields for 6.09 years of service, so an underpayment is likely unless the employer can justify deductions permitted by law or a judgment."
+    },
+    {
+     "clause": "fdl33-2021:art51:cl3",
+     "issue": "The worker completed over six years of continuous full-time service, so the statutory gratuity formula applies: 21 days' basic wage for each of the first five years and 30 days for each year beyond that, calculated on the last basic wage received. The company's stated gratuity figure appears materially below what this formula yields for 6.09 years of service, so an underpayment is likely unless the employer can justify deductions permitted by law or a judgment."
+    },
+    {
+     "clause": "fdl33-2021:art51:cl7",
+     "issue": "The worker completed over six years of continuous full-time service, so the statutory gratuity formula applies: 21 days' basic wage for each of the first five years and 30 days for each year beyond that, calculated on the last basic wage received. The company's stated gratuity figure appears materially below what this formula yields for 6.09 years of service, so an underpayment is likely unless the employer can justify deductions permitted by law or a judgment."
+    }
+   ],
+   "violation_cited": [
+    true,
+    true,
+    true,
+    true
+   ],
+   "violation_supported": [
+    true,
+    true,
+    true,
+    true
+   ],
+   "not_covered": [],
+   "critic": "pass",
+   "revised": false,
+   "writer_failed": false,
+   "headline": "Your employer's gratuity offer is below the statutory amount for your six years of service.",
    "calculator_exact": true
   }
  }
