@@ -3,6 +3,7 @@
 import Link from "next/link";
 
 import { ComplaintDownload } from "@/components/complaint-download";
+import { MohreCall } from "@/components/mohre-call";
 import { Button } from "@/components/ui/button";
 import { articleRef, lawName } from "@/lib/citation";
 import { useI18n } from "@/lib/i18n/provider";
@@ -29,13 +30,21 @@ export function Results({ caseId, analysis, onRetry }: { caseId: string; analysi
   // The Writer returns one plain-language line per claim line, in the same order (haqqi/agents/writer.py).
   const plain = writer && writer.amount_lines.length === lines.length ? writer.amount_lines : null;
   const nextSteps = writer?.checklist.length ? writer.checklist : analysis.next_steps;
+  // Task 8.5: when no finding is more than a possibility, lead with "not sure" + MOHRE and offer no complaint.
+  const unsure = analysis.unsure;
   const canComplain =
-    Boolean(writer?.letter_facts_ar) && (analysis.violations.length > 0 || analysis.claim.length > 0);
+    !unsure && Boolean(writer?.letter_facts_ar) && (analysis.violations.length > 0 || analysis.claim.length > 0);
 
   return (
     <article className="flex flex-col gap-8" data-testid="results">
       <header className="flex flex-col gap-3">
         <p className="text-sm text-muted-foreground">{t("results.title")}</p>
+        {unsure && (
+          <div className="flex flex-col gap-3 rounded-md bg-warning-bg px-3 py-3 text-warning-fg" data-testid="unsure">
+            <p className="font-medium">{t("results.unsure")}</p>
+            <MohreCall />
+          </div>
+        )}
         {writer && <h1 className="text-2xl font-semibold">{writer.headline}</h1>}
         {(writer?.explanation ?? analysis.explanation)
           .split(/\n+/)
@@ -57,7 +66,7 @@ export function Results({ caseId, analysis, onRetry }: { caseId: string; analysi
         )}
       </header>
 
-      <Section title={t("results.violations")} note={t("results.inEnglish")}>
+      <Section title={t(unsure ? "results.possibleIssues" : "results.violations")} note={t("results.inEnglish")}>
         {analysis.violations.length === 0 ? (
           <p>{t("results.noViolations")}</p>
         ) : (
@@ -87,7 +96,7 @@ export function Results({ caseId, analysis, onRetry }: { caseId: string; analysi
       </Section>
 
       {analysis.claim.length > 0 && (
-        <Section title={t("results.claim")}>
+        <Section title={t(unsure ? "results.claimIfApplies" : "results.claim")}>
           <ClaimList lines={analysis.claim} plain={plain} />
           <div className="flex items-baseline justify-between gap-4 border-t pt-3 text-lg font-semibold" data-testid="total">
             <span>{t("results.total")}</span>

@@ -6,7 +6,8 @@ local database and its law index (DATABASE_URL, EMBEDDER). The LLM is K2 by defa
 for eval runs, 4 Oct; production stays on free Gemini); `--provider gemini` uses the free chain.
 
 Each case's result is saved as soon as it finishes, so a stopped run continues where it left off
-(`--rerun` starts again). Writes eval/results/<date>-<provider>.json and prints the metrics table.
+(`--rerun` starts again; `--limit N` stops after N cases, so a run can be split over days or
+providers). Writes eval/results/<date>-<provider>.json and prints the metrics table.
 """
 
 import argparse
@@ -23,7 +24,7 @@ from typing import Any
 import psycopg
 
 from eval.cases_io import confirmed_facts, create_request, load_cases
-from eval.metrics import summarize, table
+from eval.metrics import article_of, rescore, summarize, table
 from eval.schema import Case
 from haqqi.agents.analysis import SEEDED_BAD_CITATION
 from haqqi.agents.intake import run_intake
@@ -39,10 +40,6 @@ from haqqi.rag.retrieve import RetrievedChunk, fused_ranking, retrieve
 
 RESULTS_DIR = Path(__file__).with_name("results")
 DIGITS = str.maketrans("٠١٢٣٤٥٦٧٨٩۰۱۲۳۴۵۶۷۸۹", "01234567890123456789")
-
-
-def article_of(clause_id: str) -> str:
-    return clause_id.split(":cl")[0]
 
 
 def make_llm(provider: str) -> Completer:
@@ -120,6 +117,7 @@ def run_case(case: Case, llm: Completer, db_url: str, embedder: Embedder) -> dic
         "violation_cited": [c in allowed for c in cited],
         "violation_supported": [article_of(c) in exp.supporting_articles for c in cited],
         "not_covered": analysis.not_covered,
+        "unsure": analysis.unsure,
         "critic": analysis.critic_verdict,
         "revised": analysis.revised,
         "writer_failed": analysis.writer_failed,
@@ -150,6 +148,12 @@ def main() -> int:
     parser.add_argument("ids", nargs="*", help="only these case ids")
     parser.add_argument("--provider", choices=["k2", "gemini"], default="k2")
     parser.add_argument("--rerun", action="store_true", help="ignore saved results for these cases")
+    parser.add_argument("--limit", type=int, help="stop after running this many cases")
+    parser.add_argument(
+        "--rescore",
+        action="store_true",
+        help="re-score the saved results against today's labels (no LLM calls), then exit",
+    )
     parser.add_argument(
         "--out", type=Path, help="results file (default: results/<date>-<provider>.json)"
     )
@@ -161,12 +165,30 @@ def main() -> int:
     path = args.out or RESULTS_DIR / f"{date.today().isoformat()}-{args.provider}.json"
     saved: dict[str, Any] = json.loads(path.read_text()) if path.exists() else {}
     results: dict[str, Any] = saved.get("cases", {})
+    if args.rescore:
+        expected = {c.id: c.expected for c in load_cases()}
+        for result in results.values():
+            exp = expected[result["id"]]
+            rescore(result, exp.key_clauses, exp.supporting_articles)
+        metrics = summarize(list(results.values()))
+        path.write_text(
+            json.dumps(
+                {**saved, "metrics": metrics, "cases": results}, ensure_ascii=False, indent=1
+            )
+            + "\n"
+        )
+        print(table(metrics))
+        return 0
     llm = make_llm(args.provider)
     embedder = get_embedder(settings)
+    ran = 0
 
     for case in load_cases():
         if (args.ids and case.id not in args.ids) or (case.id in results and not args.rerun):
             continue
+        if args.limit is not None and ran >= args.limit:
+            break
+        ran += 1
         try:
             result = run_case(case, llm, settings.database_url, embedder)
         except LLMError as exc:

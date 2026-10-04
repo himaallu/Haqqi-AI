@@ -6,17 +6,20 @@ Live tests: run `make dev` (or the db service), then `make test-live`.
 import io
 import json
 import logging
-from collections.abc import Iterator
+from collections.abc import Iterator, Sequence
 from decimal import Decimal
 from typing import Any
 
 import psycopg
 import pytest
 from fastapi.testclient import TestClient
+from pydantic import BaseModel
 from pypdf import PdfReader
 
 from haqqi.api import cases
 from haqqi.api.main import create_app
+from haqqi.llm.client import Message
+from haqqi.logs import RedactingFilter
 from haqqi.models import Analysis, ExtractedFacts
 from haqqi.rag.embed import HashEmbedder
 from haqqi.rag.ingest import ingest
@@ -255,3 +258,60 @@ def test_complaint_for_out_of_scope_case_is_refused(db: str) -> None:
     client = client_with(llm, db)
     case = client.post("/v1/cases", json={"language": "en", "story": "DIFC firm ended my job."})
     assert client.post(f"/v1/cases/{case.json()['id']}/complaint", json={}).status_code == 409
+
+
+class CrashingLLM(FakeLLM):
+    """The analyst step raises an error whose message quotes the story (a worst case)."""
+
+    def complete[T: BaseModel](self, stage: str, messages: Sequence[Message], schema: type[T]) -> T:
+        if stage == "analyst":
+            raise ValueError(f"cannot parse {TC01['story']}")
+        return super().complete(stage, messages, schema)
+
+
+def test_logs_never_contain_the_story_even_when_analysis_crashes(db: str) -> None:
+    out = io.StringIO()
+    handler = logging.StreamHandler(out)
+    root = logging.getLogger()
+    client = client_with(CrashingLLM({"intake": [TC01_EXTRACTED]}), db)  # configures logging
+    handler.addFilter(RedactingFilter())
+    root.addHandler(handler)
+    level = root.level
+    root.setLevel(logging.DEBUG)
+    try:
+        case_id = client.post("/v1/cases", json=TC01).json()["id"]
+        client.patch(f"/v1/cases/{case_id}", json={"months_unpaid": 3})
+        got = events(client.post(f"/v1/cases/{case_id}/analyze").text)
+    finally:
+        root.removeHandler(handler)
+        root.setLevel(level)
+
+    assert got[-1][0] == "error"
+    logged = out.getvalue()
+    assert "analysis crashed" in logged and "ValueError" in logged
+    assert TC01["story"][:20] not in logged
+    assert case_id not in logged
+
+
+def test_only_low_confidence_findings_mark_the_case_unsure_and_refuse_the_complaint(
+    db: str,
+) -> None:
+    low = reply(WAGES)
+    low.issues[0].confidence = "low"
+    llm = FakeLLM(
+        {
+            "intake": [TC01_EXTRACTED],
+            "analyst": [low],
+            "critic": [PASS],
+            "writer": [writer(letter_facts_ar="لم أتقاضَ أجري", amount_lines=WAGE_LINE)],
+        }
+    )
+    client = client_with(llm, db)
+    case_id = analysed_tc01(client)
+
+    analysis = Analysis.model_validate(client.get(f"/v1/cases/{case_id}").json()["analysis"])
+    assert analysis.unsure
+    assert analysis.total_aed == Decimal("5400.00")  # the amounts stay (shown "if the law applies")
+    refused = client.post(f"/v1/cases/{case_id}/complaint", json={})
+    assert refused.status_code == 409
+    assert "not sure" in refused.json()["detail"]

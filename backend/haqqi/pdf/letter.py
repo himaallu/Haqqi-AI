@@ -102,6 +102,8 @@ def build_letter(facts: CaseFacts, analysis: Analysis, identity: Identity, today
         raise LetterError("the case is out of scope: there is no complaint to MOHRE")
     if not analysis.violations and not analysis.claim:
         raise LetterError("the analysis found nothing to complain about")
+    if analysis.unsure:
+        raise LetterError("Haqqi is not sure about this case: contact MOHRE first")
     writer = analysis.writer
     if writer is None or not writer.letter_facts_ar:
         raise LetterError("the Writer's text is missing: run the analysis again")

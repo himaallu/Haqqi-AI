@@ -47,6 +47,23 @@ def p95(values: Sequence[float]) -> float | None:
     return ordered[max(0, math.ceil(0.95 * len(ordered)) - 1)]
 
 
+def article_of(clause_id: str) -> str:
+    return clause_id.split(":cl")[0]
+
+
+def rescore(result: Result, key_clauses: Sequence[str], supporting: Sequence[str]) -> None:
+    """Re-score hit@5 and support from the saved top 5 and citations against today's labels.
+
+    Labels can change after a run (documented in eval/CHANGELOG.md); this keeps old and new runs
+    comparable without calling the LLM again.
+    """
+    if result.get("top5") is not None and key_clauses:
+        top5 = {article_of(i) for i in result["top5"]}
+        result["hit_at_5"] = any(article_of(k) in top5 for k in key_clauses)
+    if "citations" in result:
+        result["violation_supported"] = [article_of(c) in supporting for c in result["citations"]]
+
+
 def summarize(results: Sequence[Result]) -> dict[str, Any]:
     ok = [r for r in results if not r.get("error")]
     analysed = [r for r in ok if r.get("analysed")]

@@ -7,9 +7,11 @@ from fastapi.middleware.cors import CORSMiddleware
 from pydantic import BaseModel
 
 from haqqi.api.cases import router as cases_router
+from haqqi.api.limits import LimitsMiddleware
 from haqqi.api.transcribe import router as transcribe_router
 from haqqi.config import get_settings
 from haqqi.db import check_db
+from haqqi.logs import configure_logging
 
 
 class Health(BaseModel):
@@ -20,7 +22,10 @@ class Health(BaseModel):
 
 def create_app() -> FastAPI:
     settings = get_settings()
+    configure_logging()
     app = FastAPI(title="Haqqi API", version="0.1.0")
+    # Added first so it sits inside CORS: a 429/413 still carries the CORS headers.
+    app.add_middleware(LimitsMiddleware)
     app.add_middleware(
         CORSMiddleware,
         allow_origins=settings.cors_origins,

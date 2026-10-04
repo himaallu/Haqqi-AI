@@ -17,9 +17,11 @@ test:
 	$(FRONTEND) pnpm test
 
 ## Tests that need running services (local database, API keys). Run `make dev` first.
-## They rebuild law_chunks, so they use TEST_DATABASE_URL (local only), never DATABASE_URL.
+## They rebuild law_chunks, so they use TEST_DATABASE_URL (local only, its own `haqqi_test`
+## database), never DATABASE_URL.
 test-live:
-	$(BACKEND) export TEST_DATABASE_URL=$${TEST_DATABASE_URL:-postgresql://haqqi:haqqi@localhost:5432/haqqi} && \
+	$(BACKEND) export TEST_DATABASE_URL=$${TEST_DATABASE_URL:-postgresql://haqqi:haqqi@localhost:5432/haqqi_test} && \
+		uv run python -c "from tests.conftest import ensure_test_database; ensure_test_database()" && \
 		DATABASE_URL=$$TEST_DATABASE_URL uv run alembic upgrade head && uv run pytest -q -m live
 
 ## Apply database migrations to DATABASE_URL, then rebuild the law search index

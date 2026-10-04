@@ -178,3 +178,27 @@ def test_translation_column_embeds_its_script_font(lang: str, font: str) -> None
     _pdf, fonts = render_pdf_with_fonts(build_letter(facts, analysis_for(facts), Identity(), TODAY))
     assert any(name.split("+")[-1].startswith(font) for name in fonts), fonts
     assert any("Noto-Naskh-Arabic" in name for name in fonts)
+
+
+@pytest.mark.parametrize("lang", ["en", "hi", "ur", "ml", "bn", "tl", "ne", "ar"])
+def test_footer_disclaimer_with_mohre_80084_in_both_columns(lang: str) -> None:
+    facts = tc03(lang)
+    html = render_html(build_letter(facts, analysis_for(facts), Identity(), TODAY))
+    assert html.count("80084") == (1 if lang == "ar" else 2)  # Arabic, plus the translation
+
+
+def test_footer_disclaimer_is_in_the_pdf_text() -> None:
+    facts = tc03("en")
+    pdf = render_pdf(build_letter(facts, analysis_for(facts), Identity(), TODAY))
+    text = "\n".join(page.extract_text() for page in PdfReader(io.BytesIO(pdf)).pages)
+    assert "not legal advice" in text and "80084" in text
+
+
+def test_no_letter_when_haqqi_is_not_sure() -> None:
+    facts = tc03("en")
+    sure = analysis_for(facts)
+    low = sure.violations[0].model_copy(update={"confidence": "low"})
+    unsure = Analysis.model_validate({**sure.model_dump(), "violations": [low.model_dump()]})
+    assert unsure.unsure and unsure.claim  # the amounts are still there
+    with pytest.raises(LetterError, match="not sure"):
+        build_letter(facts, unsure, Identity(), TODAY)

@@ -460,18 +460,32 @@ data sent to them for training, which would break the PRD's "no training on user
       end of a job, above the 50,000 limit, injection, a second seeded citation, need-info, and free zone/ADGM. The
       validator shows 50 rows (40 ready, 6 out of scope, 4 need-info), with gratuity 23, unpaid wages 13, termination 11,
       notice 11. The app's calculator matches the independent hand arithmetic on all 40.
-- [ ] **7.3 `eval/run_eval.py`**: runs the pipeline per case and computes the 8 PRD metrics (outcome, issue detection,
+- [x] **7.3 `eval/run_eval.py`**: runs the pipeline per case and computes the 8 PRD metrics (outcome, issue detection,
       hit@5, citation validity, critic catch, calculator exact, injection resistance, p95 latency).
       Check: `make eval` prints the metrics table and writes `eval/results/<date>.json`. Ports: `Loop Over Items`, `Run Haqqi`, `Check Result`, `Summary`, `Is Test Run?`, `Return to Tests`, `When Executed by Another Workflow`.
+      *Done 4 Oct:* in-process pipeline per case. Each case's result is saved as it finishes, so a run resumes, and
+      `--rerun`/`--limit` let it be split across days or providers. K2 by default (your choice for eval);
+      `--provider gemini` uses the free chain. Metric definitions are in `eval/metrics.py`; `eval/compare.py` gives a
+      before/after on the same cases. First full K2 run: 16 of 50 cases were lost to a K2-only retry bug (HTTP 400,
+      fixed). **Your call (4 Oct):** 20 cases today (TC-01 to TC-21), and the other 30 tomorrow on a Gemini + K2 mix.
 - [x] **7.4 Offline eval subset for CI**: calculator exactness + retrieval hit@5 with no LLM.
       Check: `make eval-offline` finishes in < 2 min without `K2_API_KEY`; it exits non-zero if calculator < 100%. Ports: new.
       *Done 4 Oct:* `eval/offline.py`: calculator vs all 40 hand-worked cases (40/40) in about a second, no LLM, DB or key;
       CI runs it after the tests. Retrieval hit@5 runs too when a local BGE-M3 index is reachable (story as the query),
       otherwise it says "skipped".
-- [ ] **7.5 Fix the worst failures** (top 3 by metric gap).
+- [x] **7.5 Fix the worst failures** (top 3 by metric gap).
       Check: before/after table in `eval/CHANGELOG.md`. Ports: new.
+      *Done 4 Oct (20 cases, K2):*
+      - Retrieval hit@5 went from 50% to 75%: issue words are added to the search query. The 3 remaining misses were
+        unpaid wages, where CR 16 ranks above Art. 22. **Your call (4 Oct): CR 16(1) counts as a hit.** Re-scored on
+        the same 20 cases, that is 60% before and **92%** after. One miss is left (TC-11).
+      - No false notice breaches: CHANGES.md 27, approved. In TC-21 the false finding is gone.
+      - Support labels widened by documented rules. Re-scored on the same labels, support is 98% before and 96% after.
+      - The K2 retry fix: 0 cases lost.
+      - Latency stays a K2 limit (p95 299 s); production runs on Gemini.
 - [ ] **7.6 Record scores**.
       Check: the README metrics table matches the latest results file. Ports: `Log Results` (replaced).
+      *4 Oct:* the README has the table for the 20-case K2 run, marked partial. It stays open until all 50 have run.
 
 ## Sprint 8 — Production polish (PRD Block 8)
 
@@ -480,16 +494,60 @@ data sent to them for training, which would break the PRD's "no training on user
       Check: a PR shows all jobs green; merging triggers a deploy and `/healthz` shows the new commit SHA. Ports: new.
 - [ ] **8.2 Langfuse tracing** of every K2 call (stage, latency, tokens) with PII redaction.
       Check: one run → a trace with 4–5 spans; searching the trace for the test phone number finds nothing. Ports: `Log Stats` (replaced).
-- [ ] **8.3 Log redaction**: a filter drops story text and masks phones, emails and Emirates ID/passport patterns.
+- [x] **8.3 Log redaction**: a filter drops story text and masks phones, emails and Emirates ID/passport patterns.
       Check: `pytest tests/test_redaction.py`; grepping logs after TC-01 finds no story text. Ports: new.
-- [ ] **8.4 Rate limiting + input caps** (per IP; story, audio and form sizes).
+      *Done 4 Oct:* `haqqi/logs.py`. Until now the app set up no logging of its own, so only warnings reached Render and
+      nothing was filtered. The app now logs to stderr through `RedactingFilter`, which is also added to uvicorn's
+      handlers. It masks phones and other 9+ digit numbers, emails, Emirates ID, passport-like ids and **case ids**
+      (with no accounts, a case id is the only key to a case, so access logs show `/v1/cases/[case-id]`). It drops
+      exception messages, which can quote the input, keeping the type and stack frames, and caps lines at 600
+      characters. Our own log lines carry no content. A live API test runs TC-01 into a crash whose error quotes the
+      story and finds neither the story nor the case id in the logs. Also: `make test-live` now uses its own
+      `haqqi_test` database, because it had been overwriting the real local index.
+- [x] **8.4 Rate limiting + input caps** (per IP; story, audio and form sizes).
       Check: 30 rapid requests → HTTP 429; oversized audio → 413. Ports: new.
-- [ ] **8.5 Low-confidence route**: weak retrieval or all-low confidence → "I'm not sure" + MOHRE contacts.
+      *Done 4 Oct:* `haqqi/api/limits.py`, an ASGI middleware inside CORS (so the browser can read a 429; the UI
+      already shows its "busy" message). Per IP, in memory (one instance): new case 10 and analysis 10 per 10 minutes
+      (they use the free Gemini quota, about 12–15 cases a day in all), complaint and voice 20 per 10 minutes, and any
+      `/v1` call 120 a minute. `/healthz` is not limited. The IP is the last `X-Forwarded-For` entry (earlier ones can
+      be faked). **To check after deploy:** if Render adds hops of its own, every user would share one limit. Bodies
+      over 64 KB (3 MB + 64 KB for audio) get 413 before they are read; chunked bodies with no length get 411. The
+      story, contract and complaint-field caps were already in place (3.4, 5.4, 6.1). Test: 30 rapid creates → 10
+      reach the app, then 20 × 429 with Retry-After and CORS headers.
+- [x] **8.5 Low-confidence route**: weak retrieval or all-low confidence → "I'm not sure" + MOHRE contacts.
       Check: TC-12 shows the not-covered/unsure path with contacts. Ports: `not_covered` handling in `Build Writer Prompt`.
+      *Done 4 Oct (your choice: notice + keep the amounts):* code decides, with no prompt change.
+      `Analysis.unsure` = in scope and no finding of medium or high confidence (no findings at all counts, like
+      TC-12). It is always recomputed from the findings, so saved analyses get it too. The results page then:
+      - leads with "Haqqi isn't sure about your case… call 80084, use the MOHRE app, or visit mohre.gov.ae" and a
+        tap-to-call button (shared with the referral page);
+      - titles the findings "Possible issues (low confidence)" and the amounts "if the law applies";
+      - hides the complaint card. The server also refuses the PDF (409), so it isn't only hidden in the UI.
+
+      "Weak retrieval" is not used as a signal: RRF ranks aren't calibrated scores, and the Law Pack always tops up
+      the law. The new strings in the 7 non-English catalogs are drafts for review. Tests:
+      - the rule table;
+      - the PDF refusal;
+      - a live API test (low finding → `unsure`, complaint 409);
+      - the catalog 80084 check;
+      - a browser run at iPhone width with the API mocked (`docs/screens/s8-unsure-en.png`, `-ur.png`), where a
+        confident case is unchanged.
 - [ ] **8.6 7-day auto-delete** (flag 21): a scheduled purge job.
       Check: a test inserts a case dated 8 days ago → purge removes it; the job is visible in the host scheduler. Ports: new.
-- [ ] **8.7 Disclaimer everywhere** (results, referral, PDF footer).
+      *4 Oct:* Render's free plan has no cron jobs and the backend sleeps, so the schedule lives in the database:
+      migration `0002` creates an hourly **pg_cron** job on Supabase (`DELETE FROM cases WHERE expires_at <= now()`); where
+      pg_cron isn't available (the local image) it is a no-op, and `python -m haqqi.purge` does it by hand. The API
+      already refused expired cases. The live test (a case from 8 days ago is deleted, a new one kept) passes.
+      **Waiting for you:** run `alembic upgrade head` on Supabase and check `cron.job` (DEPLOY.md §1).
+- [x] **8.7 Disclaimer everywhere** (results, referral, PDF footer).
       Check: every eval response includes "80084" (ported `disclaimer` check). Ports: `DISCLAIMER`/`DISCLAIMER_AR` constants.
+      *Done 4 Oct:* mostly in place since S4/S5; this adds the missing checks. Screens: the `[lang]` layout shows the
+      disclaimer on every page (English, the worker's language and Arabic, each with 80084), and a catalog test keeps
+      80084 in every language's disclaimer and referral line. The results page and the story screen say the text is
+      processed by Google Gemini (flag 26). Referral texts from routing include 80084 (API test). PDF: new tests check
+      the footer ("legal information, not legal advice; MOHRE decides … 80084") in both columns for all 8 languages,
+      and in the PDF text. The API's JSON has no disclaimer field: the UI adds it, so the check is on what the worker
+      sees.
 - [ ] **8.8 Sentry** for the frontend and backend.
       Check: a test exception shows up in Sentry. Ports: new.
 - [ ] **8.9 README**: problem, architecture diagram, eval table, demo GIF, setup, and the n8n "v0" story.

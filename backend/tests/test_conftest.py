@@ -15,3 +15,8 @@ def test_live_tests_refuse_a_remote_test_database(monkeypatch: pytest.MonkeyPatc
     monkeypatch.setenv("TEST_DATABASE_URL", "postgresql://u:p@aws-0-x.pooler.supabase.com/postgres")
     with pytest.raises(ValueError, match="local database"):
         local_test_db_url()
+
+
+def test_live_tests_default_to_their_own_database() -> None:
+    # Not `haqqi`, which holds the real index that `make dev` and `make eval` use.
+    assert DEFAULT_TEST_DB.endswith("/haqqi_test")
