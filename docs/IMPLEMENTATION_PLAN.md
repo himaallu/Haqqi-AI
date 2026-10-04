@@ -480,8 +480,16 @@ data sent to them for training, which would break the PRD's "no training on user
       Check: a PR shows all jobs green; merging triggers a deploy and `/healthz` shows the new commit SHA. Ports: new.
 - [ ] **8.2 Langfuse tracing** of every K2 call (stage, latency, tokens) with PII redaction.
       Check: one run → a trace with 4–5 spans; searching the trace for the test phone number finds nothing. Ports: `Log Stats` (replaced).
-- [ ] **8.3 Log redaction**: a filter drops story text and masks phones, emails and Emirates ID/passport patterns.
+- [x] **8.3 Log redaction**: a filter drops story text and masks phones, emails and Emirates ID/passport patterns.
       Check: `pytest tests/test_redaction.py`; grepping logs after TC-01 finds no story text. Ports: new.
+      *Done 4 Oct:* `haqqi/logs.py`. Until now the app set up no logging of its own, so only warnings reached Render and
+      nothing was filtered. The app now logs to stderr through `RedactingFilter`, which is also added to uvicorn's
+      handlers. It masks phones and other 9+ digit numbers, emails, Emirates ID, passport-like ids and **case ids**
+      (with no accounts, a case id is the only key to a case, so access logs show `/v1/cases/[case-id]`). It drops
+      exception messages, which can quote the input, keeping the type and stack frames, and caps lines at 600
+      characters. Our own log lines carry no content. A live API test runs TC-01 into a crash whose error quotes the
+      story and finds neither the story nor the case id in the logs. Also: `make test-live` now uses its own
+      `haqqi_test` database, because it had been overwriting the real local index.
 - [ ] **8.4 Rate limiting + input caps** (per IP; story, audio and form sizes).
       Check: 30 rapid requests → HTTP 429; oversized audio → 413. Ports: new.
 - [ ] **8.5 Low-confidence route**: weak retrieval or all-low confidence → "I'm not sure" + MOHRE contacts.
