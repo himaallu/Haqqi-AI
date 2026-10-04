@@ -509,8 +509,15 @@ data sent to them for training, which would break the PRD's "no training on user
       pg_cron isn't available (the local image) it is a no-op, and `python -m haqqi.purge` does it by hand. The API
       already refused expired cases. The live test (a case from 8 days ago is deleted, a new one kept) passes.
       **Waiting for you:** run `alembic upgrade head` on Supabase and check `cron.job` (DEPLOY.md §1).
-- [ ] **8.7 Disclaimer everywhere** (results, referral, PDF footer).
+- [x] **8.7 Disclaimer everywhere** (results, referral, PDF footer).
       Check: every eval response includes "80084" (ported `disclaimer` check). Ports: `DISCLAIMER`/`DISCLAIMER_AR` constants.
+      *Done 4 Oct:* mostly in place since S4/S5; this adds the missing checks. Screens: the `[lang]` layout shows the
+      disclaimer on every page (English, the worker's language and Arabic, each with 80084), and a catalog test keeps
+      80084 in every language's disclaimer and referral line. The results page and the story screen say the text is
+      processed by Google Gemini (flag 26). Referral texts from routing include 80084 (API test). PDF: new tests check
+      the footer ("legal information, not legal advice; MOHRE decides … 80084") in both columns for all 8 languages,
+      and in the PDF text. The API's JSON has no disclaimer field: the UI adds it, so the check is on what the worker
+      sees.
 - [ ] **8.8 Sentry** for the frontend and backend.
       Check: a test exception shows up in Sentry. Ports: new.
 - [ ] **8.9 README**: problem, architecture diagram, eval table, demo GIF, setup, and the n8n "v0" story.
