@@ -9,6 +9,7 @@ import {
   downloadComplaint,
   fetchHealth,
   getCase,
+  transcribeAudio,
 } from "./api";
 
 describe("apiUrl", () => {
@@ -97,5 +98,26 @@ describe("downloadComplaint", () => {
     const fakeFetch = vi.fn().mockResolvedValue(new Response(JSON.stringify({ detail: "x" }), { status: 409 }));
     const err = await downloadComplaint("abc", {}, fakeFetch).catch((e: unknown) => e);
     expect((err as ApiError).status).toBe(409);
+  });
+});
+
+describe("transcribeAudio", () => {
+  it("uploads the recording as multipart with the language, without a JSON content type", async () => {
+    const body = { text: "पिछले तीन महीने", detected_language: "hi" };
+    const fakeFetch = vi.fn().mockResolvedValue(new Response(JSON.stringify(body), { status: 200 }));
+
+    await expect(transcribeAudio(new Blob(["x"], { type: "audio/mp4" }), "hi", fakeFetch)).resolves.toEqual(body);
+
+    const [url, init] = fakeFetch.mock.calls[0] as [string, RequestInit];
+    expect(url).toMatch(/\/v1\/transcribe$/);
+    expect(init.headers).toBeUndefined();
+    const form = init.body as FormData;
+    expect(form.get("language")).toBe("hi");
+    expect((form.get("audio") as File).name).toBe("recording.m4a");
+  });
+
+  it("throws ApiError when the speech service is down", async () => {
+    const fakeFetch = vi.fn().mockResolvedValue(new Response(JSON.stringify({ detail: "x" }), { status: 503 }));
+    await expect(transcribeAudio(new Blob(["x"]), "en", fakeFetch)).rejects.toBeInstanceOf(ApiError);
   });
 });

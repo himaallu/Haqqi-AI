@@ -7,6 +7,7 @@ from fastapi.middleware.cors import CORSMiddleware
 from pydantic import BaseModel
 
 from haqqi.api.cases import router as cases_router
+from haqqi.api.transcribe import router as transcribe_router
 from haqqi.config import get_settings
 from haqqi.db import check_db
 
@@ -34,6 +35,7 @@ def create_app() -> FastAPI:
         return Health(status="ok", db="ok" if db_ok else "down", version=settings.git_sha)
 
     app.include_router(cases_router)
+    app.include_router(transcribe_router)
     return app
 
 

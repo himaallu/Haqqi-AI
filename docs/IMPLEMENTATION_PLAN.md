@@ -145,7 +145,7 @@ data sent to them for training, which would break the PRD's "no training on user
 | Backend | Render free web service (Docker) | `render.yaml` Blueprint builds `backend/Dockerfile`; 512 MB RAM; sleeps after ~15 min idle (~1 min cold start). Hugging Face was dropped: free accounts can no longer use CPU-basic Spaces |
 | Database | Supabase free (Postgres + pgvector) | Pauses after inactivity; Neon free as alternative |
 | Embeddings | Cloudflare Workers AI, BGE-M3 (flag 15) | 10k neurons/day free; no training on content; ingest and queries use the same model |
-| Speech | **Decided in Sprint 6** | Groq's free tier gave our key no model access (HTTP 404, 2 Oct); pick a free speech-to-text option in task 6.1 |
+| Speech | Cloudflare Workers AI, Whisper large-v3-turbo (your choice, 4 Oct) | Same account and free allowance as the embeddings; no training on content; the worker's language is sent as a hint (it decides Hindi vs Urdu script) |
 | LLM | Gemini free tier only (`gemini-3-flash-preview`, then free 3.5-flash, 3.8-flash, 3.1-flash-lite), K2 as fallback (user decision, 2 Oct) | K2 made one case take 153 s, so Gemini is now primary. Free tier: 5 requests/minute and 20/day per model (flag 18), and Google may use the data (flag 26). `LLM_PROVIDER=k2` reverses the order |
 | PDF | WeasyPrint + Noto Naskh Arabic | Open source |
 | Tracing / errors | Langfuse Cloud Hobby / Sentry free | PII redacted before sending |
@@ -407,13 +407,25 @@ data sent to them for training, which would break the PRD's "no training on user
 - [ ] **5.6 Arabic reader review**.
       Check: a named reviewer signs off (tone + correctness), and notes go in `docs/arabic_review.md`. Ports: new.
       *3 Oct:* the review pack is ready (`docs/arabic_review.md`, with the TC-02 and TC-03 PDFs). Waiting for a reviewer.
+      *4 Oct:* PDFs regenerated with Western digits (CHANGES.md 23). **Deferred (your call):** you'll do the sign-off later
+      with an Arabic reader; Sprint 6 goes ahead meanwhile.
 
 ## Sprint 6 — Voice and languages (PRD Block 6)
 
-- [ ] **6.1 `POST /v1/transcribe`** (speech-to-text provider chosen here; Groq is unavailable, see 0.1; size and duration limits; audio is not stored).
+- [x] **6.1 `POST /v1/transcribe`** (speech-to-text provider chosen here; Groq is unavailable, see 0.1; size and duration limits; audio is not stored).
       Check: `curl -F audio=@tests/fixtures/hi.webm` → `{text, detected_language:"hi"}`. Ports: new (F1 voice).
+      *Done 4 Oct:* Whisper large-v3-turbo on Cloudflare Workers AI (`haqqi/speech.py`, `haqqi/api/transcribe.py`). The curl
+      check returns the TC-01 sentence with `detected_language: "hi"`; with `language=ur` the same speech comes back in Urdu
+      script. WebM/Opus (Chrome, Android) and MP4 (iPhone Safari) both transcribe. Limits: 3 MB (413), audio types only
+      (415), empty (422), service down → 503 "please type". Audio and text are never stored or logged. The fixture is the
+      TC-01 story in a synthetic voice (`tests/fixtures/README.md`).
 - [ ] **6.2 Mic recording in the browser** (MediaRecorder, iOS Safari fallback format).
       Check: record → transcript appears in the story box on Android Chrome and iOS Safari. Ports: new.
+      *4 Oct:* `components/voice-input.tsx`: tap Speak → record (WebM/Opus, or MP4 on iPhone) → Stop or 2-minute limit →
+      the text is added below what's already typed. Messages for a blocked microphone, no browser support, nothing heard,
+      and service down. Chromium (Pixel 7 profile, fake mic playing the Hindi clip): the text appears in /hi (Devanagari)
+      and /ur (Urdu script), with no console errors or sideways scroll. **Waiting for the real-phone check** on Android
+      Chrome and iPhone Safari.
 - [ ] **6.3 Language matrix**: run TC-01 (hi), 02 (ur), 03 (en), 04 (ml), 05 (tl), 06 (bn), 08 (ne) and 23 (ar) through
       the UI; note output quality per language in `docs/language_check.md`.
       Check: the table is filled, and native/fluent reviewer notes are recorded where available. Ports: harness cases.
