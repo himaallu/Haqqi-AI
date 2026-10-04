@@ -105,6 +105,11 @@ def test_a_bad_first_reply_can_be_fixed_by_the_retry() -> None:
     llm = FakeLLM({"writer": [writer(explanation="You are owed AED 6,000."), writer()]})
     out = run_writer(llm, TC03, GRATUITY, calculate(TC03))
     assert "AED 16,056.85" in out.explanation
+    retry = llm.calls[1][1]
+    assert all(
+        m.role != "assistant" for m in retry
+    )  # K2 rejects assistant turns without "thinking"
+    assert "AED 6,000" in retry[-1].content and "money figure" in retry[-1].content
 
 
 @pytest.mark.live

@@ -61,3 +61,11 @@ def test_fulltext_matches_when_only_some_query_words_appear(local_db_url: str) -
 
     assert any(i.startswith("fdl33-2021:art51") for i in english)
     assert any(i.startswith("fdl33-2021:art51") for i in arabic)
+
+
+def test_search_query_adds_the_law_words_for_each_issue_type() -> None:
+    from haqqi.rag.retrieve import search_query
+
+    q = search_query("Not paid for 2 months.", ["unpaid_wages", "unpaid_wages", "other"])
+    assert q == "Not paid for 2 months. unpaid wages salary payment due date"
+    assert search_query("Story.") == "Story."

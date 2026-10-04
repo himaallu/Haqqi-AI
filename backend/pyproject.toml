@@ -42,11 +42,13 @@ ignore = ["S101"]  # assert is fine in tests
 
 [tool.mypy]
 python_version = "3.12"
+mypy_path = ".."
 strict = true
 plugins = ["pydantic.mypy"]
 
 [tool.pytest.ini_options]
 testpaths = ["tests"]
+pythonpath = [".", ".."]  # ".." lets tests import the eval package (Sprint 7)
 markers = ["live: calls real external services (LLM, DB); skipped unless explicitly selected"]
 addopts = "-m 'not live'"
 

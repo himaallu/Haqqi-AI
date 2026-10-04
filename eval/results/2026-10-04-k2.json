@@ -1,0 +1,1706 @@
+{
+ "provider": "k2",
+ "embedder": "cloudflare",
+ "run_on": "2026-10-04",
+ "metrics": {
+  "cases": 50,
+  "errors": 15,
+  "outcome_accuracy": 1.0,
+  "issue_detection": 0.976,
+  "retrieval_hit_at_5": 0.708,
+  "citations_cited": 1.0,
+  "citations_supported": 0.807,
+  "critic_catch_rate": 1.0,
+  "calculator_correctness": 1.0,
+  "injection_resistance": null,
+  "latency_p95_s": 256.0,
+  "counts": {
+   "analysed": 25,
+   "with_issues": 24,
+   "violations": 135,
+   "seeded": 1,
+   "injected": 0,
+   "writer_failed": 0
+  }
+ },
+ "cases": {
+  "TC-01": {
+   "id": "TC-01",
+   "language": "hi",
+   "tags": [
+    "unpaid_wages"
+   ],
+   "route": "ready",
+   "referral": null,
+   "outcome_ok": true,
+   "intake_issues": [
+    "unpaid_wages"
+   ],
+   "issue_recall": 1.0,
+   "hit_at_5": false,
+   "top5": [
+    "fdl33-2021:art47:cl2",
+    "fdl33-2021:art37:cl3",
+    "fdl33-2021:art1",
+    "fdl33-2021:art37:cl2",
+    "cr1-2022:art16:cl1"
+   ],
+   "seconds": 137.2,
+   "analysed": true,
+   "total_aed": "5400.00",
+   "claim": {
+    "Unpaid wages": "5400.00"
+   },
+   "citations": [
+    "cr1-2022:art16:cl1",
+    "fdl33-2021:art22:cl2",
+    "fdl33-2021:art54:cl1",
+    "fdl33-2021:art54:cl5"
+   ],
+   "violation_cited": [
+    true,
+    true,
+    true,
+    true
+   ],
+   "violation_supported": [
+    false,
+    true,
+    true,
+    true
+   ],
+   "not_covered": [],
+   "critic": "pass",
+   "revised": false,
+   "writer_failed": false,
+   "headline": "आपकी कंपनी ने पिछले 3 महीने से आपकी तनख्वाह नहीं दी है।",
+   "calculator_exact": true
+  },
+  "TC-02": {
+   "id": "TC-02",
+   "language": "ur",
+   "tags": [
+    "termination",
+    "gratuity"
+   ],
+   "route": "ready",
+   "referral": null,
+   "outcome_ok": true,
+   "intake_issues": [
+    "notice_pay",
+    "termination"
+   ],
+   "issue_recall": 1.0,
+   "hit_at_5": true,
+   "top5": [
+    "fdl33-2021:art1",
+    "fdl33-2021:art43:cl5",
+    "fdl33-2021:art37:cl3",
+    "fdl33-2021:art51:cl2",
+    "fdl33-2021:art22:cl3"
+   ],
+   "seconds": 68.5,
+   "analysed": true,
+   "total_aed": "6229.59",
+   "claim": {
+    "Notice pay": "3000.00",
+    "End-of-service gratuity": "3229.59"
+   },
+   "citations": [
+    "fdl33-2021:art43:cl1",
+    "fdl33-2021:art42:cl3",
+    "fdl33-2021:art43:cl3",
+    "fdl33-2021:art43:cl4",
+    "fdl33-2021:art51:cl2",
+    "fdl33-2021:art51:cl3",
+    "fdl33-2021:art51:cl5",
+    "fdl33-2021:art51:cl6"
+   ],
+   "violation_cited": [
+    true,
+    true,
+    true,
+    true,
+    true,
+    true,
+    true,
+    true
+   ],
+   "violation_supported": [
+    true,
+    true,
+    true,
+    true,
+    false,
+    false,
+    false,
+    false
+   ],
+   "not_covered": [],
+   "critic": "revise",
+   "revised": true,
+   "writer_failed": false,
+   "headline": "آپ کے آجر نے 30 دن کا نوٹس دیے بغیر آپ کو نوکری سے نکال دیا ہے۔",
+   "calculator_exact": true
+  },
+  "TC-03": {
+   "id": "TC-03",
+   "error": "LLMUnavailable: writer: HTTP 400 from k2"
+  },
+  "TC-04": {
+   "id": "TC-04",
+   "language": "ml",
+   "tags": [
+    "deductions"
+   ],
+   "route": "ready",
+   "referral": null,
+   "outcome_ok": true,
+   "intake_issues": [
+    "illegal_deduction"
+   ],
+   "issue_recall": 1.0,
+   "hit_at_5": true,
+   "top5": [
+    "fdl33-2021:art25:cl1",
+    "fdl33-2021:art1",
+    "cr1-2022:art15:cl3",
+    "fdl33-2021:art39:cl1",
+    "fdl33-2021:art60:cl1"
+   ],
+   "seconds": 47.5,
+   "analysed": true,
+   "total_aed": "2400.00",
+   "claim": {
+    "Deductions from wages": "2400.00"
+   },
+   "citations": [
+    "fdl33-2021:art25:cl1",
+    "fdl33-2021:art25:cl2"
+   ],
+   "violation_cited": [
+    true,
+    true
+   ],
+   "violation_supported": [
+    true,
+    true
+   ],
+   "not_covered": [],
+   "critic": "pass",
+   "revised": false,
+   "writer_failed": false,
+   "headline": "നിങ്ങളുടെ തൊഴിലുടമയ്ക്ക് ശമ്പളത്തിൽ നിന്ന് അനുമതിയില്ലാതെ പ്രതിമാസം പണം പിടിക്കുന്നു.",
+   "calculator_exact": true
+  },
+  "TC-05": {
+   "id": "TC-05",
+   "language": "tl",
+   "tags": [
+    "documents"
+   ],
+   "route": "ready",
+   "referral": null,
+   "outcome_ok": true,
+   "intake_issues": [
+    "document_retention"
+   ],
+   "issue_recall": 1.0,
+   "hit_at_5": false,
+   "top5": [
+    "fdl33-2021:art1",
+    "fdl33-2021:art9:cl4",
+    "cr1-2022:art6:cl1",
+    "fdl33-2021:art22:cl3",
+    "cr1-2022:art19:cl1"
+   ],
+   "seconds": 40.7,
+   "analysed": true,
+   "total_aed": "0.00",
+   "claim": {},
+   "citations": [
+    "fdl33-2021:art13:cl2"
+   ],
+   "violation_cited": [
+    true
+   ],
+   "violation_supported": [
+    true
+   ],
+   "not_covered": [
+    "The specific procedure and conditions for transferring to a new employer while still employed are not detailed in the provided clauses; only the existence of a Work Permit for Transfer is mentioned in cr1-2022:art6:cl1."
+   ],
+   "critic": "pass",
+   "revised": false,
+   "writer_failed": false,
+   "headline": "Kinukuha ng employer mo ang passport mo at ayaw itong ibalik kahit hinihingi mo.",
+   "calculator_exact": true
+  },
+  "TC-06": {
+   "id": "TC-06",
+   "error": "LLMUnavailable: analyst: HTTP 400 from k2"
+  },
+  "TC-07": {
+   "id": "TC-07",
+   "language": "en",
+   "tags": [
+    "scope"
+   ],
+   "route": "out_of_scope",
+   "referral": "difc_adgm",
+   "outcome_ok": true,
+   "intake_issues": [
+    "termination",
+    "unpaid_wages"
+   ],
+   "issue_recall": null,
+   "seconds": 11.4
+  },
+  "TC-08": {
+   "id": "TC-08",
+   "language": "ne",
+   "tags": [
+    "scope"
+   ],
+   "route": "out_of_scope",
+   "referral": "domestic",
+   "outcome_ok": true,
+   "intake_issues": [
+    "unpaid_wages"
+   ],
+   "issue_recall": null,
+   "seconds": 4.5
+  },
+  "TC-09": {
+   "id": "TC-09",
+   "language": "en",
+   "tags": [
+    "need_info"
+   ],
+   "route": "need_info",
+   "referral": null,
+   "outcome_ok": true,
+   "intake_issues": [
+    "unpaid_wages"
+   ],
+   "issue_recall": null,
+   "seconds": 4.5
+  },
+  "TC-10": {
+   "id": "TC-10",
+   "error": "LLMUnavailable: writer: HTTP 400 from k2"
+  },
+  "TC-11": {
+   "id": "TC-11",
+   "language": "en",
+   "tags": [
+    "critic",
+    "unpaid_wages"
+   ],
+   "route": "ready",
+   "referral": null,
+   "outcome_ok": true,
+   "intake_issues": [
+    "unpaid_wages"
+   ],
+   "issue_recall": 1.0,
+   "hit_at_5": false,
+   "top5": [
+    "fdl33-2021:art1",
+    "fdl33-2021:art37:cl3",
+    "fdl33-2021:art47:cl2",
+    "fdl33-2021:art43:cl2",
+    "cr1-2022:art15:cl3"
+   ],
+   "seconds": 57.9,
+   "analysed": true,
+   "total_aed": "4800.00",
+   "claim": {
+    "Unpaid wages": "4800.00"
+   },
+   "citations": [
+    "fdl33-2021:art22:cl2",
+    "fdl33-2021:art54:cl5",
+    "fdl33-2021:art54:cl1"
+   ],
+   "violation_cited": [
+    true,
+    true,
+    true
+   ],
+   "violation_supported": [
+    true,
+    true,
+    true
+   ],
+   "not_covered": [],
+   "critic": "revise",
+   "revised": true,
+   "writer_failed": false,
+   "headline": "Your employer has not paid your salary for 2 months.",
+   "calculator_exact": true,
+   "seeded": true,
+   "critic_caught": true
+  },
+  "TC-12": {
+   "id": "TC-12",
+   "language": "en",
+   "tags": [
+    "not_covered"
+   ],
+   "route": "ready",
+   "referral": null,
+   "outcome_ok": true,
+   "intake_issues": [
+    "other"
+   ],
+   "issue_recall": null,
+   "seconds": 40.6,
+   "analysed": true,
+   "total_aed": "0.00",
+   "claim": {},
+   "citations": [],
+   "violation_cited": [],
+   "violation_supported": [],
+   "not_covered": [
+    "The worker's question about the visa overstay fine amount per day and how to pay it is not covered by the provided labour law clauses. Overstay fines and their payment are governed by UAE immigration and residence regulations, not by Federal Decree-Law No. 33 of 2021 on labour relations, so no clause id can be cited and no fine amount can be stated."
+   ],
+   "critic": "pass",
+   "revised": false,
+   "writer_failed": false,
+   "headline": "Your visa expired last month and needs to be renewed, but Haqqi cannot answer questions about overstay fines.",
+   "calculator_exact": true,
+   "not_covered_flagged": true
+  },
+  "TC-14": {
+   "id": "TC-14",
+   "language": "en",
+   "tags": [
+    "scope",
+    "injection"
+   ],
+   "route": "out_of_scope",
+   "referral": "free_zone",
+   "outcome_ok": true,
+   "intake_issues": [
+    "unpaid_wages"
+   ],
+   "issue_recall": null,
+   "seconds": 7.8
+  },
+  "TC-15": {
+   "id": "TC-15",
+   "language": "en",
+   "tags": [
+    "scope"
+   ],
+   "route": "out_of_scope",
+   "referral": "domestic",
+   "outcome_ok": true,
+   "intake_issues": [
+    "unpaid_wages"
+   ],
+   "issue_recall": null,
+   "seconds": 7.5
+  },
+  "TC-16": {
+   "id": "TC-16",
+   "language": "en",
+   "tags": [
+    "need_info"
+   ],
+   "route": "need_info",
+   "referral": null,
+   "outcome_ok": true,
+   "intake_issues": [
+    "illegal_deduction"
+   ],
+   "issue_recall": null,
+   "seconds": 8.0
+  },
+  "TC-17": {
+   "id": "TC-17",
+   "language": "en",
+   "tags": [
+    "need_info"
+   ],
+   "route": "need_info",
+   "referral": null,
+   "outcome_ok": true,
+   "intake_issues": [
+    "termination"
+   ],
+   "issue_recall": null,
+   "seconds": 6.3
+  },
+  "TC-18": {
+   "id": "TC-18",
+   "language": "en",
+   "tags": [
+    "unpaid_wages",
+    "extraction"
+   ],
+   "route": "ready",
+   "referral": null,
+   "outcome_ok": true,
+   "intake_issues": [
+    "unpaid_wages"
+   ],
+   "issue_recall": 1.0,
+   "hit_at_5": true,
+   "top5": [
+    "fdl33-2021:art25:cl1",
+    "fdl33-2021:art37:cl3",
+    "fdl33-2021:art54:cl5",
+    "fdl33-2021:art22:cl3",
+    "fdl33-2021:art1"
+   ],
+   "seconds": 50.1,
+   "analysed": true,
+   "total_aed": "2200.00",
+   "claim": {
+    "Unpaid wages": "2200.00"
+   },
+   "citations": [
+    "fdl33-2021:art22:cl2"
+   ],
+   "violation_cited": [
+    true
+   ],
+   "violation_supported": [
+    true
+   ],
+   "not_covered": [],
+   "critic": "pass",
+   "revised": false,
+   "writer_failed": false,
+   "headline": "Your employer has not paid your August salary.",
+   "calculator_exact": true
+  },
+  "TC-19": {
+   "id": "TC-19",
+   "language": "en",
+   "tags": [
+    "termination"
+   ],
+   "route": "ready",
+   "referral": null,
+   "outcome_ok": true,
+   "intake_issues": [
+    "notice_pay",
+    "termination"
+   ],
+   "issue_recall": 1.0,
+   "hit_at_5": true,
+   "top5": [
+    "fdl33-2021:art1",
+    "fdl33-2021:art43:cl5",
+    "cr1-2022:art10:cl1",
+    "fdl33-2021:art9:cl4",
+    "fdl33-2021:art37:cl3"
+   ],
+   "seconds": 77.0,
+   "analysed": true,
+   "total_aed": "4500.00",
+   "claim": {
+    "Notice pay": "4500.00",
+    "End-of-service gratuity": "0.00"
+   },
+   "citations": [
+    "fdl33-2021:art42:cl3",
+    "fdl33-2021:art43:cl1",
+    "fdl33-2021:art43:cl2",
+    "fdl33-2021:art43:cl3",
+    "fdl33-2021:art43:cl4"
+   ],
+   "violation_cited": [
+    true,
+    true,
+    true,
+    true,
+    true
+   ],
+   "violation_supported": [
+    true,
+    true,
+    true,
+    true,
+    true
+   ],
+   "not_covered": [],
+   "critic": "pass",
+   "revised": false,
+   "writer_failed": false,
+   "headline": "Your employer ended your job on 10 September without giving the 30-day notice your contract requires.",
+   "calculator_exact": true
+  },
+  "TC-20": {
+   "id": "TC-20",
+   "error": "LLMUnavailable: writer: HTTP 400 from k2"
+  },
+  "TC-21": {
+   "id": "TC-21",
+   "language": "en",
+   "tags": [
+    "gratuity",
+    "unpaid_wages",
+    "mixed"
+   ],
+   "route": "ready",
+   "referral": null,
+   "outcome_ok": true,
+   "intake_issues": [
+    "gratuity",
+    "unpaid_wages"
+   ],
+   "issue_recall": 1.0,
+   "hit_at_5": true,
+   "top5": [
+    "fdl33-2021:art1",
+    "fdl33-2021:art51:cl2",
+    "fdl33-2021:art37:cl3",
+    "fdl33-2021:art51:cl5",
+    "fdl33-2021:art43:cl2"
+   ],
+   "seconds": 88.2,
+   "analysed": true,
+   "total_aed": "18381.37",
+   "claim": {
+    "Unpaid wages": "6000.00",
+    "End-of-service gratuity": "12381.37"
+   },
+   "citations": [
+    "fdl33-2021:art22:cl2",
+    "fdl33-2021:art43:cl2",
+    "fdl33-2021:art53",
+    "fdl33-2021:art51:cl2",
+    "fdl33-2021:art51:cl3",
+    "fdl33-2021:art51:cl5",
+    "fdl33-2021:art51:cl6",
+    "fdl33-2021:art53"
+   ],
+   "violation_cited": [
+    true,
+    true,
+    true,
+    true,
+    true,
+    true,
+    true,
+    true
+   ],
+   "violation_supported": [
+    true,
+    false,
+    true,
+    true,
+    true,
+    true,
+    true,
+    true
+   ],
+   "not_covered": [],
+   "critic": "pass",
+   "revised": false,
+   "writer_failed": false,
+   "headline": "Your employer has not paid your July salary or your end-of-service gratuity after you resigned.",
+   "calculator_exact": true
+  },
+  "TC-22": {
+   "id": "TC-22",
+   "language": "en",
+   "tags": [
+    "leave"
+   ],
+   "route": "ready",
+   "referral": null,
+   "outcome_ok": true,
+   "intake_issues": [
+    "leave"
+   ],
+   "issue_recall": 1.0,
+   "hit_at_5": false,
+   "top5": [
+    "fdl33-2021:art1",
+    "cr1-2022:art18:cl3",
+    "cr1-2022:art18:cl4",
+    "cr1-2022:art18:cl1",
+    "cr1-2022:art18:cl2"
+   ],
+   "seconds": 45.6,
+   "analysed": true,
+   "total_aed": "0.00",
+   "claim": {},
+   "citations": [
+    "fdl33-2021:art29:cl8",
+    "fdl33-2021:art29:cl4"
+   ],
+   "violation_cited": [
+    true,
+    true
+   ],
+   "violation_supported": [
+    true,
+    true
+   ],
+   "not_covered": [
+    "Whether the worker is entitled to a cash allowance for the carried-forward leave balance while still employed (cash equivalent on termination is covered by cr1-2022:art19:cl2, but the worker has not terminated)."
+   ],
+   "critic": "pass",
+   "revised": false,
+   "writer_failed": false,
+   "headline": "Your employer has refused your annual leave for two years.",
+   "calculator_exact": true
+  },
+  "TC-23": {
+   "id": "TC-23",
+   "language": "ar",
+   "tags": [
+    "unpaid_wages"
+   ],
+   "route": "ready",
+   "referral": null,
+   "outcome_ok": true,
+   "intake_issues": [
+    "unpaid_wages"
+   ],
+   "issue_recall": 1.0,
+   "hit_at_5": false,
+   "top5": [
+    "fdl33-2021:art1",
+    "fdl33-2021:art37:cl3",
+    "fdl33-2021:art47:cl2",
+    "fdl33-2021:art43:cl2",
+    "cr1-2022:art10:cl1"
+   ],
+   "seconds": 60.8,
+   "analysed": true,
+   "total_aed": "5000.00",
+   "claim": {
+    "Unpaid wages": "5000.00"
+   },
+   "citations": [
+    "fdl33-2021:art22:cl2",
+    "fdl33-2021:art54:cl1"
+   ],
+   "violation_cited": [
+    true,
+    true
+   ],
+   "violation_supported": [
+    true,
+    true
+   ],
+   "not_covered": [],
+   "critic": "pass",
+   "revised": false,
+   "writer_failed": false,
+   "headline": "لم يدفع لك صاحب العمل راتب شهرين (يوليو وأغسطس).",
+   "calculator_exact": true
+  },
+  "N-01": {
+   "id": "N-01",
+   "error": "LLMUnavailable: writer: HTTP 400 from k2"
+  },
+  "N-02": {
+   "id": "N-02",
+   "error": "LLMUnavailable: writer: the language model is not responding, try again later"
+  },
+  "N-03": {
+   "id": "N-03",
+   "language": "ml",
+   "tags": [
+    "gratuity",
+    "edge"
+   ],
+   "route": "ready",
+   "referral": null,
+   "outcome_ok": true,
+   "intake_issues": [
+    "gratuity",
+    "notice_pay",
+    "termination"
+   ],
+   "issue_recall": 1.0,
+   "hit_at_5": true,
+   "top5": [
+    "fdl33-2021:art51:cl2",
+    "fdl33-2021:art1",
+    "fdl33-2021:art43:cl5",
+    "fdl33-2021:art37:cl3",
+    "fdl33-2021:art43:cl2"
+   ],
+   "seconds": 60.0,
+   "analysed": true,
+   "total_aed": "1260.00",
+   "claim": {
+    "End-of-service gratuity": "1260.00"
+   },
+   "citations": [
+    "fdl33-2021:art51:cl2",
+    "fdl33-2021:art51:cl3",
+    "fdl33-2021:art51:cl5",
+    "fdl33-2021:art51:cl6",
+    "fdl33-2021:art43:cl1",
+    "fdl33-2021:art43:cl2",
+    "fdl33-2021:art43:cl3",
+    "fdl33-2021:art43:cl5",
+    "fdl33-2021:art42:cl3",
+    "fdl33-2021:art47:cl1",
+    "fdl33-2021:art47:cl2",
+    "fdl33-2021:art47:cl3"
+   ],
+   "violation_cited": [
+    true,
+    true,
+    true,
+    true,
+    true,
+    true,
+    true,
+    true,
+    true,
+    true,
+    true,
+    true
+   ],
+   "violation_supported": [
+    true,
+    true,
+    true,
+    true,
+    false,
+    false,
+    false,
+    false,
+    true,
+    false,
+    false,
+    false
+   ],
+   "not_covered": [],
+   "critic": "pass",
+   "revised": false,
+   "writer_failed": false,
+   "headline": "ഒരു വർഷം ജോലി ചെയ്തതിന് ശേഷം നിങ്ങളെ തൊഴിലുടമ പിരിച്ചുവിട്ടു; നിങ്ങൾക്ക് ഗ്രാറ്റുവിറ്റി ലഭിക്കണം.",
+   "calculator_exact": true
+  },
+  "N-04": {
+   "id": "N-04",
+   "error": "LLMUnavailable: critic: HTTP 400 from k2"
+  },
+  "N-05": {
+   "id": "N-05",
+   "language": "tl",
+   "tags": [
+    "gratuity"
+   ],
+   "route": "ready",
+   "referral": null,
+   "outcome_ok": true,
+   "intake_issues": [
+    "gratuity"
+   ],
+   "issue_recall": 1.0,
+   "hit_at_5": true,
+   "top5": [
+    "fdl33-2021:art51:cl2",
+    "fdl33-2021:art37:cl3",
+    "fdl33-2021:art1",
+    "fdl33-2021:art9:cl4",
+    "fdl33-2021:art43:cl2"
+   ],
+   "seconds": 61.7,
+   "analysed": true,
+   "total_aed": "18004.11",
+   "claim": {
+    "End-of-service gratuity": "18004.11"
+   },
+   "citations": [
+    "fdl33-2021:art51:cl2",
+    "fdl33-2021:art51:cl3",
+    "fdl33-2021:art51:cl5",
+    "fdl33-2021:art51:cl6"
+   ],
+   "violation_cited": [
+    true,
+    true,
+    true,
+    true
+   ],
+   "violation_supported": [
+    true,
+    true,
+    true,
+    true
+   ],
+   "not_covered": [],
+   "critic": "pass",
+   "revised": false,
+   "writer_failed": false,
+   "headline": "Hindi pa ibinibigay ng iyong employer ang iyong end-of-service gratuity pagkatapos mong mag-resign.",
+   "calculator_exact": true
+  },
+  "N-06": {
+   "id": "N-06",
+   "language": "ne",
+   "tags": [
+    "unpaid_wages"
+   ],
+   "route": "ready",
+   "referral": null,
+   "outcome_ok": true,
+   "intake_issues": [
+    "unpaid_wages"
+   ],
+   "issue_recall": 1.0,
+   "hit_at_5": false,
+   "top5": [
+    "fdl33-2021:art1",
+    "fdl33-2021:art37:cl3",
+    "cr1-2022:art31:cl4",
+    "fdl33-2021:art47:cl2",
+    "fdl33-2021:art60:cl2"
+   ],
+   "seconds": 96.6,
+   "analysed": true,
+   "total_aed": "6000.00",
+   "claim": {
+    "Unpaid wages": "6000.00"
+   },
+   "citations": [
+    "fdl33-2021:art22:cl2",
+    "fdl33-2021:art22:cl1",
+    "fdl33-2021:art54:cl1",
+    "fdl33-2021:art54:cl2",
+    "fdl33-2021:art54:cl4",
+    "fdl33-2021:art54:cl5"
+   ],
+   "violation_cited": [
+    true,
+    true,
+    true,
+    true,
+    true,
+    true
+   ],
+   "violation_supported": [
+    true,
+    true,
+    true,
+    true,
+    true,
+    true
+   ],
+   "not_covered": [
+    "The specific amount of unpaid wages and any calculation of compensation is not addressed in the provided clauses; code has already calculated the unpaid wages item.",
+    "No clause in the provided LAW addresses the employer's obligation to pay wages during the first months of employment or any penalty for delayed wage payment beyond the dispute-resolution mechanism."
+   ],
+   "critic": "revise",
+   "revised": true,
+   "writer_failed": false,
+   "headline": "तपाईंको रोजगारीले 4 महिनासम्म तलब दिनुभएको छैन।",
+   "calculator_exact": true
+  },
+  "N-07": {
+   "id": "N-07",
+   "language": "ar",
+   "tags": [
+    "termination",
+    "gratuity",
+    "unpaid_wages",
+    "mixed"
+   ],
+   "route": "ready",
+   "referral": null,
+   "outcome_ok": true,
+   "intake_issues": [
+    "gratuity",
+    "notice_pay",
+    "termination",
+    "unpaid_wages"
+   ],
+   "issue_recall": 1.0,
+   "hit_at_5": true,
+   "top5": [
+    "fdl33-2021:art1",
+    "fdl33-2021:art43:cl5",
+    "fdl33-2021:art51:cl2",
+    "fdl33-2021:art40:cl1",
+    "fdl33-2021:art65:cl6"
+   ],
+   "seconds": 119.5,
+   "analysed": true,
+   "total_aed": "34454.79",
+   "claim": {
+    "Unpaid wages": "12000.00",
+    "Notice pay": "6000.00",
+    "End-of-service gratuity": "16454.79"
+   },
+   "citations": [
+    "fdl33-2021:art22:cl2",
+    "fdl33-2021:art53",
+    "fdl33-2021:art42:cl3",
+    "fdl33-2021:art43:cl1",
+    "fdl33-2021:art43:cl2",
+    "fdl33-2021:art43:cl1",
+    "fdl33-2021:art43:cl2",
+    "fdl33-2021:art43:cl3",
+    "fdl33-2021:art65:cl6",
+    "fdl33-2021:art51:cl1",
+    "fdl33-2021:art51:cl2",
+    "fdl33-2021:art51:cl3",
+    "fdl33-2021:art51:cl5"
+   ],
+   "violation_cited": [
+    true,
+    true,
+    true,
+    true,
+    true,
+    true,
+    true,
+    true,
+    true,
+    true,
+    true,
+    true,
+    true
+   ],
+   "violation_supported": [
+    true,
+    true,
+    true,
+    true,
+    true,
+    true,
+    true,
+    true,
+    false,
+    true,
+    true,
+    true,
+    true
+   ],
+   "not_covered": [],
+   "critic": "revise",
+   "revised": true,
+   "writer_failed": false,
+   "headline": "الشركة أنهت عقدك فوراً دون إنذار ولم تدفع لك راتبي يونيو ويوليو 2026 ولا مكافأة نهاية الخدمة.",
+   "calculator_exact": true
+  },
+  "N-08": {
+   "id": "N-08",
+   "error": "LLMUnavailable: writer: HTTP 400 from k2"
+  },
+  "N-09": {
+   "id": "N-09",
+   "language": "hi",
+   "tags": [
+    "gratuity",
+    "notice_owed",
+    "edge"
+   ],
+   "route": "ready",
+   "referral": null,
+   "outcome_ok": true,
+   "intake_issues": [
+    "gratuity",
+    "notice_pay"
+   ],
+   "issue_recall": 1.0,
+   "hit_at_5": true,
+   "top5": [
+    "fdl33-2021:art1",
+    "fdl33-2021:art51:cl2",
+    "fdl33-2021:art43:cl5",
+    "fdl33-2021:art37:cl3",
+    "fdl33-2021:art53"
+   ],
+   "seconds": 48.4,
+   "analysed": true,
+   "total_aed": "2741.51",
+   "claim": {
+    "End-of-service gratuity": "2741.51"
+   },
+   "citations": [
+    "fdl33-2021:art51:cl2",
+    "fdl33-2021:art51:cl3",
+    "fdl33-2021:art43:cl1",
+    "fdl33-2021:art43:cl3"
+   ],
+   "violation_cited": [
+    true,
+    true,
+    true,
+    true
+   ],
+   "violation_supported": [
+    true,
+    true,
+    false,
+    false
+   ],
+   "not_covered": [],
+   "critic": "pass",
+   "revised": false,
+   "writer_failed": false,
+   "headline": "आपकी ग्रेच्युटी बनती है, लेकिन आपने 30 दिन की जगह 10 दिन का नोटिस दिया है।",
+   "calculator_exact": true
+  },
+  "N-10": {
+   "id": "N-10",
+   "language": "ur",
+   "tags": [
+    "deductions",
+    "edge"
+   ],
+   "route": "ready",
+   "referral": null,
+   "outcome_ok": true,
+   "intake_issues": [
+    "illegal_deduction"
+   ],
+   "issue_recall": 1.0,
+   "hit_at_5": true,
+   "top5": [
+    "fdl33-2021:art25:cl1",
+    "fdl33-2021:art1",
+    "fdl33-2021:art47:cl2",
+    "fdl33-2021:art44:cl8",
+    "fdl33-2021:art22:cl3"
+   ],
+   "seconds": 62.0,
+   "analysed": true,
+   "total_aed": "3600.00",
+   "claim": {
+    "Deductions from wages": "3600.00"
+   },
+   "citations": [
+    "fdl33-2021:art25:cl1",
+    "fdl33-2021:art25:cl2"
+   ],
+   "violation_cited": [
+    true,
+    true
+   ],
+   "violation_supported": [
+    true,
+    true
+   ],
+   "not_covered": [],
+   "critic": "pass",
+   "revised": false,
+   "writer_failed": false,
+   "headline": "آپ کی کمپنی پچھلے تین مہینوں سے آپ کی تنخواہ سے غیر قانونی کٹوتی کر رہی ہے۔",
+   "calculator_exact": true
+  },
+  "N-11": {
+   "id": "N-11",
+   "language": "ml",
+   "tags": [
+    "gratuity",
+    "leave",
+    "mixed"
+   ],
+   "route": "ready",
+   "referral": null,
+   "outcome_ok": true,
+   "intake_issues": [
+    "gratuity",
+    "leave",
+    "termination"
+   ],
+   "issue_recall": 1.0,
+   "hit_at_5": true,
+   "top5": [
+    "fdl33-2021:art1",
+    "fdl33-2021:art47:cl2",
+    "fdl33-2021:art37:cl3",
+    "fdl33-2021:art29:cl1",
+    "cr1-2022:art18:cl2"
+   ],
+   "seconds": 76.2,
+   "analysed": true,
+   "total_aed": "5717.75",
+   "claim": {
+    "End-of-service gratuity": "4667.75",
+    "Unused annual leave": "1050.00"
+   },
+   "citations": [
+    "fdl33-2021:art43:cl1",
+    "fdl33-2021:art43:cl2",
+    "fdl33-2021:art42:cl3",
+    "fdl33-2021:art51:cl2",
+    "fdl33-2021:art51:cl3",
+    "fdl33-2021:art51:cl5",
+    "fdl33-2021:art29:cl1",
+    "fdl33-2021:art29:cl9",
+    "cr1-2022:art19:cl2"
+   ],
+   "violation_cited": [
+    true,
+    true,
+    true,
+    true,
+    true,
+    true,
+    true,
+    true,
+    true
+   ],
+   "violation_supported": [
+    false,
+    false,
+    true,
+    true,
+    true,
+    true,
+    true,
+    true,
+    true
+   ],
+   "not_covered": [],
+   "critic": "pass",
+   "revised": false,
+   "writer_failed": false,
+   "headline": "നിങ്ങളുടെ ജോലി അവസാനിപ്പിച്ചപ്പോൾ ഗ്രാറ്റുവിറ്റിയും അവധിക്കാശവും കമ്പനി നൽകിയിട്ടില്ല.",
+   "calculator_exact": true
+  },
+  "N-12": {
+   "id": "N-12",
+   "language": "bn",
+   "tags": [
+    "gratuity",
+    "cap",
+    "edge"
+   ],
+   "route": "ready",
+   "referral": null,
+   "outcome_ok": true,
+   "intake_issues": [
+    "gratuity",
+    "termination"
+   ],
+   "issue_recall": 1.0,
+   "hit_at_5": true,
+   "top5": [
+    "fdl33-2021:art51:cl2",
+    "fdl33-2021:art37:cl3",
+    "fdl33-2021:art1",
+    "fdl33-2021:art47:cl2",
+    "fdl33-2021:art51:cl6"
+   ],
+   "seconds": 97.8,
+   "analysed": true,
+   "total_aed": "142610.96",
+   "claim": {
+    "End-of-service gratuity": "142610.96"
+   },
+   "citations": [
+    "fdl33-2021:art43:cl1",
+    "fdl33-2021:art42:cl3",
+    "fdl33-2021:art47:cl1",
+    "fdl33-2021:art51:cl2",
+    "fdl33-2021:art51:cl3",
+    "fdl33-2021:art51:cl5",
+    "fdl33-2021:art51:cl6"
+   ],
+   "violation_cited": [
+    true,
+    true,
+    true,
+    true,
+    true,
+    true,
+    true
+   ],
+   "violation_supported": [
+    false,
+    true,
+    false,
+    true,
+    true,
+    true,
+    true
+   ],
+   "not_covered": [],
+   "critic": "pass",
+   "revised": false,
+   "writer_failed": false,
+   "headline": "আপনার নিয়োগকর্তা ২৫ বছরের চাকরির গ্র্যাচুইটি এখনো দেয়নি।",
+   "calculator_exact": true
+  },
+  "N-13": {
+   "id": "N-13",
+   "language": "tl",
+   "tags": [
+    "termination",
+    "deductions",
+    "gratuity",
+    "mixed"
+   ],
+   "route": "ready",
+   "referral": null,
+   "outcome_ok": true,
+   "intake_issues": [
+    "illegal_deduction",
+    "notice_pay",
+    "termination"
+   ],
+   "issue_recall": 0.75,
+   "hit_at_5": true,
+   "top5": [
+    "fdl33-2021:art1",
+    "fdl33-2021:art43:cl5",
+    "fdl33-2021:art25:cl1",
+    "fdl33-2021:art45:cl1",
+    "fdl33-2021:art37:cl3"
+   ],
+   "seconds": 87.2,
+   "analysed": true,
+   "total_aed": "6185.21",
+   "claim": {
+    "Deductions from wages": "900.00",
+    "Notice pay": "2700.00",
+    "End-of-service gratuity": "2585.21"
+   },
+   "citations": [
+    "fdl33-2021:art43:cl1",
+    "fdl33-2021:art43:cl2",
+    "fdl33-2021:art47:cl1",
+    "fdl33-2021:art43:cl3",
+    "fdl33-2021:art43:cl4",
+    "fdl33-2021:art25:cl1",
+    "fdl33-2021:art25:cl2",
+    "fdl33-2021:art51:cl2",
+    "fdl33-2021:art51:cl3"
+   ],
+   "violation_cited": [
+    true,
+    true,
+    true,
+    true,
+    true,
+    true,
+    true,
+    true,
+    true
+   ],
+   "violation_supported": [
+    true,
+    true,
+    true,
+    true,
+    true,
+    true,
+    true,
+    true,
+    true
+   ],
+   "not_covered": [],
+   "critic": "pass",
+   "revised": false,
+   "writer_failed": false,
+   "headline": "Tinanggal ka ng iyong employer nang walang notice at kinaltas ang iyong suweldo nang walang paliwanag.",
+   "calculator_exact": true
+  },
+  "N-14": {
+   "id": "N-14",
+   "language": "ne",
+   "tags": [
+    "need_info"
+   ],
+   "route": "need_info",
+   "referral": null,
+   "outcome_ok": true,
+   "intake_issues": [
+    "unpaid_wages"
+   ],
+   "issue_recall": null,
+   "seconds": 8.9
+  },
+  "N-15": {
+   "id": "N-15",
+   "error": "LLMUnavailable: writer: HTTP 400 from k2"
+  },
+  "N-16": {
+   "id": "N-16",
+   "error": "LLMUnavailable: writer: HTTP 400 from k2"
+  },
+  "N-17": {
+   "id": "N-17",
+   "error": "LLMUnavailable: analyst: HTTP 400 from k2"
+  },
+  "N-18": {
+   "id": "N-18",
+   "language": "ur",
+   "tags": [
+    "gratuity",
+    "edge"
+   ],
+   "route": "ready",
+   "referral": null,
+   "outcome_ok": true,
+   "intake_issues": [
+    "gratuity",
+    "leave",
+    "termination"
+   ],
+   "issue_recall": 1.0,
+   "hit_at_5": true,
+   "top5": [
+    "fdl33-2021:art51:cl2",
+    "fdl33-2021:art43:cl5",
+    "fdl33-2021:art40:cl1",
+    "fdl33-2021:art43:cl2",
+    "fdl33-2021:art15:cl1"
+   ],
+   "seconds": 102.7,
+   "analysed": true,
+   "total_aed": "1522.74",
+   "claim": {
+    "End-of-service gratuity": "1522.74"
+   },
+   "citations": [
+    "fdl33-2021:art43:cl1",
+    "fdl33-2021:art43:cl2",
+    "fdl33-2021:art43:cl3",
+    "fdl33-2021:art51:cl2",
+    "fdl33-2021:art51:cl3",
+    "fdl33-2021:art51:cl4",
+    "fdl33-2021:art51:cl5",
+    "fdl33-2021:art51:cl6",
+    "fdl33-2021:art29:cl1",
+    "cr1-2022:art19:cl2"
+   ],
+   "violation_cited": [
+    true,
+    true,
+    true,
+    true,
+    true,
+    true,
+    true,
+    true,
+    true,
+    true
+   ],
+   "violation_supported": [
+    false,
+    false,
+    false,
+    true,
+    true,
+    true,
+    true,
+    true,
+    false,
+    false
+   ],
+   "not_covered": [],
+   "critic": "pass",
+   "revised": false,
+   "writer_failed": false,
+   "headline": "کمپنی نے 30 دن کا نوٹس دے کر آپ کو فارغ کیا اور آپ کو گریچویٹی بنتی ہے۔",
+   "calculator_exact": true
+  },
+  "N-19": {
+   "id": "N-19",
+   "error": "LLMUnavailable: writer: HTTP 400 from k2"
+  },
+  "N-20": {
+   "id": "N-20",
+   "error": "LLMUnavailable: writer: HTTP 400 from k2"
+  },
+  "N-21": {
+   "id": "N-21",
+   "language": "tl",
+   "tags": [
+    "scope"
+   ],
+   "route": "out_of_scope",
+   "referral": "free_zone",
+   "outcome_ok": true,
+   "intake_issues": [
+    "unpaid_wages"
+   ],
+   "issue_recall": null,
+   "seconds": 8.5
+  },
+  "N-22": {
+   "id": "N-22",
+   "error": "LLMUnavailable: writer: HTTP 400 from k2"
+  },
+  "N-23": {
+   "id": "N-23",
+   "error": "LLMUnavailable: writer: HTTP 400 from k2"
+  },
+  "N-24": {
+   "id": "N-24",
+   "language": "en",
+   "tags": [
+    "gratuity",
+    "unpaid_wages",
+    "deductions",
+    "mixed"
+   ],
+   "route": "ready",
+   "referral": null,
+   "outcome_ok": true,
+   "intake_issues": [
+    "gratuity",
+    "illegal_deduction",
+    "unpaid_wages"
+   ],
+   "issue_recall": 1.0,
+   "hit_at_5": true,
+   "top5": [
+    "fdl33-2021:art1",
+    "fdl33-2021:art43:cl2",
+    "fdl33-2021:art43:cl5",
+    "fdl33-2021:art44:cl8",
+    "fdl33-2021:art25:cl1"
+   ],
+   "seconds": 111.3,
+   "analysed": true,
+   "total_aed": "23505.48",
+   "claim": {
+    "Unpaid wages": "9000.00",
+    "Deductions from wages": "500.00",
+    "End-of-service gratuity": "14005.48"
+   },
+   "citations": [
+    "fdl33-2021:art22:cl2",
+    "fdl33-2021:art25:cl1",
+    "fdl33-2021:art51:cl2",
+    "fdl33-2021:art51:cl3"
+   ],
+   "violation_cited": [
+    true,
+    true,
+    true,
+    true
+   ],
+   "violation_supported": [
+    true,
+    true,
+    true,
+    true
+   ],
+   "not_covered": [],
+   "critic": "pass",
+   "revised": false,
+   "writer_failed": false,
+   "headline": "Your employer has not paid your June and July salary, made an unlawful deduction, and has not paid your gratuity.",
+   "calculator_exact": true
+  },
+  "N-25": {
+   "id": "N-25",
+   "language": "hi",
+   "tags": [
+    "scope"
+   ],
+   "route": "out_of_scope",
+   "referral": "difc_adgm",
+   "outcome_ok": true,
+   "intake_issues": [
+    "termination"
+   ],
+   "issue_recall": null,
+   "seconds": 8.3
+  },
+  "N-26": {
+   "id": "N-26",
+   "language": "ur",
+   "tags": [
+    "termination",
+    "gratuity",
+    "mixed"
+   ],
+   "route": "ready",
+   "referral": null,
+   "outcome_ok": true,
+   "intake_issues": [
+    "notice_pay",
+    "termination"
+   ],
+   "issue_recall": 0.667,
+   "hit_at_5": true,
+   "top5": [
+    "fdl33-2021:art43:cl5",
+    "fdl33-2021:art1",
+    "fdl33-2021:art40:cl1",
+    "fdl33-2021:art65:cl6",
+    "fdl33-2021:art9:cl4"
+   ],
+   "seconds": 285.6,
+   "analysed": true,
+   "total_aed": "5073.99",
+   "claim": {
+    "Notice pay": "1533.33",
+    "End-of-service gratuity": "3540.66"
+   },
+   "citations": [
+    "fdl33-2021:art43:cl1",
+    "fdl33-2021:art43:cl3",
+    "fdl33-2021:art43:cl1",
+    "fdl33-2021:art43:cl3",
+    "fdl33-2021:art51:cl2",
+    "fdl33-2021:art51:cl3",
+    "fdl33-2021:art51:cl5"
+   ],
+   "violation_cited": [
+    true,
+    true,
+    true,
+    true,
+    true,
+    true,
+    true
+   ],
+   "violation_supported": [
+    true,
+    true,
+    true,
+    true,
+    true,
+    true,
+    true
+   ],
+   "not_covered": [],
+   "critic": "revise",
+   "revised": true,
+   "writer_failed": false,
+   "headline": "آپ کے آجر نے معاہدے کے 30 دن کے نوٹس کے بجائے صرف 10 دن کا نوٹس دے کر آپ کو 20 ستمبر 2026 کو نکال دیا۔",
+   "calculator_exact": true
+  },
+  "N-27": {
+   "id": "N-27",
+   "language": "en",
+   "tags": [
+    "documents",
+    "unpaid_wages",
+    "mixed"
+   ],
+   "route": "ready",
+   "referral": null,
+   "outcome_ok": true,
+   "intake_issues": [
+    "document_retention",
+    "unpaid_wages"
+   ],
+   "issue_recall": 1.0,
+   "hit_at_5": false,
+   "top5": [
+    "fdl33-2021:art1",
+    "fdl33-2021:art60:cl1",
+    "fdl33-2021:art40:cl1",
+    "fdl33-2021:art40:cl2",
+    "cr1-2022:art10:cl1"
+   ],
+   "seconds": 256.0,
+   "analysed": true,
+   "total_aed": "2000.00",
+   "claim": {
+    "Unpaid wages": "2000.00"
+   },
+   "citations": [
+    "fdl33-2021:art22:cl2",
+    "fdl33-2021:art13:cl2"
+   ],
+   "violation_cited": [
+    true,
+    true
+   ],
+   "violation_supported": [
+    true,
+    true
+   ],
+   "not_covered": [],
+   "critic": "pass",
+   "revised": false,
+   "writer_failed": false,
+   "headline": "Your employer has not paid your August salary and is keeping your passport.",
+   "calculator_exact": true
+  },
+  "N-28": {
+   "id": "N-28",
+   "language": "ml",
+   "tags": [
+    "termination",
+    "gratuity",
+    "mixed",
+    "above_limit"
+   ],
+   "route": "ready",
+   "referral": null,
+   "outcome_ok": true,
+   "intake_issues": [
+    "gratuity",
+    "notice_pay",
+    "termination"
+   ],
+   "issue_recall": 1.0,
+   "hit_at_5": true,
+   "top5": [
+    "fdl33-2021:art1",
+    "fdl33-2021:art43:cl5",
+    "fdl33-2021:art45:cl1",
+    "fdl33-2021:art37:cl3",
+    "fdl33-2021:art65:cl6"
+   ],
+   "seconds": 58.3,
+   "analysed": true,
+   "total_aed": "210143.84",
+   "claim": {
+    "Notice pay": "75000.00",
+    "End-of-service gratuity": "135143.84"
+   },
+   "citations": [
+    "fdl33-2021:art43:cl1",
+    "fdl33-2021:art65:cl6",
+    "fdl33-2021:art42:cl3",
+    "fdl33-2021:art43:cl3",
+    "fdl33-2021:art43:cl4",
+    "fdl33-2021:art43:cl2",
+    "fdl33-2021:art51:cl2",
+    "fdl33-2021:art51:cl3",
+    "fdl33-2021:art51:cl5",
+    "fdl33-2021:art51:cl6"
+   ],
+   "violation_cited": [
+    true,
+    true,
+    true,
+    true,
+    true,
+    true,
+    true,
+    true,
+    true,
+    true
+   ],
+   "violation_supported": [
+    true,
+    false,
+    true,
+    true,
+    true,
+    true,
+    true,
+    true,
+    true,
+    true
+   ],
+   "not_covered": [
+    "Whether the dismissal was 'unlawful' under fdl33-2021:art47:cl1 (e.g., in retaliation for a complaint to the Ministry) cannot be assessed because the facts do not indicate any complaint or case filed by the worker."
+   ],
+   "critic": "pass",
+   "revised": false,
+   "writer_failed": false,
+   "headline": "കമ്പനി 90 ദിവസത്തെ നോട്ടീസ് നൽകാതെ നിങ്ങളെ പിരിച്ചുവിട്ടു; നോട്ടീസ് അലവൻസും ഗ്രാറ്റുവിറ്റിയും ബാക്കിയുണ്ട്.",
+   "calculator_exact": true
+  }
+ }
+}

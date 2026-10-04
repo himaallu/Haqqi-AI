@@ -1,4 +1,4 @@
-.PHONY: dev down test test-live db lint format eval pdf-smoke
+.PHONY: dev down test test-live db lint format eval eval-offline eval-validate pdf-smoke
 
 BACKEND := cd backend &&
 FRONTEND := cd frontend &&
@@ -28,11 +28,12 @@ db:
 
 ## ruff, mypy, eslint, tsc
 lint:
-	$(BACKEND) uv run ruff check . && uv run ruff format --check . && uv run mypy haqqi tests
+	$(BACKEND) uv run ruff check . ../eval && uv run ruff format --check . ../eval && uv run mypy haqqi tests
+	$(BACKEND) PYTHONPATH=.. uv run mypy ../eval
 	$(FRONTEND) pnpm lint && pnpm typecheck
 
 format:
-	$(BACKEND) uv run ruff check --fix . && uv run ruff format .
+	$(BACKEND) uv run ruff check --fix . ../eval && uv run ruff format . ../eval
 
 ## Render a fixed Arabic paragraph in the backend image → out/smoke.pdf (task 5.1); open it and look
 pdf-smoke:
@@ -40,6 +41,15 @@ pdf-smoke:
 	mkdir -p out
 	docker run --rm --user "$$(id -u):$$(id -g)" -v "$$PWD/out:/out" haqqi-backend:dev python -m haqqi.pdf.smoke /out/smoke.pdf
 
-## Evaluation over eval/cases.jsonl (built in Sprint 7)
+## Check eval/cases.jsonl: valid rows, real clause ids, hand-worked totals (tasks 7.1–7.2)
+eval-validate:
+	$(BACKEND) PYTHONPATH=.. uv run python -m eval.validate
+
+## Full evaluation over eval/cases.jsonl on a local database with the law index (task 7.3).
+## K2 by default (EVAL_ARGS="--provider gemini" for the free Gemini chain); resumable.
 eval:
-	@echo "make eval: not implemented yet; the evaluation runner arrives in Sprint 7."
+	$(BACKEND) PYTHONPATH=.. uv run python -m eval.run_eval $(EVAL_ARGS)
+
+## No-LLM subset (task 7.4): calculator correctness (fails below 100%) + retrieval hit@5 if a DB is up
+eval-offline:
+	$(BACKEND) PYTHONPATH=.. uv run python -m eval.offline
