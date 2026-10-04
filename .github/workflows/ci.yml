@@ -50,6 +50,9 @@ jobs:
       - name: Test (pytest, vitest)
         run: make test
 
+      - name: Offline evaluation (calculator vs 40 hand-worked cases; fails below 100%)
+        run: make eval-offline
+
       - name: Build frontend
         working-directory: frontend
         run: pnpm build

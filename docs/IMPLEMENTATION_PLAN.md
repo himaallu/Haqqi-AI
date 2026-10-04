@@ -463,8 +463,11 @@ data sent to them for training, which would break the PRD's "no training on user
 - [ ] **7.3 `eval/run_eval.py`**: runs the pipeline per case and computes the 8 PRD metrics (outcome, issue detection,
       hit@5, citation validity, critic catch, calculator exact, injection resistance, p95 latency).
       Check: `make eval` prints the metrics table and writes `eval/results/<date>.json`. Ports: `Loop Over Items`, `Run Haqqi`, `Check Result`, `Summary`, `Is Test Run?`, `Return to Tests`, `When Executed by Another Workflow`.
-- [ ] **7.4 Offline eval subset for CI**: calculator exactness + retrieval hit@5 with no LLM.
+- [x] **7.4 Offline eval subset for CI**: calculator exactness + retrieval hit@5 with no LLM.
       Check: `make eval-offline` finishes in < 2 min without `K2_API_KEY`; it exits non-zero if calculator < 100%. Ports: new.
+      *Done 4 Oct:* `eval/offline.py`: calculator vs all 40 hand-worked cases (40/40) in about a second, no LLM, DB or key;
+      CI runs it after the tests. Retrieval hit@5 runs too when a local BGE-M3 index is reachable (story as the query),
+      otherwise it says "skipped".
 - [ ] **7.5 Fix the worst failures** (top 3 by metric gap).
       Check: before/after table in `eval/CHANGELOG.md`. Ports: new.
 - [ ] **7.6 Record scores**.
