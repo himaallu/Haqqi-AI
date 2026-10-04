@@ -532,13 +532,14 @@ data sent to them for training, which would break the PRD's "no training on user
       - the catalog 80084 check;
       - a browser run at iPhone width with the API mocked (`docs/screens/s8-unsure-en.png`, `-ur.png`), where a
         confident case is unchanged.
-- [ ] **8.6 7-day auto-delete** (flag 21): a scheduled purge job.
+- [x] **8.6 7-day auto-delete** (flag 21): a scheduled purge job.
       Check: a test inserts a case dated 8 days ago → purge removes it; the job is visible in the host scheduler. Ports: new.
       *4 Oct:* Render's free plan has no cron jobs and the backend sleeps, so the schedule lives in the database:
       migration `0002` creates an hourly **pg_cron** job on Supabase (`DELETE FROM cases WHERE expires_at <= now()`); where
       pg_cron isn't available (the local image) it is a no-op, and `python -m haqqi.purge` does it by hand. The API
       already refused expired cases. The live test (a case from 8 days ago is deleted, a new one kept) passes.
-      **Waiting for you:** run `alembic upgrade head` on Supabase and check `cron.job` (DEPLOY.md §1).
+      *Done 4 Oct:* migrated on Supabase (`0002 (head)`). `cron.job` lists `haqqi-purge-expired-cases`, hourly
+      at :17, active (your check).
 - [x] **8.7 Disclaimer everywhere** (results, referral, PDF footer).
       Check: every eval response includes "80084" (ported `disclaimer` check). Ports: `DISCLAIMER`/`DISCLAIMER_AR` constants.
       *Done 4 Oct:* mostly in place since S4/S5; this adds the missing checks. Screens: the `[lang]` layout shows the
