@@ -102,3 +102,14 @@ below has a reason. The rendered prompts are in `backend/tests/agents/snapshots/
     MOHRE decides. Reason: TC-01 (Hindi) said exactly that.
 26. **Specific headline.** One sentence naming the main problem ("Your employer has not paid your salary for 3
     months."), never a general title. Reason: TC-06 (Bengali) headline was "Information about your work rights and dues".
+
+## Sprint 7, task 7.5 (from the first K2 evaluation run; please review the wording)
+27. **No breach the facts rule out.**
+    - Analyst: raise only issues the facts show. If the full contractual notice was given (`notice_days_given` ≥
+      `notice_days_contract`), don't cite the notice clauses as broken. A worker who resigned short of notice has no
+      notice claim (code shows what they may owe). Don't raise leave, deductions or overtime unless the facts or the
+      worker's words mention them.
+    - Critic: new check 7, a breach the facts rule out is a problem.
+    - Reason: in the 4 Oct K2 run, 6 cases with notice served in full (TC-21, N-03, N-11, N-12, N-18) or a
+      resignation short of notice (N-09) got Art. 43/47 "violations", and N-18 got a leave finding with 0 unused days
+      and no leave complaint. That pulled "citations supported" to 83%.
