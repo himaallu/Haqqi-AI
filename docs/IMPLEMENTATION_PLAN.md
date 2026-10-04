@@ -391,7 +391,7 @@ data sent to them for training, which would break the PRD's "no training on user
       *Done 3 Oct:* `ComplaintRequest` (all optional, one line, max 120/40/160 characters, no extra keys). A live API test
       checks the `cases` row and captured logs at DEBUG. A browser run against a local server found none of the values in
       the backend or frontend logs. An empty field prints a dotted line to fill in by hand.
-- [ ] **5.5 `POST /v1/cases/{id}/complaint`** streams the PDF (or a short-lived signed URL).
+- [x] **5.5 `POST /v1/cases/{id}/complaint`** streams the PDF (or a short-lived signed URL).
       Check: `curl -o c.pdf` → valid PDF; the UI download button works on the phone. Ports: new.
       *3 Oct:* returns `application/pdf` (attachment, `no-store`); nothing is stored. Returns 409 before analysis, for
       out-of-scope cases, and when there's no Writer facts section (also for analyses saved before CHANGES.md 22, which
@@ -403,7 +403,7 @@ data sent to them for training, which would break the PRD's "no training on user
       ignores `<a download>` for a blob PDF. Fix (your choice): on phones the button prepares the PDF, then **"Save or
       share PDF"** opens the system share sheet (Save to Files, WhatsApp, Print), with an "Open PDF" fallback and an
       iPhone hint (`lib/share.ts`, `docs/screens/s5-complaint-share-ur.png`). Desktop still downloads directly.
-      Waiting for one more phone try before ticking.
+      *Done 4 Oct:* on the iPhone, after PR #16, Download → **Save or share PDF** → saved to Files (your check).
 - [ ] **5.6 Arabic reader review**.
       Check: a named reviewer signs off (tone + correctness), and notes go in `docs/arabic_review.md`. Ports: new.
       *3 Oct:* the review pack is ready (`docs/arabic_review.md`, with the TC-02 and TC-03 PDFs). Waiting for a reviewer.
@@ -419,13 +419,14 @@ data sent to them for training, which would break the PRD's "no training on user
       script. WebM/Opus (Chrome, Android) and MP4 (iPhone Safari) both transcribe. Limits: 3 MB (413), audio types only
       (415), empty (422), service down → 503 "please type". Audio and text are never stored or logged. The fixture is the
       TC-01 story in a synthetic voice (`tests/fixtures/README.md`).
-- [ ] **6.2 Mic recording in the browser** (MediaRecorder, iOS Safari fallback format).
+- [x] **6.2 Mic recording in the browser** (MediaRecorder, iOS Safari fallback format).
       Check: record → transcript appears in the story box on Android Chrome and iOS Safari. Ports: new.
       *4 Oct:* `components/voice-input.tsx`: tap Speak → record (WebM/Opus, or MP4 on iPhone) → Stop or 2-minute limit →
       the text is added below what's already typed. Messages for a blocked microphone, no browser support, nothing heard,
       and service down. Chromium (Pixel 7 profile, fake mic playing the Hindi clip): the text appears in /hi (Devanagari)
-      and /ur (Urdu script), with no console errors or sideways scroll. **Waiting for the real-phone check** on Android
-      Chrome and iPhone Safari.
+      and /ur (Urdu script), with no console errors or sideways scroll.
+      *Done 4 Oct:* on your iPhone (Safari, public URL) the recording was transcribed well and the case went through to
+      the complaint. Android Chrome is covered only by the automated Pixel 7 run so far; try a real Android phone when you can.
 - [ ] **6.3 Language matrix**: run TC-01 (hi), 02 (ur), 03 (en), 04 (ml), 05 (tl), 06 (bn), 08 (ne) and 23 (ar) through
       the UI; note output quality per language in `docs/language_check.md`.
       Check: the table is filled, and native/fluent reviewer notes are recorded where available. Ports: harness cases.
