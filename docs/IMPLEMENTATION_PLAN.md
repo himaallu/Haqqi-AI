@@ -551,8 +551,14 @@ data sent to them for training, which would break the PRD's "no training on user
       sees.
 - [ ] **8.8 Sentry** for the frontend and backend.
       Check: a test exception shows up in Sentry. Ports: new.
-- [ ] **8.9 README**: problem, architecture diagram, eval table, demo GIF, setup, and the n8n "v0" story.
+- [x] **8.9 README**: problem, architecture diagram, eval table, demo GIF, setup, and the n8n "v0" story.
       Check: the README renders on GitHub with the image and table. Ports: `Setup` note.
+      *Done 4 Oct:* `README.md` covers the problem (with the PRD's sources), the 7-step journey, the architecture as a
+      Mermaid flowchart (LLM steps tinted; checked to render with mermaid 11), the trust rules, the free stack, the eval
+      table (partial, 20/50 on K2), local setup and commands, repo layout, the n8n v0 story (kept vs changed) and
+      privacy/limits. The demo GIF (`docs/demo.gif`, 272 KB) is built from real screenshots of one Urdu case by
+      `docs/screens/make_demo_gif.py`. Its complaint frames come from an earlier Urdu test with different wages. A
+      screen recording can replace it with 8.10.
 - [ ] **8.10 90-second demo video**.
       Check: the file or link is in the README. Ports: new.
 
