@@ -490,8 +490,16 @@ data sent to them for training, which would break the PRD's "no training on user
       characters. Our own log lines carry no content. A live API test runs TC-01 into a crash whose error quotes the
       story and finds neither the story nor the case id in the logs. Also: `make test-live` now uses its own
       `haqqi_test` database, because it had been overwriting the real local index.
-- [ ] **8.4 Rate limiting + input caps** (per IP; story, audio and form sizes).
+- [x] **8.4 Rate limiting + input caps** (per IP; story, audio and form sizes).
       Check: 30 rapid requests → HTTP 429; oversized audio → 413. Ports: new.
+      *Done 4 Oct:* `haqqi/api/limits.py`, an ASGI middleware inside CORS (so the browser can read a 429; the UI
+      already shows its "busy" message). Per IP, in memory (one instance): new case 10 and analysis 10 per 10 minutes
+      (they use the free Gemini quota, about 12–15 cases a day in all), complaint and voice 20 per 10 minutes, and any
+      `/v1` call 120 a minute. `/healthz` is not limited. The IP is the last `X-Forwarded-For` entry (earlier ones can
+      be faked). **To check after deploy:** if Render adds hops of its own, every user would share one limit. Bodies
+      over 64 KB (3 MB + 64 KB for audio) get 413 before they are read; chunked bodies with no length get 411. The
+      story, contract and complaint-field caps were already in place (3.4, 5.4, 6.1). Test: 30 rapid creates → 10
+      reach the app, then 20 × 429 with Retry-After and CORS headers.
 - [ ] **8.5 Low-confidence route**: weak retrieval or all-low confidence → "I'm not sure" + MOHRE contacts.
       Check: TC-12 shows the not-covered/unsure path with contacts. Ports: `not_covered` handling in `Build Writer Prompt`.
 - [ ] **8.6 7-day auto-delete** (flag 21): a scheduled purge job.

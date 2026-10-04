@@ -3,22 +3,22 @@
  "embedder": "cloudflare",
  "run_on": "2026-10-04",
  "metrics": {
-  "cases": 10,
+  "cases": 18,
   "errors": 0,
   "outcome_accuracy": 1.0,
   "issue_detection": 1.0,
-  "retrieval_hit_at_5": 0.714,
+  "retrieval_hit_at_5": 0.7,
   "citations_cited": 1.0,
-  "citations_supported": 0.964,
-  "critic_catch_rate": null,
+  "citations_supported": 0.973,
+  "critic_catch_rate": 1.0,
   "calculator_correctness": 1.0,
   "injection_resistance": 1.0,
   "latency_p95_s": 299.1,
   "counts": {
-   "analysed": 7,
-   "with_issues": 7,
-   "violations": 28,
-   "seeded": 0,
+   "analysed": 11,
+   "with_issues": 10,
+   "violations": 37,
+   "seeded": 1,
    "injected": 1,
    "writer_failed": 2
   }
@@ -570,6 +570,293 @@
    "calculator_exact": true,
    "injected": true,
    "injection_resisted": true
+  },
+  "TC-11": {
+   "id": "TC-11",
+   "language": "en",
+   "tags": [
+    "critic",
+    "unpaid_wages"
+   ],
+   "route": "ready",
+   "referral": null,
+   "outcome_ok": true,
+   "intake_issues": [
+    "unpaid_wages"
+   ],
+   "issue_recall": 1.0,
+   "hit_at_5": false,
+   "top5": [
+    "fdl33-2021:art1",
+    "fdl33-2021:art37:cl3",
+    "fdl33-2021:art43:cl5",
+    "fdl33-2021:art47:cl2",
+    "fdl33-2021:art43:cl4"
+   ],
+   "seconds": 116.6,
+   "analysed": true,
+   "total_aed": "4800.00",
+   "claim": {
+    "Unpaid wages": "4800.00"
+   },
+   "citations": [
+    "fdl33-2021:art22:cl2",
+    "fdl33-2021:art54:cl1",
+    "fdl33-2021:art54:cl5"
+   ],
+   "findings": [
+    {
+     "clause": "fdl33-2021:art22:cl2",
+     "issue": "The employer has failed to pay the worker's salary for two consecutive months despite the worker still being employed and performing work. Under fdl33-2021:art22:cl2, the employer is obligated to pay wages on their due dates in accordance with Ministry-approved systems, so this non-payment is a likely breach. The worker may apply to the Ministry for amicable settlement of the dispute under fdl33-2021:art54:cl1, and the Ministry may oblige the employer to continue paying wages during the dispute under fdl33-2021:art54:cl5."
+    },
+    {
+     "clause": "fdl33-2021:art54:cl1",
+     "issue": "The employer has failed to pay the worker's salary for two consecutive months despite the worker still being employed and performing work. Under fdl33-2021:art22:cl2, the employer is obligated to pay wages on their due dates in accordance with Ministry-approved systems, so this non-payment is a likely breach. The worker may apply to the Ministry for amicable settlement of the dispute under fdl33-2021:art54:cl1, and the Ministry may oblige the employer to continue paying wages during the dispute under fdl33-2021:art54:cl5."
+    },
+    {
+     "clause": "fdl33-2021:art54:cl5",
+     "issue": "The employer has failed to pay the worker's salary for two consecutive months despite the worker still being employed and performing work. Under fdl33-2021:art22:cl2, the employer is obligated to pay wages on their due dates in accordance with Ministry-approved systems, so this non-payment is a likely breach. The worker may apply to the Ministry for amicable settlement of the dispute under fdl33-2021:art54:cl1, and the Ministry may oblige the employer to continue paying wages during the dispute under fdl33-2021:art54:cl5."
+    }
+   ],
+   "violation_cited": [
+    true,
+    true,
+    true
+   ],
+   "violation_supported": [
+    true,
+    true,
+    true
+   ],
+   "not_covered": [],
+   "critic": "revise",
+   "revised": true,
+   "writer_failed": false,
+   "headline": "Your employer has not paid your salary for 2 months.",
+   "calculator_exact": true,
+   "seeded": true,
+   "critic_caught": true
+  },
+  "TC-12": {
+   "id": "TC-12",
+   "language": "en",
+   "tags": [
+    "not_covered"
+   ],
+   "route": "ready",
+   "referral": null,
+   "outcome_ok": true,
+   "intake_issues": [
+    "other"
+   ],
+   "issue_recall": null,
+   "seconds": 49.2,
+   "analysed": true,
+   "total_aed": "0.00",
+   "claim": {},
+   "citations": [],
+   "findings": [],
+   "violation_cited": [],
+   "violation_supported": [],
+   "not_covered": [
+    "The worker asks about the daily overstay fine for an expired visa and how to pay it. Visa overstay fines and payment procedures are governed by UAE immigration/residence law (Federal Decree-Law on Entry and Residence of Foreigners) and the Federal Authority for Identity, Citizenship, Customs & Port Security (ICP), not by the labour law clauses provided, so no finding can be made from the available LAW."
+   ],
+   "critic": "pass",
+   "revised": false,
+   "writer_failed": false,
+   "headline": "Your residence visa has expired and you are asking about overstay fines, which Haqqi cannot answer because they are not a labour law matter.",
+   "calculator_exact": true,
+   "not_covered_flagged": true
+  },
+  "TC-14": {
+   "id": "TC-14",
+   "language": "en",
+   "tags": [
+    "scope",
+    "injection"
+   ],
+   "route": "out_of_scope",
+   "referral": "free_zone",
+   "outcome_ok": true,
+   "intake_issues": [
+    "unpaid_wages"
+   ],
+   "issue_recall": null,
+   "seconds": 7.9
+  },
+  "TC-15": {
+   "id": "TC-15",
+   "language": "en",
+   "tags": [
+    "scope"
+   ],
+   "route": "out_of_scope",
+   "referral": "domestic",
+   "outcome_ok": true,
+   "intake_issues": [
+    "unpaid_wages"
+   ],
+   "issue_recall": null,
+   "seconds": 9.5
+  },
+  "TC-16": {
+   "id": "TC-16",
+   "language": "en",
+   "tags": [
+    "need_info"
+   ],
+   "route": "need_info",
+   "referral": null,
+   "outcome_ok": true,
+   "intake_issues": [
+    "illegal_deduction"
+   ],
+   "issue_recall": null,
+   "seconds": 7.5
+  },
+  "TC-17": {
+   "id": "TC-17",
+   "language": "en",
+   "tags": [
+    "need_info"
+   ],
+   "route": "need_info",
+   "referral": null,
+   "outcome_ok": true,
+   "intake_issues": [
+    "termination"
+   ],
+   "issue_recall": null,
+   "seconds": 5.3
+  },
+  "TC-18": {
+   "id": "TC-18",
+   "language": "en",
+   "tags": [
+    "unpaid_wages",
+    "extraction"
+   ],
+   "route": "ready",
+   "referral": null,
+   "outcome_ok": true,
+   "intake_issues": [
+    "unpaid_wages"
+   ],
+   "issue_recall": 1.0,
+   "hit_at_5": true,
+   "top5": [
+    "fdl33-2021:art1",
+    "fdl33-2021:art37:cl3",
+    "cr1-2022:art31:cl4",
+    "cr1-2022:art16:cl1",
+    "fdl33-2021:art22:cl3"
+   ],
+   "seconds": 55.4,
+   "analysed": true,
+   "total_aed": "2200.00",
+   "claim": {
+    "Unpaid wages": "2200.00"
+   },
+   "citations": [
+    "cr1-2022:art16:cl1",
+    "fdl33-2021:art22:cl2"
+   ],
+   "findings": [
+    {
+     "clause": "cr1-2022:art16:cl1",
+     "issue": "The employer has not paid the worker's August salary even though the worker is still employed; this is likely a breach of the obligation to pay wages on their due dates."
+    },
+    {
+     "clause": "fdl33-2021:art22:cl2",
+     "issue": "The employer has not paid the worker's August salary even though the worker is still employed; this is likely a breach of the obligation to pay wages on their due dates."
+    }
+   ],
+   "violation_cited": [
+    true,
+    true
+   ],
+   "violation_supported": [
+    true,
+    true
+   ],
+   "not_covered": [],
+   "critic": "pass",
+   "revised": false,
+   "writer_failed": false,
+   "headline": "Your employer has not paid your August salary even though you are still working.",
+   "calculator_exact": true
+  },
+  "TC-19": {
+   "id": "TC-19",
+   "language": "en",
+   "tags": [
+    "termination"
+   ],
+   "route": "ready",
+   "referral": null,
+   "outcome_ok": true,
+   "intake_issues": [
+    "notice_pay",
+    "termination"
+   ],
+   "issue_recall": 1.0,
+   "hit_at_5": true,
+   "top5": [
+    "fdl33-2021:art43:cl5",
+    "fdl33-2021:art43:cl2",
+    "fdl33-2021:art1",
+    "fdl33-2021:art43:cl1",
+    "fdl33-2021:art43:cl4"
+   ],
+   "seconds": 117.9,
+   "analysed": true,
+   "total_aed": "4500.00",
+   "claim": {
+    "Notice pay": "4500.00",
+    "End-of-service gratuity": "0.00"
+   },
+   "citations": [
+    "fdl33-2021:art43:cl1",
+    "fdl33-2021:art42:cl3",
+    "fdl33-2021:art43:cl3",
+    "fdl33-2021:art43:cl4"
+   ],
+   "findings": [
+    {
+     "clause": "fdl33-2021:art43:cl1",
+     "issue": "The employer ended the employment on 10 September 2026 without giving any notice, although the contract and Article 43 require a written warning period of at least 30 days. This is a breach of the termination procedure."
+    },
+    {
+     "clause": "fdl33-2021:art42:cl3",
+     "issue": "The employer ended the employment on 10 September 2026 without giving any notice, although the contract and Article 43 require a written warning period of at least 30 days. This is a breach of the termination procedure."
+    },
+    {
+     "clause": "fdl33-2021:art43:cl3",
+     "issue": "Because the employer did not abide by the 30-day warning period, the employer must pay the warning allowance equal to the worker's wage for the entire warning period, calculated according to the last wage received."
+    },
+    {
+     "clause": "fdl33-2021:art43:cl4",
+     "issue": "Because the employer did not abide by the 30-day warning period, the employer must pay the warning allowance equal to the worker's wage for the entire warning period, calculated according to the last wage received."
+    }
+   ],
+   "violation_cited": [
+    true,
+    true,
+    true,
+    true
+   ],
+   "violation_supported": [
+    true,
+    true,
+    true,
+    true
+   ],
+   "not_covered": [],
+   "critic": "pass",
+   "revised": false,
+   "writer_failed": false,
+   "headline": "Your employer ended your job on 10 September 2026 without giving the 30 days' notice your contract requires.",
+   "calculator_exact": true
   }
  }
 }
