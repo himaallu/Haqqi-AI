@@ -20,6 +20,18 @@ If the frontend URL changes, update `CORS_ORIGINS` in `render.yaml`, or the brow
 
 Free projects pause after about a week without traffic; open the dashboard to wake one up.
 
+### Migrations and the 7-day auto-delete
+
+Run migrations from your laptop after a merge that adds one (Render does not run them):
+`cd backend && DATABASE_URL='<Supabase URI>' uv run alembic upgrade head`.
+
+Migration `0002` schedules the hourly delete of cases older than 7 days with **pg_cron**, inside Postgres, so it
+runs even while the Render backend sleeps. Check it in the Supabase SQL editor:
+`select jobname, schedule, active from cron.job;` → `haqqi-purge-expired-cases | 17 * * * * | t`.
+Each run shows in `cron.job_run_details`. If the migration fails on `pg_cron`, enable it under
+**Database → Extensions → pg_cron** and run the migration again. Without pg_cron, `uv run python -m haqqi.purge`
+does the same delete by hand.
+
 ## 2. Backend: Render (free web service)
 
 Render builds `backend/Dockerfile` straight from GitHub. The service is described in `render.yaml` at the repo
