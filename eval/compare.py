@@ -46,7 +46,8 @@ def main() -> None:
         name = key.replace("_", " ").replace("at 5", "@5").replace("p95 s", "p95")
         print(f"| {name} | {fmt(key, b.get(key))} | {fmt(key, a.get(key))} | {target} |")
     print(f"| errors (cases lost) | {b['errors']} | {a['errors']} | 0 |")
-    print(f"| writer failed | {b['counts']['writer_failed']} | {a['counts']['writer_failed']} | 0 |")
+    failed = (b["counts"]["writer_failed"], a["counts"]["writer_failed"])
+    print(f"| writer failed | {failed[0]} | {failed[1]} | 0 |")
 
 
 if __name__ == "__main__":
