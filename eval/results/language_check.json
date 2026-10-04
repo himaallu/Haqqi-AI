@@ -10,7 +10,7 @@
   "intake_issues": [
    "unpaid_wages"
   ],
-  "intake_summary": "The worker is employed as a helper at a construction company in Ajman. He has been working there since February 2023 and is still currently employed. He reports that he has not received his salary for the last three months. The employer repeatedly promises payment in the following month but has not fulfilled this.",
+  "intake_summary": "The worker has been employed as a helper at a construction company in Ajman since February 1, 2023. They have not received their salary for the last three months. The worker is still currently employed with the company. Their basic wage is AED 1,200 and total wage is AED 1,800.",
   "missing_fields": [],
   "filled_on_confirm": {},
   "stages": [
@@ -21,7 +21,7 @@
    "writing",
    "done"
   ],
-  "seconds": 42.4,
+  "seconds": 70.8,
   "total_aed": "5400.00",
   "claim": {
    "Unpaid wages": "5400.00"
@@ -33,8 +33,8 @@
   "critic": "pass",
   "revised": false,
   "writer_failed": false,
-  "headline": "नमस्ते साथी, हम आपकी रुकी हुई तनख्वाह वापस पाने में आपकी पूरी मदद करेंगे।",
-  "worker_text_script": 0.95,
+  "headline": "आपकी कंपनी ने पिछले 3 महीनों से आपका वेतन नहीं दिया है।",
+  "worker_text_script": 0.88,
   "letter_translation_script": 1.0,
   "letter_facts_ar_script": 1.0,
   "arabic_indic_digits": false,
@@ -162,7 +162,7 @@
    "overtime",
    "leave"
   ],
-  "intake_summary": "The worker is employed at a workshop in Fujairah mainland since 15 January 2024. They report working 12 hours daily without receiving overtime pay. Additionally, they state they have not received any annual leave for two years. Their monthly salary consists of a basic wage of AED 1,500 and a total wage of AED 2,000.",
+  "intake_summary": "The worker is employed in a workshop in Fujairah since January 15, 2024. They report working 12 hours daily without receiving overtime pay. Additionally, the worker states they have not received any annual leave for two years. The worker is currently still employed.",
   "missing_fields": [],
   "filled_on_confirm": {},
   "stages": [
@@ -173,21 +173,22 @@
    "writing",
    "done"
   ],
-  "seconds": 16.4,
+  "seconds": 16.7,
   "total_aed": "0.00",
   "claim": {},
   "citations": [
-   "cr1-2022:art15:cl3",
    "fdl33-2021:art17:cl1",
+   "fdl33-2021:art19:cl1",
    "fdl33-2021:art19:cl2",
    "fdl33-2021:art29:cl1",
+   "fdl33-2021:art29:cl4",
    "fdl33-2021:art29:cl8"
   ],
   "not_covered": [],
   "critic": "pass",
   "revised": false,
   "writer_failed": false,
-  "headline": "আপনার কাজের অধিকার এবং পাওনা সম্পর্কে তথ্য।",
+  "headline": "আপনার নিয়োগকর্তা আপনাকে অতিরিক্ত সময়ের কাজের টাকা দিচ্ছেন না এবং বার্ষিক ছুটিও দিচ্ছেন না।",
   "worker_text_script": 0.96,
   "letter_translation_script": 1.0,
   "letter_facts_ar_script": 1.0,
@@ -287,28 +288,27 @@
    "calculating",
    "analysing",
    "critiquing",
-   "revising",
    "writing",
    "done"
   ],
-  "seconds": 49.4,
+  "seconds": 19.3,
   "total_aed": "6229.59",
   "claim": {
    "Notice pay": "3000.00",
    "End-of-service gratuity": "3229.59"
   },
   "citations": [
+   "fdl33-2021:art42:cl3",
    "fdl33-2021:art43:cl2",
-   "fdl33-2021:art43:cl3"
+   "fdl33-2021:art43:cl3",
+   "fdl33-2021:art51:cl2"
   ],
-  "not_covered": [
-   "The worker is not entitled to end-of-service gratuity because they have not completed one year of continuous service as required by fdl33-2021:art51:cl2."
-  ],
-  "critic": "revise",
-  "revised": true,
+  "not_covered": [],
+  "critic": "pass",
+  "revised": false,
   "writer_failed": false,
-  "headline": "آپ کی ملازمت کے خاتمے کے حقوق",
-  "worker_text_script": 0.97,
+  "headline": "آپ کے آجر نے آپ کو نوٹس پیریڈ دیے بغیر ملازمت سے فارغ کر دیا ہے۔",
+  "worker_text_script": 0.93,
   "letter_translation_script": 1.0,
   "letter_facts_ar_script": 1.0,
   "arabic_indic_digits": false,

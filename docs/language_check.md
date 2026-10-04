@@ -48,6 +48,20 @@ fluency and tone. That needs a native or fluent reader (last column).
 4. **Not checked yet:** the Nepali letter, because TC-08 is a referral and makes no PDF. A Nepali mainland case would
    check the Devanagari PDF path for `ne`.
 
+## 6.4 re-run (4 Oct, after CHANGES.md 24–26)
+
+The three affected cases were re-run with the same runner. The Flash models hit their daily caps during the run, so
+some calls were answered by Flash-Lite, the weakest free model.
+
+| Case | Before | After |
+| --- | --- | --- |
+| TC-02 Urdu | "Haqqi can't help with your gratuity, your service is under one year", next to a 3,229.59 gratuity | "Since you worked more than a year, you are also entitled to gratuity"; not_covered empty; cites Art. 51(2). Total 6,229.59 ✓ |
+| TC-01 Hindi | "We will fully help you get your withheld salary back… we are with you" | Headline: "Your company has not paid your salary for the last 3 months." Haqqi explains the law and prepares the complaint; MOHRE decides. Total 5,400.00 ✓ |
+| TC-06 Bengali | "Information about your work rights and dues" | Headline: "Your employer is not paying you for overtime and is not giving you annual leave." |
+
+One run per case, so model variance remains. The code guard (`haqqi/agents/consistency.py`) still drops a "not
+entitled" note against a calculated item if the model slips again.
+
 ## Reader notes
 
 Add notes per language here: anything unnatural, wrong or hard to understand in the explanation, checklist, UI text or

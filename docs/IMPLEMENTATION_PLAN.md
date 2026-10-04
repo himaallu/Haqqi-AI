@@ -435,8 +435,13 @@ data sent to them for training, which would break the PRD's "no training on user
       worker they are not entitled to gratuity ("under one year") while the claim shows 3,229.59 (the model miscounted
       2.3 years); TC-01 (Hindi) over-promises ("we will get your salary back"); TC-06 (Bengali) headline is vague.
       **Open:** native/fluent reader notes.
-- [ ] **6.4 Fix the worst language issues** (prompt tweaks, UI strings).
+- [x] **6.4 Fix the worst language issues** (prompt tweaks, UI strings).
       Check: re-run the affected cases. Ports: new.
+      *Done 4 Oct:* CHANGES.md 24–26 (**wording for your review**): the agents get the calculator's service length
+      (SERVICE) and must not contradict calculated items; the Critic checks that; a code guard drops a contradicting
+      not_covered note; the Writer must not promise results and the headline must name the problem. Re-run: TC-02 now
+      says gratuity is due (6,229.59), TC-01 no longer promises, TC-06 headline names both issues
+      (`docs/language_check.md`).
 - [ ] **6.5 (P1) TTS playback** of the explanation. First to cut.
       Check: play button reads the Hindi explanation. Ports: new (F9).
 
