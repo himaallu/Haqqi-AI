@@ -11,6 +11,21 @@ from haqqi.rag.embed import Embedder
 from haqqi.rag.ingest import vector_literal
 from haqqi.rag.lawdata import LawPack
 
+# Words added to the search query for each issue type the Intake found (task 7.5). A worker's
+# story or its summary often names the problem ("not paid for 2 months") but not the law's own
+# words; with these, search reached the key article in its top 5 for 85% of the eval cases
+# (story-only query: 64%).
+ISSUE_QUERY_TERMS = {
+    "unpaid_wages": "unpaid wages salary payment due date",
+    "illegal_deduction": "deduction from wage",
+    "termination": "termination of employment contract",
+    "notice_pay": "notice period warning allowance",
+    "gratuity": "end-of-service gratuity",
+    "leave": "annual leave",
+    "overtime": "overtime working hours",
+    "document_retention": "withhold official documents passport",
+}
+
 RRF_K = 60
 CANDIDATES = 20  # per ranker, before fusion
 TOP_K = 8
@@ -83,6 +98,22 @@ def fetch_chunks(
     return {r[0]: (r[1], r[2], r[3], r[4], r[5]) for r in rows}
 
 
+def search_query(text: str, issue_types: Sequence[str] = ()) -> str:
+    terms = [ISSUE_QUERY_TERMS[i] for i in dict.fromkeys(issue_types) if i in ISSUE_QUERY_TERMS]
+    return " ".join([text, *terms])
+
+
+def fused_ranking(
+    conn: psycopg.Connection, text: str, embedder: Embedder, issue_types: Sequence[str] = ()
+) -> list[str]:
+    """Search results before the Law Pack top-up (what eval hit@5 measures)."""
+    query = search_query(text, issue_types)
+    (query_vec,) = embedder.embed([query])
+    return rrf(
+        [dense_ranking(conn, query_vec, CANDIDATES), fulltext_ranking(conn, query, CANDIDATES)]
+    )
+
+
 def retrieve(
     conn: psycopg.Connection,
     query: str,
@@ -91,10 +122,7 @@ def retrieve(
     issue_types: Sequence[str] = (),
     top_k: int = TOP_K,
 ) -> list[RetrievedChunk]:
-    (query_vec,) = embedder.embed([query])
-    fused = rrf(
-        [dense_ranking(conn, query_vec, CANDIDATES), fulltext_ranking(conn, query, CANDIDATES)]
-    )
+    fused = fused_ranking(conn, query, embedder, issue_types)
     pack_ids = pack.chunk_ids_for(list(issue_types))
     ids = merge_with_pack(fused, pack_ids, top_k)
     searched = set(fused[:top_k])

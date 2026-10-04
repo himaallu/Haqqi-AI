@@ -35,14 +35,7 @@ from haqqi.llm.client import Completer, LLMClient, LLMError, providers_from_sett
 from haqqi.models import IssueType
 from haqqi.rag.embed import Embedder, get_embedder
 from haqqi.rag.lawdata import load_law_pack
-from haqqi.rag.retrieve import (
-    CANDIDATES,
-    RetrievedChunk,
-    dense_ranking,
-    fulltext_ranking,
-    retrieve,
-    rrf,
-)
+from haqqi.rag.retrieve import RetrievedChunk, fused_ranking, retrieve
 
 RESULTS_DIR = Path(__file__).with_name("results")
 DIGITS = str.maketrans("٠١٢٣٤٥٦٧٨٩۰۱۲۳۴۵۶۷۸۹", "01234567890123456789")
@@ -97,10 +90,7 @@ def run_case(case: Case, llm: Completer, db_url: str, embedder: Embedder) -> dic
         with psycopg.connect(db_url) as conn:
             retrieved[:] = retrieve(conn, text, embedder, load_law_pack(), list(issue_types))
             if exp.key_clauses:
-                (vec,) = embedder.embed([text])
-                fused = rrf(
-                    [dense_ranking(conn, vec, CANDIDATES), fulltext_ranking(conn, text, CANDIDATES)]
-                )
+                fused = fused_ranking(conn, text, embedder, list(issue_types))
                 top5 = {article_of(i) for i in fused[:5]}
                 out["hit_at_5"] = any(article_of(k) in top5 for k in exp.key_clauses)
                 out["top5"] = fused[:5]
@@ -126,6 +116,7 @@ def run_case(case: Case, llm: Completer, db_url: str, embedder: Embedder) -> dic
         "total_aed": str(analysis.total_aed),
         "claim": {k: str(v) if v is not None else None for k, v in lines.items()},
         "citations": cited,
+        "findings": [{"clause": v.article.chunk_id, "issue": v.issue} for v in analysis.violations],
         "violation_cited": [c in allowed for c in cited],
         "violation_supported": [article_of(c) in exp.supporting_articles for c in cited],
         "not_covered": analysis.not_covered,

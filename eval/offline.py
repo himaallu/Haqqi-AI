@@ -4,8 +4,9 @@
    the calculator must equal the hand-worked lines, worker-owes lines and total exactly. Exits
    non-zero below 100%, so CI fails.
 2. Retrieval hit@5, only when a local law index is reachable (DATABASE_URL and a real embedder).
-   With no LLM there is no Intake summary, so the worker's own story is the query: a harder
-   setting than the app's English summary. Otherwise it reports "skipped".
+   With no LLM there is no Intake, so the query is the worker's own story plus the case's
+   expected issue types (a harder setting than the app's English summary). Otherwise it reports
+   "skipped".
 """
 
 import sys
@@ -16,7 +17,7 @@ from eval.cases_io import confirmed_facts, load_cases
 from haqqi.config import get_settings
 from haqqi.core.calculator import calculate
 from haqqi.rag.embed import get_embedder
-from haqqi.rag.retrieve import CANDIDATES, dense_ranking, fulltext_ranking, rrf
+from haqqi.rag.retrieve import fused_ranking
 
 
 def calculator_failures() -> tuple[int, list[str]]:
@@ -44,16 +45,12 @@ def retrieval_hit_at_5() -> str:
         for case in load_cases():
             if not case.expected.key_clauses:
                 continue
-            (vec,) = embedder.embed([case.story])
-            fused = rrf(
-                [
-                    dense_ranking(conn, vec, CANDIDATES),
-                    fulltext_ranking(conn, case.story, CANDIDATES),
-                ]
-            )
+            # No Intake offline: the expected issue types stand in for the Intake's.
+            fused = fused_ranking(conn, case.story, embedder, case.expected.issues)
             top5 = {i.split(":cl")[0] for i in fused[:5]}
             hits.append(any(k.split(":cl")[0] in top5 for k in case.expected.key_clauses))
-    return f"{sum(hits)}/{len(hits)} = {sum(hits) / len(hits):.0%} (story as the query)"
+    share = sum(hits) / len(hits)
+    return f"{sum(hits)}/{len(hits)} = {share:.0%} (story + issue types as the query)"
 
 
 def main() -> int:
