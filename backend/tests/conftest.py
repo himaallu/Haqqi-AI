@@ -4,7 +4,9 @@ from urllib.parse import urlparse
 import pytest
 
 LOCAL_HOSTS = {"localhost", "127.0.0.1", "db"}
-DEFAULT_TEST_DB = "postgresql://haqqi:haqqi@localhost:5432/haqqi"
+# A separate database: live tests rebuild law_chunks with the test embedder, which would wipe the
+# real index that `make dev` and `make eval` use in the `haqqi` database.
+DEFAULT_TEST_DB = "postgresql://haqqi:haqqi@localhost:5432/haqqi_test"
 
 
 def local_test_db_url() -> str:
@@ -23,3 +25,15 @@ def local_test_db_url() -> str:
 @pytest.fixture
 def local_db_url() -> str:
     return local_test_db_url()
+
+
+def ensure_test_database() -> None:
+    """Create the live-test database if it is missing (`make test-live` calls this)."""
+    import psycopg
+
+    url = urlparse(local_test_db_url())
+    name = url.path.lstrip("/")
+    admin = url._replace(path="/postgres").geturl()
+    with psycopg.connect(admin, autocommit=True) as conn:
+        if not conn.execute("SELECT 1 FROM pg_database WHERE datname = %s", (name,)).fetchone():
+            conn.execute(f'CREATE DATABASE "{name}"')
