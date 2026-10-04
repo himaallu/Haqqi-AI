@@ -1,0 +1,192 @@
+{
+ "provider": "k2",
+ "embedder": "cloudflare",
+ "run_on": "2026-10-04",
+ "metrics": {
+  "cases": 2,
+  "errors": 0,
+  "outcome_accuracy": 1.0,
+  "issue_detection": 1.0,
+  "retrieval_hit_at_5": 0.5,
+  "citations_cited": 1.0,
+  "citations_supported": 1.0,
+  "critic_catch_rate": null,
+  "calculator_correctness": 1.0,
+  "injection_resistance": null,
+  "latency_p95_s": 299.1,
+  "counts": {
+   "analysed": 2,
+   "with_issues": 2,
+   "violations": 11,
+   "seeded": 0,
+   "injected": 0,
+   "writer_failed": 1
+  }
+ },
+ "cases": {
+  "TC-01": {
+   "id": "TC-01",
+   "language": "hi",
+   "tags": [
+    "unpaid_wages"
+   ],
+   "route": "ready",
+   "referral": null,
+   "outcome_ok": true,
+   "intake_issues": [
+    "unpaid_wages"
+   ],
+   "issue_recall": 1.0,
+   "hit_at_5": false,
+   "top5": [
+    "fdl33-2021:art47:cl2",
+    "fdl33-2021:art37:cl3",
+    "cr1-2022:art16:cl1",
+    "cr1-2022:art29:cl2",
+    "fdl33-2021:art43:cl4"
+   ],
+   "seconds": 46.8,
+   "analysed": true,
+   "total_aed": "5400.00",
+   "claim": {
+    "Unpaid wages": "5400.00"
+   },
+   "citations": [
+    "cr1-2022:art16:cl1",
+    "fdl33-2021:art22:cl2",
+    "fdl33-2021:art54:cl1",
+    "fdl33-2021:art54:cl5"
+   ],
+   "findings": [
+    {
+     "clause": "cr1-2022:art16:cl1",
+     "issue": "The employer has failed to pay the worker's wages for three consecutive months even though the worker is still employed and working. The law obligates the employer to pay wages on their due dates in the manner agreed in the contract and through the Wage Protection System or another Ministry-approved system, so this delay is a clear breach."
+    },
+    {
+     "clause": "fdl33-2021:art22:cl2",
+     "issue": "The employer has failed to pay the worker's wages for three consecutive months even though the worker is still employed and working. The law obligates the employer to pay wages on their due dates in the manner agreed in the contract and through the Wage Protection System or another Ministry-approved system, so this delay is a clear breach."
+    },
+    {
+     "clause": "fdl33-2021:art54:cl1",
+     "issue": "Because the worker is still employed and unpaid, he can apply to the Ministry (MOHRE) for amicable settlement, and during the dispute the Ministry may oblige the employer to continue paying his wages for a maximum of two months."
+    },
+    {
+     "clause": "fdl33-2021:art54:cl5",
+     "issue": "Because the worker is still employed and unpaid, he can apply to the Ministry (MOHRE) for amicable settlement, and during the dispute the Ministry may oblige the employer to continue paying his wages for a maximum of two months."
+    }
+   ],
+   "violation_cited": [
+    true,
+    true,
+    true,
+    true
+   ],
+   "violation_supported": [
+    true,
+    true,
+    true,
+    true
+   ],
+   "not_covered": [],
+   "critic": "pass",
+   "revised": false,
+   "writer_failed": false,
+   "headline": "आपकी कंपनी ने पिछले 3 महीने से तनख्वाह नहीं दी है।",
+   "calculator_exact": true
+  },
+  "TC-02": {
+   "id": "TC-02",
+   "language": "ur",
+   "tags": [
+    "termination",
+    "gratuity"
+   ],
+   "route": "ready",
+   "referral": null,
+   "outcome_ok": true,
+   "intake_issues": [
+    "notice_pay",
+    "termination"
+   ],
+   "issue_recall": 1.0,
+   "hit_at_5": true,
+   "top5": [
+    "fdl33-2021:art43:cl5",
+    "fdl33-2021:art43:cl2",
+    "fdl33-2021:art43:cl4",
+    "fdl33-2021:art35",
+    "fdl33-2021:art43:cl3"
+   ],
+   "seconds": 299.1,
+   "analysed": true,
+   "total_aed": "6229.59",
+   "claim": {
+    "Notice pay": "3000.00",
+    "End-of-service gratuity": "3229.59"
+   },
+   "citations": [
+    "fdl33-2021:art43:cl3",
+    "fdl33-2021:art43:cl1",
+    "fdl33-2021:art43:cl1",
+    "fdl33-2021:art42:cl3",
+    "fdl33-2021:art47:cl1",
+    "fdl33-2021:art51:cl2",
+    "fdl33-2021:art51:cl3"
+   ],
+   "findings": [
+    {
+     "clause": "fdl33-2021:art43:cl3",
+     "issue": "The employer terminated the worker on 20 September without giving any notice, although the contract requires a 30-day warning period. Under fdl33-2021:art43:cl3, the party that does not abide by the warning period must pay the other party a warning allowance equal to the worker's wage for the entire warning period, even if no harm resulted."
+    },
+    {
+     "clause": "fdl33-2021:art43:cl1",
+     "issue": "The employer terminated the worker on 20 September without giving any notice, although the contract requires a 30-day warning period. Under fdl33-2021:art43:cl3, the party that does not abide by the warning period must pay the other party a warning allowance equal to the worker's wage for the entire warning period, even if no harm resulted."
+    },
+    {
+     "clause": "fdl33-2021:art43:cl1",
+     "issue": "The employer ended the contract without the written notice required by fdl33-2021:art43:cl1, which obliges the terminating party to notify the other party in writing and observe a warning period of not less than 30 and not more than 90 days. The termination itself is not shown to be unlawful under fdl33-2021:art47, as there are no facts indicating dismissal for filing a complaint or case."
+    },
+    {
+     "clause": "fdl33-2021:art42:cl3",
+     "issue": "The employer ended the contract without the written notice required by fdl33-2021:art43:cl1, which obliges the terminating party to notify the other party in writing and observe a warning period of not less than 30 and not more than 90 days. The termination itself is not shown to be unlawful under fdl33-2021:art47, as there are no facts indicating dismissal for filing a complaint or case."
+    },
+    {
+     "clause": "fdl33-2021:art47:cl1",
+     "issue": "The employer ended the contract without the written notice required by fdl33-2021:art43:cl1, which obliges the terminating party to notify the other party in writing and observe a warning period of not less than 30 and not more than 90 days. The termination itself is not shown to be unlawful under fdl33-2021:art47, as there are no facts indicating dismissal for filing a complaint or case."
+    },
+    {
+     "clause": "fdl33-2021:art51:cl2",
+     "issue": "The worker completed more than one year of continuous service (2.31 years), so as a foreign full-time worker she is entitled to an end-of-service gratuity calculated on her basic wage under fdl33-2021:art51:cl2 (21 days' wage per year for the first five years), with proportional bonus for parts of a year under fdl33-2021:art51:cl3."
+    },
+    {
+     "clause": "fdl33-2021:art51:cl3",
+     "issue": "The worker completed more than one year of continuous service (2.31 years), so as a foreign full-time worker she is entitled to an end-of-service gratuity calculated on her basic wage under fdl33-2021:art51:cl2 (21 days' wage per year for the first five years), with proportional bonus for parts of a year under fdl33-2021:art51:cl3."
+    }
+   ],
+   "violation_cited": [
+    true,
+    true,
+    true,
+    true,
+    true,
+    true,
+    true
+   ],
+   "violation_supported": [
+    true,
+    true,
+    true,
+    true,
+    true,
+    true,
+    true
+   ],
+   "not_covered": [],
+   "critic": "pass",
+   "revised": false,
+   "writer_failed": true,
+   "headline": null,
+   "calculator_exact": true
+  }
+ }
+}
