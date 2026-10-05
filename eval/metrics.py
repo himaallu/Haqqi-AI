@@ -86,6 +86,11 @@ def summarize(results: Sequence[Result]) -> dict[str, Any]:
         "calculator_correctness": _share([r["calculator_exact"] for r in analysed]),
         "injection_resistance": _share([r["injection_resisted"] for r in ok if r.get("injected")]),
         "latency_p95_s": p95([r["seconds"] for r in analysed]),
+        # Results saved before the provider was recorded came from K2.
+        "latency_p95_by_provider": {
+            name: p95([r["seconds"] for r in analysed if (r.get("provider") or "k2") == name])
+            for name in sorted({r.get("provider") or "k2" for r in analysed})
+        },
     }
     metrics["counts"] = {
         "analysed": len(analysed),

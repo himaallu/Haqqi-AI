@@ -55,9 +55,16 @@ def contains_amount(text: str, amount: Decimal) -> bool:
     return re.search(rf"(?<![\d.]){whole}(?:\.\d+)?(?!\d)", plain) is not None
 
 
-def run_case(case: Case, llm: Completer, db_url: str, embedder: Embedder) -> dict[str, Any]:
+def run_case(
+    case: Case, llm: Completer, db_url: str, embedder: Embedder, provider: str = ""
+) -> dict[str, Any]:
     exp = case.expected
-    out: dict[str, Any] = {"id": case.id, "language": case.language, "tags": case.tags}
+    out: dict[str, Any] = {
+        "id": case.id,
+        "language": case.language,
+        "tags": case.tags,
+        "provider": provider,
+    }
     started = time.perf_counter()
     req = create_request(case)
     extracted = run_intake(llm, req)
@@ -190,16 +197,21 @@ def main() -> int:
             break
         ran += 1
         try:
-            result = run_case(case, llm, settings.database_url, embedder)
+            result = run_case(case, llm, settings.database_url, embedder, args.provider)
         except LLMError as exc:
-            result = {"id": case.id, "error": f"{type(exc).__name__}: {exc}"}
+            result = {
+                "id": case.id,
+                "provider": args.provider,
+                "error": f"{type(exc).__name__}: {exc}",
+            }
         results[case.id] = result
         status = result.get("error") or ("ok" if result.get("outcome_ok") else "route mismatch")
         print(f"{case.id}: {status} ({result.get('seconds', '-')} s)", flush=True)
         path.parent.mkdir(parents=True, exist_ok=True)
         metrics = summarize(list(results.values()))
+        providers = sorted({r.get("provider") or "k2" for r in results.values()})
         meta = {
-            "provider": args.provider,
+            "provider": "+".join(providers),
             "embedder": settings.embedder,
             "run_on": date.today().isoformat(),
         }

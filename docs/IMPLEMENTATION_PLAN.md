@@ -483,9 +483,16 @@ data sent to them for training, which would break the PRD's "no training on user
       - Support labels widened by documented rules. Re-scored on the same labels, support is 98% before and 96% after.
       - The K2 retry fix: 0 cases lost.
       - Latency stays a K2 limit (p95 299 s); production runs on Gemini.
-- [ ] **7.6 Record scores**.
+- [x] **7.6 Record scores**.
       Check: the README metrics table matches the latest results file. Ports: `Log Results` (replaced).
       *4 Oct:* the README has the table for the 20-case K2 run, marked partial. It stays open until all 50 have run.
+      *Done 5 Oct:* all 50 cases are in `eval/results/final.json`: 40 on K2 and 10 on free Gemini (your call: a mix).
+      There were 0 errors, and all targets are met except K2 latency:
+      - outcome 100%, issues 95%, hit@5 92%, cited 100%, supported 93%;
+      - critic 2/2, calculator 40/40, injection 2/2;
+      - p95 latency 32 s on Gemini (production), 292 s on K2.
+      The README table matches `summarize()` of that file. Open items are in `eval/CHANGELOG.md`: K2 still flags
+      notice breaches in N-11/N-12/N-18 (a code guard is a possible fix), and 6 Writer rejections on K2.
 
 ## Sprint 8 — Production polish (PRD Block 8)
 

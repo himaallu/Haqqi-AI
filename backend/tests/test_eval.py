@@ -75,3 +75,25 @@ def test_summary_uses_only_the_cases_each_metric_applies_to() -> None:
     assert m["latency_p95_s"] == 60.0
     assert m["errors"] == 1
     assert "| outcome accuracy | 67% | >= 95% |" in table(m)
+
+
+def test_latency_is_also_reported_per_provider() -> None:
+    def analysed(seconds: float, provider: str | None) -> dict[str, Any]:
+        result: dict[str, Any] = {
+            "outcome_ok": True,
+            "analysed": True,
+            "calculator_exact": True,
+            "seconds": seconds,
+        }
+        if provider:
+            result["provider"] = provider
+        return result
+
+    results = [
+        analysed(20, "gemini"),
+        analysed(30, "gemini"),
+        analysed(200, "k2"),
+        analysed(250, None),
+    ]
+    by_provider = summarize(results)["latency_p95_by_provider"]
+    assert by_provider == {"gemini": 30, "k2": 250}  # untagged results are the older K2 runs
