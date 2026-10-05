@@ -9,7 +9,9 @@ import {
   downloadComplaint,
   fetchHealth,
   getCase,
+  resetWakeForTests,
   transcribeAudio,
+  wakeBackend,
 } from "./api";
 
 describe("apiUrl", () => {
@@ -31,6 +33,29 @@ describe("fetchHealth", () => {
     const fakeFetch = vi.fn().mockResolvedValue(new Response("nope", { status: 503 }));
 
     await expect(fetchHealth(fakeFetch)).rejects.toThrow("503");
+  });
+});
+
+describe("wakeBackend", () => {
+  it("pings /healthz once per page load", async () => {
+    resetWakeForTests();
+    const fakeFetch = vi.fn().mockResolvedValue(new Response("{}", { status: 200 }));
+
+    await wakeBackend(fakeFetch);
+    await wakeBackend(fakeFetch);
+
+    expect(fakeFetch).toHaveBeenCalledTimes(1);
+    expect(String(fakeFetch.mock.calls[0][0])).toMatch(/\/healthz$/);
+  });
+
+  it("never throws when the backend is asleep or down", async () => {
+    resetWakeForTests();
+    const fakeFetch = vi.fn().mockRejectedValue(new TypeError("Failed to fetch"));
+
+    await expect(wakeBackend(fakeFetch)).resolves.toBeUndefined();
+    resetWakeForTests();
+    const busy = vi.fn().mockResolvedValue(new Response("nope", { status: 503 }));
+    await expect(wakeBackend(busy)).resolves.toBeUndefined();
   });
 });
 

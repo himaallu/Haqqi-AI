@@ -46,6 +46,26 @@ export async function fetchHealth(fetchFn: typeof fetch = fetch): Promise<Health
   return (await resp.json()) as Health;
 }
 
+let woken = false;
+
+/**
+ * Pings /healthz once per page load so a sleeping backend (Render free sleeps after ~15 idle minutes and takes about
+ * a minute to wake) starts waking while the worker picks a language and tells their story. Errors are ignored: the
+ * worker never sees this call.
+ */
+export function wakeBackend(fetchFn: typeof fetch = fetch): Promise<void> {
+  if (woken) return Promise.resolve();
+  woken = true;
+  return fetchHealth(fetchFn).then(
+    () => undefined,
+    () => undefined,
+  );
+}
+
+export function resetWakeForTests(): void {
+  woken = false;
+}
+
 export type CreateCase = { language: Language; story: string; zone?: Zone; worker_type?: WorkerType };
 
 export function createCase(body: CreateCase, fetchFn: typeof fetch = fetch): Promise<CaseView> {

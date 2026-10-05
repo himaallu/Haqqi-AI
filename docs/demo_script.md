@@ -5,8 +5,9 @@ without notice. The expected result is **AED 6,229.59**: notice pay 3,000.00 plu
 
 ## Before you record (5 minutes)
 
-1. **Wake the backend.** Open https://haqqi-api.onrender.com/healthz and wait until it shows `"status":"ok"`. The free
-   Render plan sleeps, and the first request takes about a minute.
+1. **Wake the backend.** Open https://haqqi-ai.vercel.app about a minute before you start. The free Render plan
+   sleeps after 15 idle minutes, and opening the site starts waking it (the app pings the backend on load). Do it
+   before recording, so the video doesn't wait at "Continue".
 2. **Fresh Gemini quota.** Record after **11:00 UAE time** (07:00 UTC), when the free daily quota resets, so the case
    runs on Gemini in about 15–25 s.
 3. **The phone:**

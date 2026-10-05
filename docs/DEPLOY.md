@@ -48,6 +48,8 @@ root, so there is nothing to push by hand: every commit touching `backend/` rede
    Your exact URL is shown at the top of the service page. If the name was taken, it has a suffix.
 
 Free services sleep after about 15 minutes without traffic; the first request after that takes about a minute.
+The frontend pings `/healthz` as soon as any page opens, so the backend usually wakes while the worker picks a language
+and tells their story; nobody needs to open the health page by hand.
 The free plan has 512 MB of RAM, too little for a local multilingual embedding model (flag 15), so embeddings
 come from Cloudflare Workers AI.
 
