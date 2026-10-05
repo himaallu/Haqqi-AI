@@ -5,6 +5,27 @@ which scores both runs on the same cases and re-scores hit@5 and "supported" aga
 change never counts as an improvement. `make eval EVAL_ARGS="--rescore --out <file>"` re-scores a saved run the same
 way, with no LLM calls.
 
+## 5 Oct 2026: notice code guard
+
+`drop_ruled_out_notice` (`backend/haqqi/agents/consistency.py`) drops Art. 43 citations when the full notice was
+served: the job ended and the calculator's notice shortfall is 0. A finding left uncited is dropped. Contracts that
+started before 2 Feb 2022 are skipped, because Art. 65(6) sets their notice by length of service.
+
+The 5 cases it targets, or that guard against regressions (N-01, N-03, N-11, N-18 and TC-21), were re-run on K2 and
+replaced in `results/final.json`. The other 45 results are unchanged.
+
+| Metric | Before | After |
+| --- | --- | --- |
+| Citations supported (50 cases) | 93% (169/181) | **96% (171/178)** |
+| Art. 43 cited with full notice served | N-01, N-11, N-18 | none |
+
+Every other metric is unchanged. Writer rejections on K2 stay at 6: N-03 now failed and N-11 now passed. What N-18
+still gets wrong:
+- an Art. 47 (arbitrary dismissal) finding;
+- leave findings the worker never raised (Art. 29(9), CR 19(2)).
+
+Neither is a notice clause, so the guard leaves them alone.
+
 ## 5 Oct 2026: all 50 cases (task 7.6)
 
 Run: `results/final.json`. It holds the 20 cases from 4 Oct (K2) plus the other 30. Of those 30, 10 ran on free
