@@ -114,7 +114,6 @@ def test_notice_findings_are_dropped_when_the_full_notice_was_served() -> None:
         {"notice_days_given": 0},  # no notice: a real breach
         {"notice_days_contract": 20, "notice_days_given": 20},  # the law requires 30: 10 days short
         {"termination": "still_employed", "end_date": None},
-        {"start_date": date(2001, 6, 1)},  # pre-2022 contract: Art. 65(6) notice by service length
     ],
 )
 def test_notice_findings_are_kept_unless_the_full_notice_was_served(
@@ -123,3 +122,16 @@ def test_notice_findings_are_kept_unless_the_full_notice_was_served(
     reply = AnalystReply(issues=[finding("notice_pay", "fdl33-2021:art43:cl1")])
     facts = NOTICE_SERVED.model_copy(update=change)
     assert drop_ruled_out_notice(reply, facts) == reply
+
+
+def test_pre_2022_contracts_use_the_contract_notice_too() -> None:
+    # Your decision (5 Oct, N-12): the contract notice applies, not Art. 65(6)'s by service length.
+    reply = AnalystReply(
+        issues=[
+            finding("notice_pay", "fdl33-2021:art65:cl6", "fdl33-2021:art43:cl3"),
+            finding("gratuity", "fdl33-2021:art51:cl2"),
+        ]
+    )
+    facts = NOTICE_SERVED.model_copy(update={"start_date": date(2001, 6, 1)})
+    kept = drop_ruled_out_notice(reply, facts).issues
+    assert [i.chunk_ids for i in kept] == [["fdl33-2021:art51:cl2"]]

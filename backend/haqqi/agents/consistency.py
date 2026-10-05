@@ -7,13 +7,12 @@ not_covered note that denies an item the calculator paid.
 
 In the 5 Oct evaluation, K2 still cited Art. 43 (notice) as broken when the full notice had been
 served (N-01, N-11, N-18), despite the prompt rule (CHANGES.md 27). `drop_ruled_out_notice` removes
-those citations in code. Contracts from before the 2021 law took effect are left alone: Art. 65(6)
-gives them a statutory notice by length of service, so the contract notice may not be the full one.
+those citations in code. Your decision (5 Oct, N-12): contracts from before the 2021 law also use
+the contract notice, not Art. 65(6)'s notice by length of service, so Art. 65(6) is dropped too.
 """
 
 import logging
 import re
-from datetime import date
 
 from haqqi.agents.schemas import AnalystReply
 from haqqi.core.calculator import CalcResult, notice_shortfall_days
@@ -51,26 +50,22 @@ def drop_contradictions(reply: AnalystReply, calc: CalcResult) -> AnalystReply:
     return reply.model_copy(update={"not_covered": kept})
 
 
-NOTICE_ARTICLE = "fdl33-2021:art43"
-LAW_IN_FORCE = date(2022, 2, 2)
+# Notice clauses: Art. 43, and Art. 65(6) for pre-2022 contracts (also on the contract notice).
+NOTICE_CLAUSES = ("fdl33-2021:art43:", "fdl33-2021:art65:cl6")
 
 
 def notice_served_in_full(facts: CaseFacts) -> bool:
-    return (
-        facts.termination in ("employer", "resigned")
-        and facts.start_date >= LAW_IN_FORCE
-        and notice_shortfall_days(facts) == 0
-    )
+    return facts.termination in ("employer", "resigned") and notice_shortfall_days(facts) == 0
 
 
 def drop_ruled_out_notice(reply: AnalystReply, facts: CaseFacts) -> AnalystReply:
-    """With the full notice served, Art. 43 can't be the clause broken: drop those citations."""
+    """With the full notice served, no notice clause can be the one broken: drop those citations."""
     if not notice_served_in_full(facts):
         return reply
     issues = []
     removed = 0
     for issue in reply.issues:
-        kept = [c for c in issue.chunk_ids if not c.startswith(NOTICE_ARTICLE + ":")]
+        kept = [c for c in issue.chunk_ids if not c.startswith(NOTICE_CLAUSES)]
         if len(kept) == len(issue.chunk_ids):
             issues.append(issue)
             continue
