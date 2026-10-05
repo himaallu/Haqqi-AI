@@ -27,6 +27,7 @@ from fastapi.responses import Response, StreamingResponse
 from psycopg.types.json import Jsonb
 from pydantic import BaseModel, ValidationError
 
+from haqqi import tracing
 from haqqi.agents.intake import run_intake
 from haqqi.agents.pipeline import Search, analyze_case
 from haqqi.api.schemas import ComplaintRequest, CreateCaseRequest
@@ -169,7 +170,8 @@ def _route_data(decision: RouteDecision) -> dict[str, Any]:
 @router.post("", status_code=201)
 def create_case(req: CreateCaseRequest, llm: Llm, db_url: DbUrl) -> CaseView:
     try:
-        extracted = run_intake(llm, req)
+        with tracing.trace("intake", language=req.language):
+            extracted = run_intake(llm, req)
     except LLMError as exc:
         raise _llm_http_error(exc) from None
     decision = route_case(extracted, req.zone, req.worker_type)
@@ -289,14 +291,15 @@ def _run_streamed(
 
     def work() -> None:
         try:
-            analysis = analyze_case(
-                facts,
-                query,
-                llm,
-                search,
-                lambda stage: events.put((stage, "{}")),
-                seed_bad_citation=seed,
-            )
+            with tracing.trace("analysis", language=facts.language):
+                analysis = analyze_case(
+                    facts,
+                    query,
+                    llm,
+                    search,
+                    lambda stage: events.put((stage, "{}")),
+                    seed_bad_citation=seed,
+                )
             _save_analysis(db_url, case_id, analysis)
             events.put(("done", analysis.model_dump_json()))
         except LLMError as exc:

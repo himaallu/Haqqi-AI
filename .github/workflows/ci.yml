@@ -56,3 +56,49 @@ jobs:
       - name: Build frontend
         working-directory: frontend
         run: pnpm build
+
+  # Task 8.1: the backend image builds (it fails without the law data or the PDF fonts), and the
+  # law index rebuilds from data/law on a fresh pgvector database. Render deploys only after CI passes.
+  image:
+    runs-on: ubuntu-latest
+    timeout-minutes: 20
+    steps:
+      - uses: actions/checkout@v4
+      - name: Build the backend image
+        run: docker build -f backend/Dockerfile -t haqqi-backend:ci .
+
+  ingest-smoke:
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    services:
+      db:
+        image: pgvector/pgvector:pg16
+        env:
+          POSTGRES_USER: haqqi
+          POSTGRES_PASSWORD: haqqi
+          POSTGRES_DB: haqqi
+        ports: ["5432:5432"]
+        options: >-
+          --health-cmd "pg_isready -U haqqi" --health-interval 5s --health-timeout 5s --health-retries 10
+    env:
+      DATABASE_URL: postgresql://haqqi:haqqi@localhost:5432/haqqi
+      EMBEDDER: hash
+    steps:
+      - uses: actions/checkout@v4
+      - uses: astral-sh/setup-uv@v6
+        with:
+          python-version: "3.12"
+          enable-cache: true
+          cache-dependency-glob: backend/uv.lock
+      - name: Migrate and ingest the law
+        working-directory: backend
+        run: |
+          uv sync --locked
+          uv run alembic upgrade head
+          uv run python -m haqqi.ingest
+      - name: Check the index has every law chunk
+        run: |
+          rows=$(psql "$DATABASE_URL" -tAc "select count(*) from law_chunks")
+          expected=$(python3 -c "import json,glob; print(sum(len(c) for f in glob.glob('data/law/*.json') if 'articles' in (d:=json.load(open(f))) for a in d['articles'] for c in [a.get('clauses') or [a]]))")
+          echo "rows=$rows expected=$expected"
+          test "$rows" = "$expected"

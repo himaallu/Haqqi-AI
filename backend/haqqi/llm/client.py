@@ -14,11 +14,13 @@ import threading
 import time
 from collections.abc import Callable, Sequence
 from dataclasses import dataclass, field
-from typing import Protocol
+from datetime import UTC, datetime
+from typing import Any, Protocol
 
 import httpx
 from pydantic import BaseModel, SecretStr, ValidationError
 
+from haqqi import tracing
 from haqqi.config import Settings
 
 log = logging.getLogger(__name__)
@@ -213,6 +215,20 @@ class LLMClient:
                 self._sleep(wait)
             self._last_call = time.monotonic()
         started = time.perf_counter()
+        began = datetime.now(UTC)
+
+        def traced(outcome: str, usage: dict[str, Any] | None = None) -> None:
+            tracing.generation(
+                stage=stage,
+                provider=provider.name,
+                model=provider.model,
+                start=began,
+                end=datetime.now(UTC),
+                outcome=outcome,
+                tokens_in=(usage or {}).get("prompt_tokens"),
+                tokens_out=(usage or {}).get("completion_tokens"),
+            )
+
         try:
             resp = self._http.post(
                 f"{provider.base_url.rstrip('/')}/chat/completions",
@@ -227,6 +243,7 @@ class LLMClient:
             )
         except httpx.HTTPError as exc:
             log.warning("llm %s: %s %s", stage, provider.name, type(exc).__name__)
+            traced(type(exc).__name__)
             return _Retry(1.0)
         latency = time.perf_counter() - started
         if resp.status_code == 429:
@@ -237,23 +254,28 @@ class LLMClient:
                 self._parked_until[provider.name] = time.monotonic() + park
                 log.warning("llm %s: %s over quota, parked for %.0fs", stage, provider.name, park)
             log.warning("llm %s: %s rate limited", stage, provider.name)
+            traced("rate limited")
             return _Retry(retry_after, rate_limited=True)
         if resp.status_code >= 500:
             log.warning("llm %s: HTTP %s", stage, resp.status_code)
+            traced(f"HTTP {resp.status_code}")
             return _Retry(1.0)
         if resp.status_code != 200:
             # The provider's own error text says why (e.g. K2's 400 on multi-turn history).
             log.warning(
                 "llm %s: %s HTTP %s: %s", stage, provider.name, resp.status_code, _error_text(resp)
             )
+            traced(f"HTTP {resp.status_code}")
             raise LLMUnavailable(f"{stage}: HTTP {resp.status_code} from {provider.name}")
         try:
             body = resp.json()
             text = body["choices"][0]["message"]["content"] or ""
         except (ValueError, KeyError, IndexError, TypeError):
             log.warning("llm %s: unexpected response shape", stage)
+            traced("unexpected response shape")
             return _Retry(1.0)
         usage = body.get("usage") or {}
+        traced("ok", usage)
         log.info(
             "llm %s: %s ok in %.1fs, tokens in=%s out=%s",
             stage,

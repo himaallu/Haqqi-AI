@@ -94,6 +94,7 @@ plain code, so no amount or article reaches the worker unchecked.
 | Law | Federal Decree-Law 33/2021 (as amended) and Cabinet Resolution 1/2022, English and Arabic, one chunk per clause (`data/law/`) |
 | Embeddings, speech | BGE-M3 and Whisper large-v3-turbo on Cloudflare Workers AI |
 | LLM | Gemini free models (Flash → Flash-Lite), then K2 Horizon |
+| Tracing | Langfuse via OpenTelemetry: stage, model, timing and tokens per LLM call, never content |
 | PDF | WeasyPrint with Noto Naskh Arabic and the Noto font for each worker language |
 
 ## Evaluation
@@ -177,5 +178,5 @@ Progress, decisions and open items are tracked in [`docs/IMPLEMENTATION_PLAN.md`
 Still open:
 - an Arabic reader's sign-off on the complaint;
 - native-speaker review of the translations;
-- tracing and error reporting;
+- error reporting (Sentry, deferred);
 - the 90-second demo video.

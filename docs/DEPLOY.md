@@ -82,6 +82,15 @@ quota (requests per minute and per day), so the backend tries `GEMINI_MODEL`, th
 then K2. Each Flash model allows only **20 requests a day** on the free tier (about 3–4 cases), so on a busy day
 later cases run on Flash-Lite or K2 and take longer.
 
+## 2d. Tracing: Langfuse (free Hobby plan)
+
+Every LLM call is traced with its stage, model, timing, token counts and outcome. The story, prompts, replies,
+amounts and case ids are never sent (`backend/haqqi/tracing.py`).
+
+1. Sign up at cloud.langfuse.com (EU), create a project, then **Settings → API Keys → Create new API key**.
+2. Put `LANGFUSE_PUBLIC_KEY` and `LANGFUSE_SECRET_KEY` in Render → Environment (`LANGFUSE_HOST` comes from
+   `render.yaml`). Never paste them in chat. Without them, tracing is simply off.
+
 ## 3. Frontend: Vercel
 
 1. Import the GitHub repo in Vercel; set **Root Directory** to `frontend` (Vercel detects Next.js and pnpm).

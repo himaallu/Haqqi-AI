@@ -505,8 +505,23 @@ data sent to them for training, which would break the PRD's "no training on user
 - [ ] **8.1 Full CI**: ruff, mypy, eslint, tsc, pytest, calculator tests, `make eval-offline`, ingest smoke; on merge to
       `main`, build the image and deploy both services.
       Check: a PR shows all jobs green; merging triggers a deploy and `/healthz` shows the new commit SHA. Ports: new.
-- [ ] **8.2 Langfuse tracing** of every K2 call (stage, latency, tokens) with PII redaction.
+      *5 Oct:* you set Render's Auto-Deploy to "After CI checks pass". CI now also builds the backend image (it fails
+      without the law data or PDF fonts) and runs an ingest smoke test on a fresh pgvector (375 chunks). The tick is
+      waiting for the merge, after which `/healthz` should show the merge commit.
+- [x] **8.2 Langfuse tracing** of every K2 call (stage, latency, tokens) with PII redaction.
       Check: one run → a trace with 4–5 spans; searching the trace for the test phone number finds nothing. Ports: `Log Stats` (replaced).
+      *Done 5 Oct:* `haqqi/tracing.py` sends **metadata only**, never the story, prompts, replies, amounts or case ids.
+      It doesn't use the Langfuse SDK: spans go straight to Langfuse's OpenTelemetry endpoint as OTLP JSON over
+      httpx. Its older ingestion API is deprecated for traces on 16 Nov 2026, and new organisations can't read the
+      legacy trace API at all.
+      - Each step (intake, analysis) is one trace with a fresh random id. Each LLM HTTP call is one generation span
+        with the stage, model, provider, timing, tokens and outcome.
+      - Spans are sent from a daemon thread, so the app never waits. Tracing is off without keys and in eval runs,
+        and a test fixture blocks it in tests.
+      - Live check: one test case (a story with `+971 50 123 4567`) on the local API with your keys gave 2 traces:
+        intake with 1 generation, and analysis with analyst, critic and writer. Each shows the model
+        (gemini-3-flash-preview) and token counts. The v2 observations contain none of the phone number, the story,
+        "Ajman" or the delimiters.
 - [x] **8.3 Log redaction**: a filter drops story text and masks phones, emails and Emirates ID/passport patterns.
       Check: `pytest tests/test_redaction.py`; grepping logs after TC-01 finds no story text. Ports: new.
       *Done 4 Oct:* `haqqi/logs.py`. Until now the app set up no logging of its own, so only warnings reached Render and
@@ -564,6 +579,8 @@ data sent to them for training, which would break the PRD's "no training on user
       sees.
 - [ ] **8.8 Sentry** for the frontend and backend.
       Check: a test exception shows up in Sentry. Ports: new.
+      *5 Oct:* **deferred (your call).** It can be added later: a Sentry account, two DSNs in Render and Vercel,
+      then about an hour of code.
 - [x] **8.9 README**: problem, architecture diagram, eval table, demo GIF, setup, and the n8n "v0" story.
       Check: the README renders on GitHub with the image and table. Ports: `Setup` note.
       *Done 4 Oct:* `README.md` covers the problem (with the PRD's sources), the 7-step journey, the architecture as a
@@ -574,6 +591,8 @@ data sent to them for training, which would break the PRD's "no training on user
       screen recording can replace it with 8.10.
 - [ ] **8.10 90-second demo video**.
       Check: the file or link is in the README. Ports: new.
+      *5 Oct:* the script and shot list are in `docs/demo_script.md` (TC-02, expected total AED 6,229.59).
+      Waiting for your recording.
 
 ## Definition of done (from PRD)
 - [ ] Public URL works on a phone end to end in ≥ 4 languages
