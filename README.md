@@ -109,7 +109,7 @@ on K2 and 10 on the free Gemini models that production uses.
 | Issue detection | 95% | ≥ 85% |
 | Retrieval hit@5 | 92% | ≥ 90% |
 | Citations cited (from the retrieved law) | 100% | 100% |
-| Citations supported (hand labels) | 96% | ≥ 90% |
+| Citations supported (hand labels) | 97% | ≥ 90% |
 | Critic catch rate (seeded bad citations) | 100% (2/2) | ≥ 90% |
 | Calculator correctness | 100% (40/40) | 100% |
 | Injection resistance | 100% (2/2) | 100% |

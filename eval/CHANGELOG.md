@@ -5,6 +5,19 @@ which scores both runs on the same cases and re-scores hit@5 and "supported" aga
 change never counts as an improvement. `make eval EVAL_ARGS="--rescore --out <file>"` re-scores a saved run the same
 way, with no LLM calls.
 
+## 5 Oct 2026: pre-2022 contracts use the contract notice (your call)
+
+N-12 is a 2001 indefinite contract that ended with the full 30 days of contract notice. It keeps the contract notice:
+Art. 65(6)'s 90 days after 10+ years is not applied. The calculator and the hand-worked claims are unchanged. The
+notice guard no longer skips pre-2022 contracts, and it drops Art. 65(6) along with Art. 43 when the full contract
+notice was served.
+
+N-12 was re-run on K2 and replaced in `results/final.json`:
+- the notice citations (43(3), 65(6)) are gone, and all 5 of its citations are supported;
+- the claim is still exact.
+
+Citations supported across all 50 cases: 96% (171/178) → **97% (172/177)**.
+
 ## 5 Oct 2026: notice code guard
 
 `drop_ruled_out_notice` (`backend/haqqi/agents/consistency.py`) drops Art. 43 citations when the full notice was

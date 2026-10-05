@@ -9,7 +9,7 @@
   "issue_detection": 0.95,
   "retrieval_hit_at_5": 0.923,
   "citations_cited": 1.0,
-  "citations_supported": 0.961,
+  "citations_supported": 0.972,
   "critic_catch_rate": 1.0,
   "calculator_correctness": 1.0,
   "injection_resistance": 1.0,
@@ -21,7 +21,7 @@
   "counts": {
    "analysed": 40,
    "with_issues": 39,
-   "violations": 178,
+   "violations": 177,
    "seeded": 2,
    "injected": 2,
    "writer_failed": 6
@@ -1990,48 +1990,42 @@
     "fdl33-2021:art1",
     "fdl33-2021:art37:cl3"
    ],
-   "seconds": 147.5,
+   "seconds": 122.5,
    "analysed": true,
    "total_aed": "142610.96",
    "claim": {
     "End-of-service gratuity": "142610.96"
    },
    "citations": [
+    "fdl33-2021:art42:cl3",
     "fdl33-2021:art51:cl2",
-    "fdl33-2021:art51:cl3",
     "fdl33-2021:art51:cl5",
-    "fdl33-2021:art51:cl6",
-    "fdl33-2021:art65:cl6",
-    "fdl33-2021:art43:cl3"
+    "fdl33-2021:art51:cl3",
+    "fdl33-2021:art51:cl6"
    ],
    "findings": [
     {
-     "clause": "fdl33-2021:art51:cl2",
-     "issue": "The worker completed over 25 years of continuous service and the employer has not paid the end-of-service gratuity; the gratuity item has been calculated, and non-payment is likely a breach of the gratuity entitlement."
+     "clause": "fdl33-2021:art42:cl3",
+     "issue": "Although the employer gave the contractual 30 days' notice, the contract began on 2001-06-01, before Decree-Law 33/2021 entered into force, and the worker's service exceeds ten years; under fdl33-2021:art65:cl6 an indefinite-term contract concluded before the Decree's entry into force requires written notice of not less than ninety (90) days, so the 30-day notice is deficient."
     },
     {
-     "clause": "fdl33-2021:art51:cl3",
-     "issue": "The worker completed over 25 years of continuous service and the employer has not paid the end-of-service gratuity; the gratuity item has been calculated, and non-payment is likely a breach of the gratuity entitlement."
+     "clause": "fdl33-2021:art51:cl2",
+     "issue": "The worker completed more than one year of continuous service and the employer ended the service, so the end-of-service gratuity is due; the employer's failure to pay it is a likely breach."
     },
     {
      "clause": "fdl33-2021:art51:cl5",
-     "issue": "The worker completed over 25 years of continuous service and the employer has not paid the end-of-service gratuity; the gratuity item has been calculated, and non-payment is likely a breach of the gratuity entitlement."
+     "issue": "The worker completed more than one year of continuous service and the employer ended the service, so the end-of-service gratuity is due; the employer's failure to pay it is a likely breach."
+    },
+    {
+     "clause": "fdl33-2021:art51:cl3",
+     "issue": "The worker completed more than one year of continuous service and the employer ended the service, so the end-of-service gratuity is due; the employer's failure to pay it is a likely breach."
     },
     {
      "clause": "fdl33-2021:art51:cl6",
-     "issue": "The worker completed over 25 years of continuous service and the employer has not paid the end-of-service gratuity; the gratuity item has been calculated, and non-payment is likely a breach of the gratuity entitlement."
-    },
-    {
-     "clause": "fdl33-2021:art65:cl6",
-     "issue": "The employer gave 30 days' notice, but for a worker with more than 10 years' service under a pre-Decree indefinite-term contract, the law requires at least 90 days' notice; the shortfall likely entitles the worker to a warning allowance for the remaining period."
-    },
-    {
-     "clause": "fdl33-2021:art43:cl3",
-     "issue": "The employer gave 30 days' notice, but for a worker with more than 10 years' service under a pre-Decree indefinite-term contract, the law requires at least 90 days' notice; the shortfall likely entitles the worker to a warning allowance for the remaining period."
+     "issue": "The worker completed more than one year of continuous service and the employer ended the service, so the end-of-service gratuity is due; the employer's failure to pay it is a likely breach."
     }
    ],
    "violation_cited": [
-    true,
     true,
     true,
     true,
@@ -2043,15 +2037,14 @@
     true,
     true,
     true,
-    false,
-    false
+    true
    ],
    "not_covered": [],
    "unsure": false,
-   "critic": "pass",
-   "revised": false,
+   "critic": "revise",
+   "revised": true,
    "writer_failed": false,
-   "headline": "আপনার নিয়োগকর্তা ২৫ বছরের চাকরির গ্র্যাচুইটি দেয়নি।",
+   "headline": "আপনার নিয়োগকর্তা ২৫ বছরের গ্র্যাচুইটি দেয়নি এবং ৩০ দিনের নোটিশ কম দিয়েছে।",
    "calculator_exact": true
   },
   "N-13": {

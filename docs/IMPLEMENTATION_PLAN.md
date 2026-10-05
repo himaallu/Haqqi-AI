@@ -26,6 +26,8 @@ Legend: **BLOCKER** = decide before the sprint that needs it; **RISK** = plan ar
    (default 30, clamp 30–90) and `notice_days_given` (default 0).
    **RESOLVED:** if a worker resigns without serving the contractual notice, show the notice pay they owe the employer
    (Art. 43(3)) as a separate, clearly labelled line. It is not subtracted from the worker's claim total unless decided otherwise.
+   **RESOLVED (5 Oct, your call on N-12):** contracts from before the 2021 law also use the contract notice (clamped
+   30–90 days), not Art. 65(6)'s statutory notice by length of service.
 3. **BLOCKER (S3): gratuity year convention.** n8n uses `(end−start)/365.25`. This makes *exactly one calendar year*
    0.9993 years, which is **ineligible**, and that breaks the PRD's "exactly 1 year" edge case.
    **RESOLVED: count whole days.** Service days = (end − start + 1 day) − unpaid absence days; years = days / 365;
@@ -495,7 +497,8 @@ data sent to them for training, which would break the PRD's "no training on user
       notice breaches in N-11/N-12/N-18 (a code guard is a possible fix), and 6 Writer rejections on K2.
       *5 Oct, your call: notice code guard.* `drop_ruled_out_notice` drops Art. 43 when the full notice was served
       (post-2022 contracts). The 5 affected cases were re-run on K2, and supported citations went from 93% to
-      **96%**. **Open question for you:** does Art. 65(6)'s longer notice apply to pre-2022 contracts like N-12?
+      **96%**. *Your call (5 Oct):* pre-2022 contracts use the contract notice too, so the guard now covers them
+      and also drops Art. 65(6). N-12 was re-run, and supported citations are now **97%** (172/177).
 
 ## Sprint 8 — Production polish (PRD Block 8)
 
