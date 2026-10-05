@@ -9,7 +9,7 @@ from collections.abc import Callable, Sequence
 from dataclasses import dataclass
 
 from haqqi.agents.citations import enforce_citations
-from haqqi.agents.consistency import drop_contradictions
+from haqqi.agents.consistency import drop_contradictions, drop_ruled_out_notice
 from haqqi.agents.messages import analyst_messages, critic_messages, revision_messages
 from haqqi.agents.schemas import AnalystReply
 from haqqi.core.calculator import CalcResult
@@ -42,7 +42,9 @@ def run_analysis(
 
     on_stage("analysing")
     reply = client.complete("analyst", analyst_messages(facts, law, calc), AnalystReply)
-    reply = drop_contradictions(enforce_citations(reply, allowed), calc)
+    reply = drop_ruled_out_notice(
+        drop_contradictions(enforce_citations(reply, allowed), calc), facts
+    )
     if seed_bad_citation and reply.issues and SEEDED_BAD_CITATION in allowed:
         first = reply.issues[0].model_copy(update={"chunk_ids": [SEEDED_BAD_CITATION]})
         reply = reply.model_copy(update={"issues": [first, *reply.issues[1:]]})
@@ -56,6 +58,5 @@ def run_analysis(
     revised = client.complete(
         "revision", revision_messages(facts, law, calc, reply, critic), AnalystReply
     )
-    return AnalysisRun(
-        drop_contradictions(enforce_citations(revised, allowed), calc), critic, revised=True
-    )
+    revised = drop_contradictions(enforce_citations(revised, allowed), calc)
+    return AnalysisRun(drop_ruled_out_notice(revised, facts), critic, revised=True)

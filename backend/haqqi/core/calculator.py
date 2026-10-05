@@ -162,6 +162,11 @@ def _deductions(f: CaseFacts, notes: list[str]) -> ClaimLine:
     )
 
 
+def notice_shortfall_days(f: CaseFacts) -> int:
+    """Notice days still owed: contract notice clamped to the legal range, minus days given."""
+    return _notice_shortfall(f)[0]
+
+
 def _notice_shortfall(f: CaseFacts) -> tuple[int, str]:
     lo, hi = CONFIG.notice_min_days, CONFIG.notice_max_days
     period = min(max(f.notice_days_contract, lo), hi)

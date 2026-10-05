@@ -1,3 +1,5 @@
+from datetime import date
+
 import pytest
 
 from haqqi.agents.analysis import SEEDED_BAD_CITATION, run_analysis
@@ -123,3 +125,22 @@ def test_live_tc11_critic_catches_the_seeded_bad_citation() -> None:
     wage_issues = [i for i in run.reply.issues if i.issue_type == "unpaid_wages"]
     assert wage_issues and all(SEEDED_BAD_CITATION not in i.chunk_ids for i in wage_issues)
     assert cited
+
+
+def test_notice_findings_do_not_survive_when_the_full_notice_was_served() -> None:
+    facts = FACTS.model_copy(
+        update={
+            "termination": "employer",
+            "end_date": date(2026, 8, 31),
+            "notice_days_contract": 30,
+            "notice_days_given": 30,
+        }
+    )
+    notice = reply("fdl33-2021:art43:cl1")
+    llm = FakeLLM({"analyst": [notice], "critic": [PASS]})
+
+    run = run_analysis(llm, facts, pack_law("notice_pay"), calculate(facts))
+
+    assert run.reply.issues == []
+    critic_input = llm.calls[1][1][-1].content
+    assert "fdl33-2021:art43:cl1" not in critic_input.split("ANALYSIS:")[-1]

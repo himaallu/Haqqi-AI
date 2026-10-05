@@ -2,9 +2,11 @@ import json
 from datetime import date
 from decimal import Decimal
 
+import pytest
+
 from haqqi.agents import messages as m
-from haqqi.agents.consistency import drop_contradictions
-from haqqi.agents.schemas import AnalystReply
+from haqqi.agents.consistency import drop_contradictions, drop_ruled_out_notice
+from haqqi.agents.schemas import AnalystIssue, AnalystReply
 from haqqi.core.calculator import calculate
 from haqqi.models import CaseFacts
 
@@ -71,3 +73,53 @@ def test_still_employed_has_no_service_count() -> None:
     employed = TC02.model_copy(update={"end_date": None, "termination": "still_employed"})
     user = m.analyst_messages(employed, [], calculate(employed))[1].content
     assert '"job_ended": false' in user
+
+
+# N-18-like: dismissed on 31 Aug 2026 with the full 30 days' notice (eval, 5 Oct).
+NOTICE_SERVED = TC02.model_copy(
+    update={
+        "start_date": date(2025, 6, 1),
+        "end_date": date(2026, 8, 31),
+        "notice_days_contract": 30,
+        "notice_days_given": 30,
+    }
+)
+
+
+def finding(issue_type: str, *chunk_ids: str) -> AnalystIssue:
+    return AnalystIssue(
+        issue_type=issue_type,
+        finding="…",
+        chunk_ids=list(chunk_ids),
+        confidence="medium",
+        evidence="…",
+    )
+
+
+def test_notice_findings_are_dropped_when_the_full_notice_was_served() -> None:
+    reply = AnalystReply(
+        issues=[
+            finding("notice_pay", "fdl33-2021:art43:cl1", "fdl33-2021:art43:cl3"),
+            finding("termination", "fdl33-2021:art43:cl1", "fdl33-2021:art47:cl1"),
+            finding("gratuity", "fdl33-2021:art51:cl2"),
+        ]
+    )
+    kept = drop_ruled_out_notice(reply, NOTICE_SERVED).issues
+    assert [i.chunk_ids for i in kept] == [["fdl33-2021:art47:cl1"], ["fdl33-2021:art51:cl2"]]
+
+
+@pytest.mark.parametrize(
+    "change",
+    [
+        {"notice_days_given": 0},  # no notice: a real breach
+        {"notice_days_contract": 20, "notice_days_given": 20},  # the law requires 30: 10 days short
+        {"termination": "still_employed", "end_date": None},
+        {"start_date": date(2001, 6, 1)},  # pre-2022 contract: Art. 65(6) notice by service length
+    ],
+)
+def test_notice_findings_are_kept_unless_the_full_notice_was_served(
+    change: dict[str, object],
+) -> None:
+    reply = AnalystReply(issues=[finding("notice_pay", "fdl33-2021:art43:cl1")])
+    facts = NOTICE_SERVED.model_copy(update=change)
+    assert drop_ruled_out_notice(reply, facts) == reply
