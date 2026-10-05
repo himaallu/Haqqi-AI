@@ -26,6 +26,7 @@ import psycopg
 from eval.cases_io import confirmed_facts, create_request, load_cases
 from eval.metrics import article_of, rescore, summarize, table
 from eval.schema import Case
+from haqqi import tracing
 from haqqi.agents.analysis import SEEDED_BAD_CITATION
 from haqqi.agents.intake import run_intake
 from haqqi.agents.pipeline import analyze_case
@@ -167,6 +168,7 @@ def main() -> int:
     args = parser.parse_args()
 
     settings = get_settings()
+    tracing.set_enabled(False)  # evaluation runs would flood the Langfuse project
     if not settings.database_url:
         sys.exit("DATABASE_URL is not set (a local database with the law index)")
     path = args.out or RESULTS_DIR / f"{date.today().isoformat()}-{args.provider}.json"

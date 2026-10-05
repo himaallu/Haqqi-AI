@@ -44,6 +44,10 @@ class Settings(BaseSettings):
     cors_origins: Annotated[list[str], NoDecode] = ["http://localhost:3000"]
     # Shown by /healthz. Render sets RENDER_GIT_COMMIT on every deploy.
     git_sha: str = Field("dev", validation_alias=AliasChoices("GIT_SHA", "RENDER_GIT_COMMIT"))
+    # Langfuse tracing of LLM calls (task 8.2): metadata only. Off when the keys are unset.
+    langfuse_public_key: SecretStr | None = None
+    langfuse_secret_key: SecretStr | None = None
+    langfuse_host: str = "https://cloud.langfuse.com"
     # Test-only hooks such as TC-11's seeded bad citation (task 3.9). Never set in production.
     haqqi_test_hooks: bool = False
 

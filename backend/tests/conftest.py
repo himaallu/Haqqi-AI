@@ -37,3 +37,13 @@ def ensure_test_database() -> None:
     with psycopg.connect(admin, autocommit=True) as conn:
         if not conn.execute("SELECT 1 FROM pg_database WHERE datname = %s", (name,)).fetchone():
             conn.execute(f'CREATE DATABASE "{name}"')
+
+
+@pytest.fixture(autouse=True)
+def no_langfuse(monkeypatch: pytest.MonkeyPatch) -> list[object]:
+    """Tests never send traces, even when this machine has Langfuse keys (task 8.2)."""
+    from haqqi import tracing
+
+    sent: list[object] = []
+    monkeypatch.setattr(tracing, "_dispatch", lambda send: sent.append(send))
+    return sent

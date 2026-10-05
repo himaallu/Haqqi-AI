@@ -36,3 +36,10 @@ services:
         sync: false
       - key: CLOUDFLARE_API_TOKEN
         sync: false
+      # Langfuse tracing (task 8.2): metadata only
+      - key: LANGFUSE_PUBLIC_KEY
+        sync: false
+      - key: LANGFUSE_SECRET_KEY
+        sync: false
+      - key: LANGFUSE_HOST
+        value: https://cloud.langfuse.com
