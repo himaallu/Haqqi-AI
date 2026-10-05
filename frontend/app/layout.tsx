@@ -1,5 +1,7 @@
 import type { Metadata, Viewport } from "next";
 
+import { WakeBackend } from "@/components/wake-backend";
+
 import { fontVariables } from "./fonts";
 import "./globals.css";
 
@@ -14,7 +16,10 @@ export const viewport: Viewport = { width: "device-width", initialScale: 1 };
 export default function RootLayout({ children }: LayoutProps<"/">) {
   return (
     <html lang="en" dir="ltr" className={`h-full antialiased ${fontVariables}`}>
-      <body className="flex min-h-full flex-col">{children}</body>
+      <body className="flex min-h-full flex-col">
+        <WakeBackend />
+        {children}
+      </body>
     </html>
   );
 }
