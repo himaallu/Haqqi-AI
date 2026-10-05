@@ -502,12 +502,13 @@ data sent to them for training, which would break the PRD's "no training on user
 
 ## Sprint 8 — Production polish (PRD Block 8)
 
-- [ ] **8.1 Full CI**: ruff, mypy, eslint, tsc, pytest, calculator tests, `make eval-offline`, ingest smoke; on merge to
+- [x] **8.1 Full CI**: ruff, mypy, eslint, tsc, pytest, calculator tests, `make eval-offline`, ingest smoke; on merge to
       `main`, build the image and deploy both services.
       Check: a PR shows all jobs green; merging triggers a deploy and `/healthz` shows the new commit SHA. Ports: new.
       *5 Oct:* you set Render's Auto-Deploy to "After CI checks pass". CI now also builds the backend image (it fails
-      without the law data or PDF fonts) and runs an ingest smoke test on a fresh pgvector (375 chunks). The tick is
-      waiting for the merge, after which `/healthz` should show the merge commit.
+      without the law data or PDF fonts) and runs an ingest smoke test on a fresh pgvector (375 chunks).
+      *Done 5 Oct:* PR #27 merged; CI green on `main` (lint-and-test, image, ingest-smoke), then Render deployed and
+      `/healthz` shows the merge commit `f080392`.
 - [x] **8.2 Langfuse tracing** of every K2 call (stage, latency, tokens) with PII redaction.
       Check: one run → a trace with 4–5 spans; searching the trace for the test phone number finds nothing. Ports: `Log Stats` (replaced).
       *Done 5 Oct:* `haqqi/tracing.py` sends **metadata only**, never the story, prompts, replies, amounts or case ids.
@@ -599,7 +600,7 @@ data sent to them for training, which would break the PRD's "no training on user
 - [ ] Every violation shows an article citation; every amount shows its formula
 - [ ] Arabic PDF renders correctly and was checked by an Arabic reader
 - [ ] Eval scores in README; calculator tests at 100%
-- [ ] CI green on `main`; README has architecture diagram and demo GIF
+- [x] CI green on `main`; README has architecture diagram and demo GIF
 
 ## n8n node coverage (31 functional nodes + the Setup sticky note)
 Setup→2.2/8.9 · Haqqi Form→4.2–4.4 · When Executed by Another Workflow→7.3 · Normalize Input→3.4 ·
