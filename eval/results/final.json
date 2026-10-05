@@ -9,7 +9,7 @@
   "issue_detection": 0.95,
   "retrieval_hit_at_5": 0.923,
   "citations_cited": 1.0,
-  "citations_supported": 0.934,
+  "citations_supported": 0.961,
   "critic_catch_rate": 1.0,
   "calculator_correctness": 1.0,
   "injection_resistance": 1.0,
@@ -21,7 +21,7 @@
   "counts": {
    "analysed": 40,
    "with_issues": 39,
-   "violations": 181,
+   "violations": 178,
    "seeded": 2,
    "injected": 2,
    "writer_failed": 6
@@ -990,6 +990,7 @@
     "unpaid_wages",
     "mixed"
    ],
+   "provider": "k2",
    "route": "ready",
    "referral": null,
    "outcome_ok": true,
@@ -1000,13 +1001,13 @@
    "issue_recall": 1.0,
    "hit_at_5": true,
    "top5": [
+    "fdl33-2021:art37:cl3",
+    "fdl33-2021:art51:cl2",
     "fdl33-2021:art51:cl5",
     "fdl33-2021:art1",
-    "fdl33-2021:art51:cl2",
-    "fdl33-2021:art37:cl3",
-    "fdl33-2021:art51:cl6"
+    "fdl33-2021:art15:cl1"
    ],
-   "seconds": 193.1,
+   "seconds": 147.6,
    "analysed": true,
    "total_aed": "18381.37",
    "claim": {
@@ -1018,31 +1019,43 @@
     "fdl33-2021:art53",
     "fdl33-2021:art51:cl2",
     "fdl33-2021:art51:cl3",
-    "fdl33-2021:art51:cl5"
+    "fdl33-2021:art51:cl5",
+    "fdl33-2021:art51:cl6",
+    "fdl33-2021:art53"
    ],
    "findings": [
     {
      "clause": "fdl33-2021:art22:cl2",
-     "issue": "The employer has not paid the July salary even though it was due and the contract ended on 31 July 2026; wages must be paid on their due dates, and all wages and other entitlements must be paid within 14 days of the end of the contract."
+     "issue": "The employer has not paid the July salary even though the due date has passed; the law requires wages to be paid on their due dates and all final entitlements to be paid within 14 days of the end of the contract."
     },
     {
      "clause": "fdl33-2021:art53",
-     "issue": "The employer has not paid the July salary even though it was due and the contract ended on 31 July 2026; wages must be paid on their due dates, and all wages and other entitlements must be paid within 14 days of the end of the contract."
+     "issue": "The employer has not paid the July salary even though the due date has passed; the law requires wages to be paid on their due dates and all final entitlements to be paid within 14 days of the end of the contract."
     },
     {
      "clause": "fdl33-2021:art51:cl2",
-     "issue": "The worker completed more than one year of continuous full-time service and resigned, so an end-of-service gratuity is due; it remains unpaid after the end of service."
+     "issue": "The worker completed more than one year of continuous full-time service, so the end-of-service gratuity is due and must be paid within 14 days of the end of the contract, calculated according to the last basic wage."
     },
     {
      "clause": "fdl33-2021:art51:cl3",
-     "issue": "The worker completed more than one year of continuous full-time service and resigned, so an end-of-service gratuity is due; it remains unpaid after the end of service."
+     "issue": "The worker completed more than one year of continuous full-time service, so the end-of-service gratuity is due and must be paid within 14 days of the end of the contract, calculated according to the last basic wage."
     },
     {
      "clause": "fdl33-2021:art51:cl5",
-     "issue": "The worker completed more than one year of continuous full-time service and resigned, so an end-of-service gratuity is due; it remains unpaid after the end of service."
+     "issue": "The worker completed more than one year of continuous full-time service, so the end-of-service gratuity is due and must be paid within 14 days of the end of the contract, calculated according to the last basic wage."
+    },
+    {
+     "clause": "fdl33-2021:art51:cl6",
+     "issue": "The worker completed more than one year of continuous full-time service, so the end-of-service gratuity is due and must be paid within 14 days of the end of the contract, calculated according to the last basic wage."
+    },
+    {
+     "clause": "fdl33-2021:art53",
+     "issue": "The worker completed more than one year of continuous full-time service, so the end-of-service gratuity is due and must be paid within 14 days of the end of the contract, calculated according to the last basic wage."
     }
    ],
    "violation_cited": [
+    true,
+    true,
     true,
     true,
     true,
@@ -1054,13 +1067,16 @@
     true,
     true,
     true,
+    true,
+    true,
     true
    ],
    "not_covered": [],
-   "critic": "revise",
-   "revised": true,
+   "unsure": false,
+   "critic": "pass",
+   "revised": false,
    "writer_failed": false,
-   "headline": "Your employer has not paid your July 2026 salary or your end-of-service gratuity.",
+   "headline": "Your employer has not paid your July salary or your end-of-service gratuity.",
    "calculator_exact": true
   },
   "TC-22": {
@@ -1183,24 +1199,23 @@
    "tags": [
     "gratuity"
    ],
-   "provider": "gemini",
+   "provider": "k2",
    "route": "ready",
    "referral": null,
    "outcome_ok": true,
    "intake_issues": [
-    "gratuity",
-    "notice_pay"
+    "gratuity"
    ],
    "issue_recall": 1.0,
    "hit_at_5": true,
    "top5": [
-    "fdl33-2021:art51:cl2",
     "fdl33-2021:art51:cl5",
-    "fdl33-2021:art43:cl2",
-    "fdl33-2021:art15:cl1",
-    "fdl33-2021:art43:cl5"
+    "fdl33-2021:art51:cl2",
+    "fdl33-2021:art1",
+    "fdl33-2021:art51:cl6",
+    "fdl33-2021:art15:cl1"
    ],
-   "seconds": 13.4,
+   "seconds": 31.0,
    "analysed": true,
    "total_aed": "4909.59",
    "claim": {
@@ -1209,23 +1224,29 @@
    "citations": [
     "fdl33-2021:art51:cl2",
     "fdl33-2021:art51:cl3",
-    "fdl33-2021:art43:cl1"
+    "fdl33-2021:art51:cl5",
+    "fdl33-2021:art42:cl3"
    ],
    "findings": [
     {
      "clause": "fdl33-2021:art51:cl2",
-     "issue": "The worker has completed more than one year of continuous service and is entitled to an end-of-service gratuity upon the termination of their employment."
+     "issue": "The worker is a foreign full-time worker who completed more than one year of continuous service (3.51 years) and resigned with the full contractual notice of 30 days, so the resignation was proper and the end of service was regular. Under the gratuity provisions, he is entitled to 21 days' basic wage for each of the first five years of service, plus a pro-rata bonus for parts of the year, and the employer's failure to pay the gratuity after the last working day of 31 August 2026 is a likely breach of the employer's obligation to pay end-of-service gratuity."
     },
     {
      "clause": "fdl33-2021:art51:cl3",
-     "issue": "The worker has completed more than one year of continuous service and is entitled to an end-of-service gratuity upon the termination of their employment."
+     "issue": "The worker is a foreign full-time worker who completed more than one year of continuous service (3.51 years) and resigned with the full contractual notice of 30 days, so the resignation was proper and the end of service was regular. Under the gratuity provisions, he is entitled to 21 days' basic wage for each of the first five years of service, plus a pro-rata bonus for parts of the year, and the employer's failure to pay the gratuity after the last working day of 31 August 2026 is a likely breach of the employer's obligation to pay end-of-service gratuity."
     },
     {
-     "clause": "fdl33-2021:art43:cl1",
-     "issue": "The worker provided the full contractual notice period of 30 days as required by their employment contract. As the notice obligation was fulfilled, there is no breach regarding notice pay."
+     "clause": "fdl33-2021:art51:cl5",
+     "issue": "The worker is a foreign full-time worker who completed more than one year of continuous service (3.51 years) and resigned with the full contractual notice of 30 days, so the resignation was proper and the end of service was regular. Under the gratuity provisions, he is entitled to 21 days' basic wage for each of the first five years of service, plus a pro-rata bonus for parts of the year, and the employer's failure to pay the gratuity after the last working day of 31 August 2026 is a likely breach of the employer's obligation to pay end-of-service gratuity."
+    },
+    {
+     "clause": "fdl33-2021:art42:cl3",
+     "issue": "The worker is a foreign full-time worker who completed more than one year of continuous service (3.51 years) and resigned with the full contractual notice of 30 days, so the resignation was proper and the end of service was regular. Under the gratuity provisions, he is entitled to 21 days' basic wage for each of the first five years of service, plus a pro-rata bonus for parts of the year, and the employer's failure to pay the gratuity after the last working day of 31 August 2026 is a likely breach of the employer's obligation to pay end-of-service gratuity."
     }
    ],
    "violation_cited": [
+    true,
     true,
     true,
     true
@@ -1233,14 +1254,15 @@
    "violation_supported": [
     true,
     true,
-    false
+    true,
+    true
    ],
    "not_covered": [],
    "unsure": false,
-   "critic": "revise",
-   "revised": true,
+   "critic": "pass",
+   "revised": false,
    "writer_failed": false,
-   "headline": "आपकी कंपनी ने आपकी ग्रेच्युटी (End-of-service gratuity) का भुगतान नहीं किया है।",
+   "headline": "आपकी ग्रेच्युटी अभी तक नहीं दी गई है।",
    "calculator_exact": true
   },
   "N-02": {
@@ -1332,18 +1354,19 @@
    "outcome_ok": true,
    "intake_issues": [
     "gratuity",
+    "notice_pay",
     "termination"
    ],
    "issue_recall": 1.0,
    "hit_at_5": true,
    "top5": [
+    "fdl33-2021:art43:cl2",
+    "fdl33-2021:art43:cl5",
     "fdl33-2021:art51:cl2",
     "fdl33-2021:art1",
-    "fdl33-2021:art51:cl5",
-    "fdl33-2021:art43:cl2",
-    "fdl33-2021:art51:cl6"
+    "fdl33-2021:art37:cl3"
    ],
-   "seconds": 49.5,
+   "seconds": 169.6,
    "analysed": true,
    "total_aed": "1260.00",
    "claim": {
@@ -1353,24 +1376,24 @@
     "fdl33-2021:art51:cl2",
     "fdl33-2021:art51:cl3",
     "fdl33-2021:art51:cl5",
-    "fdl33-2021:art51:cl6"
+    "fdl33-2021:art42:cl3"
    ],
    "findings": [
     {
      "clause": "fdl33-2021:art51:cl2",
-     "issue": "The worker is a foreign full-time worker who completed one full year of continuous service (365 days), so he is entitled to an end-of-service gratuity of 21 days' wage for the first year, calculated on his last basic wage, and the total is capped at two years' wage. Code has already calculated this entitlement."
+     "issue": "The worker completed one full year of continuous service and was terminated by the employer, so he is entitled to an end-of-service gratuity calculated on his last basic wage at the rate of twenty-one days' wage for each year of the first five years of service. Since he has completed one year, he qualifies for the gratuity, and any part-year would be prorated proportionally."
     },
     {
      "clause": "fdl33-2021:art51:cl3",
-     "issue": "The worker is a foreign full-time worker who completed one full year of continuous service (365 days), so he is entitled to an end-of-service gratuity of 21 days' wage for the first year, calculated on his last basic wage, and the total is capped at two years' wage. Code has already calculated this entitlement."
+     "issue": "The worker completed one full year of continuous service and was terminated by the employer, so he is entitled to an end-of-service gratuity calculated on his last basic wage at the rate of twenty-one days' wage for each year of the first five years of service. Since he has completed one year, he qualifies for the gratuity, and any part-year would be prorated proportionally."
     },
     {
      "clause": "fdl33-2021:art51:cl5",
-     "issue": "The worker is a foreign full-time worker who completed one full year of continuous service (365 days), so he is entitled to an end-of-service gratuity of 21 days' wage for the first year, calculated on his last basic wage, and the total is capped at two years' wage. Code has already calculated this entitlement."
+     "issue": "The worker completed one full year of continuous service and was terminated by the employer, so he is entitled to an end-of-service gratuity calculated on his last basic wage at the rate of twenty-one days' wage for each year of the first five years of service. Since he has completed one year, he qualifies for the gratuity, and any part-year would be prorated proportionally."
     },
     {
-     "clause": "fdl33-2021:art51:cl6",
-     "issue": "The worker is a foreign full-time worker who completed one full year of continuous service (365 days), so he is entitled to an end-of-service gratuity of 21 days' wage for the first year, calculated on his last basic wage, and the total is capped at two years' wage. Code has already calculated this entitlement."
+     "clause": "fdl33-2021:art42:cl3",
+     "issue": "The employer terminated the contract after giving the full 30-day contractual notice, which is a permitted termination at the request of either party provided the agreed warning period is observed; the facts show no indication of an unlawful dismissal (such as termination for filing a complaint with the Ministry), so no breach of the termination rules is apparent."
     }
    ],
    "violation_cited": [
@@ -1389,8 +1412,8 @@
    "unsure": false,
    "critic": "pass",
    "revised": false,
-   "writer_failed": false,
-   "headline": "ഒരു വർഷം ജോലി ചെയ്തതിന് ശേഷം കമ്പനി പിരിച്ചുവിട്ടതിനാൽ നിങ്ങൾക്ക് ഗ്രാറ്റുവിറ്റി ലഭിക്കണം.",
+   "writer_failed": true,
+   "headline": null,
    "calculator_exact": true
   },
   "N-04": {
@@ -1871,13 +1894,13 @@
    "issue_recall": 1.0,
    "hit_at_5": true,
    "top5": [
-    "fdl33-2021:art47:cl2",
     "fdl33-2021:art51:cl2",
     "fdl33-2021:art37:cl3",
-    "fdl33-2021:art1",
-    "fdl33-2021:art29:cl1"
+    "fdl33-2021:art43:cl5",
+    "fdl33-2021:art51:cl5",
+    "fdl33-2021:art47:cl2"
    ],
-   "seconds": 202.1,
+   "seconds": 77.2,
    "analysed": true,
    "total_aed": "5717.75",
    "claim": {
@@ -1885,46 +1908,40 @@
     "Unused annual leave": "1050.00"
    },
    "citations": [
-    "fdl33-2021:art42:cl3",
-    "fdl33-2021:art43:cl1",
     "fdl33-2021:art51:cl2",
     "fdl33-2021:art51:cl3",
     "fdl33-2021:art51:cl5",
-    "cr1-2022:art19:cl2",
-    "fdl33-2021:art29:cl1"
+    "fdl33-2021:art29:cl1",
+    "fdl33-2021:art29:cl9",
+    "cr1-2022:art19:cl2"
    ],
    "findings": [
     {
-     "clause": "fdl33-2021:art42:cl3",
-     "issue": "The employer gave the full 30-day contractual notice, so the termination does not breach the warning-period rules; no facts show an unlawful reason under fdl33-2021:art47:cl1."
-    },
-    {
-     "clause": "fdl33-2021:art43:cl1",
-     "issue": "The employer gave the full 30-day contractual notice, so the termination does not breach the warning-period rules; no facts show an unlawful reason under fdl33-2021:art47:cl1."
-    },
-    {
      "clause": "fdl33-2021:art51:cl2",
-     "issue": "The worker completed more than one year of continuous service and was terminated, so the unpaid end-of-service gratuity is likely a breach; code has already calculated the gratuity."
+     "issue": "The worker completed more than one year of continuous service and is a foreign full-time worker, so end-of-service gratuity is due upon termination and has not been paid."
     },
     {
      "clause": "fdl33-2021:art51:cl3",
-     "issue": "The worker completed more than one year of continuous service and was terminated, so the unpaid end-of-service gratuity is likely a breach; code has already calculated the gratuity."
+     "issue": "The worker completed more than one year of continuous service and is a foreign full-time worker, so end-of-service gratuity is due upon termination and has not been paid."
     },
     {
      "clause": "fdl33-2021:art51:cl5",
-     "issue": "The worker completed more than one year of continuous service and was terminated, so the unpaid end-of-service gratuity is likely a breach; code has already calculated the gratuity."
-    },
-    {
-     "clause": "cr1-2022:art19:cl2",
-     "issue": "The worker had 15 unused annual leave days when service ended and has not been paid, so the unpaid leave balance is likely a breach; code has already calculated the leave pay."
+     "issue": "The worker completed more than one year of continuous service and is a foreign full-time worker, so end-of-service gratuity is due upon termination and has not been paid."
     },
     {
      "clause": "fdl33-2021:art29:cl1",
-     "issue": "The worker had 15 unused annual leave days when service ended and has not been paid, so the unpaid leave balance is likely a breach; code has already calculated the leave pay."
+     "issue": "The worker had 15 unused annual leave days when service ended, so the worker is entitled to payment for that leave balance."
+    },
+    {
+     "clause": "fdl33-2021:art29:cl9",
+     "issue": "The worker had 15 unused annual leave days when service ended, so the worker is entitled to payment for that leave balance."
+    },
+    {
+     "clause": "cr1-2022:art19:cl2",
+     "issue": "The worker had 15 unused annual leave days when service ended, so the worker is entitled to payment for that leave balance."
     }
    ],
    "violation_cited": [
-    true,
     true,
     true,
     true,
@@ -1934,7 +1951,6 @@
    ],
    "violation_supported": [
     true,
-    false,
     true,
     true,
     true,
@@ -1943,10 +1959,10 @@
    ],
    "not_covered": [],
    "unsure": false,
-   "critic": "revise",
-   "revised": true,
-   "writer_failed": true,
-   "headline": null,
+   "critic": "pass",
+   "revised": false,
+   "writer_failed": false,
+   "headline": "നിങ്ങളുടെ തൊഴിലുടമ 2026-09-01-ന് നിങ്ങളെ പിരിച്ചുവിട്ടു; ഗ്രാറ്റുവിറ്റിയും അവധിക്കാശവും നൽകിയിട്ടില്ല.",
    "calculator_exact": true
   },
   "N-12": {
@@ -2421,7 +2437,7 @@
     "fdl33-2021:art51:cl6",
     "fdl33-2021:art29:cl1"
    ],
-   "seconds": 117.7,
+   "seconds": 178.0,
    "analysed": true,
    "total_aed": "1522.74",
    "claim": {
@@ -2432,12 +2448,7 @@
     "fdl33-2021:art51:cl3",
     "fdl33-2021:art51:cl4",
     "fdl33-2021:art51:cl5",
-    "fdl33-2021:art51:cl6",
-    "fdl33-2021:art42:cl3",
-    "fdl33-2021:art43:cl1",
-    "fdl33-2021:art43:cl2",
-    "fdl33-2021:art43:cl3",
-    "fdl33-2021:art29:cl1",
+    "fdl33-2021:art47:cl1",
     "fdl33-2021:art29:cl9",
     "cr1-2022:art19:cl2",
     "fdl33-2021:art51:cl4"
@@ -2445,63 +2456,38 @@
    "findings": [
     {
      "clause": "fdl33-2021:art51:cl2",
-     "issue": "The worker is entitled to end-of-service gratuity because SERVICE shows at least one year of continuous service; the gratuity is based on the last basic wage, with 21 days per year for the first five years and a proportional bonus for the part year, subject to the two-year wage cap. The 60 unpaid absence days are excluded from the service calculation."
+     "issue": "The worker is entitled to end-of-service gratuity because SERVICE confirms at least one year of continuous service; the 60 days of unpaid absence are excluded from the service length under art51 cl4, and the gratuity is calculated on the last basic wage under art51 cl5."
     },
     {
      "clause": "fdl33-2021:art51:cl3",
-     "issue": "The worker is entitled to end-of-service gratuity because SERVICE shows at least one year of continuous service; the gratuity is based on the last basic wage, with 21 days per year for the first five years and a proportional bonus for the part year, subject to the two-year wage cap. The 60 unpaid absence days are excluded from the service calculation."
+     "issue": "The worker is entitled to end-of-service gratuity because SERVICE confirms at least one year of continuous service; the 60 days of unpaid absence are excluded from the service length under art51 cl4, and the gratuity is calculated on the last basic wage under art51 cl5."
     },
     {
      "clause": "fdl33-2021:art51:cl4",
-     "issue": "The worker is entitled to end-of-service gratuity because SERVICE shows at least one year of continuous service; the gratuity is based on the last basic wage, with 21 days per year for the first five years and a proportional bonus for the part year, subject to the two-year wage cap. The 60 unpaid absence days are excluded from the service calculation."
+     "issue": "The worker is entitled to end-of-service gratuity because SERVICE confirms at least one year of continuous service; the 60 days of unpaid absence are excluded from the service length under art51 cl4, and the gratuity is calculated on the last basic wage under art51 cl5."
     },
     {
      "clause": "fdl33-2021:art51:cl5",
-     "issue": "The worker is entitled to end-of-service gratuity because SERVICE shows at least one year of continuous service; the gratuity is based on the last basic wage, with 21 days per year for the first five years and a proportional bonus for the part year, subject to the two-year wage cap. The 60 unpaid absence days are excluded from the service calculation."
+     "issue": "The worker is entitled to end-of-service gratuity because SERVICE confirms at least one year of continuous service; the 60 days of unpaid absence are excluded from the service length under art51 cl4, and the gratuity is calculated on the last basic wage under art51 cl5."
     },
     {
-     "clause": "fdl33-2021:art51:cl6",
-     "issue": "The worker is entitled to end-of-service gratuity because SERVICE shows at least one year of continuous service; the gratuity is based on the last basic wage, with 21 days per year for the first five years and a proportional bonus for the part year, subject to the two-year wage cap. The 60 unpaid absence days are excluded from the service calculation."
-    },
-    {
-     "clause": "fdl33-2021:art42:cl3",
-     "issue": "No breach of the notice/warning requirement is shown because notice_days_given equals notice_days_contract at 30 days; termination by the employer is permissible if for a legitimate reason and the notice provisions are complied with."
-    },
-    {
-     "clause": "fdl33-2021:art43:cl1",
-     "issue": "No breach of the notice/warning requirement is shown because notice_days_given equals notice_days_contract at 30 days; termination by the employer is permissible if for a legitimate reason and the notice provisions are complied with."
-    },
-    {
-     "clause": "fdl33-2021:art43:cl2",
-     "issue": "No breach of the notice/warning requirement is shown because notice_days_given equals notice_days_contract at 30 days; termination by the employer is permissible if for a legitimate reason and the notice provisions are complied with."
-    },
-    {
-     "clause": "fdl33-2021:art43:cl3",
-     "issue": "No breach of the notice/warning requirement is shown because notice_days_given equals notice_days_contract at 30 days; termination by the employer is permissible if for a legitimate reason and the notice provisions are complied with."
-    },
-    {
-     "clause": "fdl33-2021:art29:cl1",
-     "issue": "The facts show zero unused annual leave days, so no cash equivalent for unused annual leave is indicated; the 60 days are unpaid absence, not annual leave, and are excluded from the gratuity service calculation."
+     "clause": "fdl33-2021:art47:cl1",
+     "issue": "The employer gave the full contractual notice period (30 days given, 30 days required), so no warning allowance is due under art43 cl3; no facts indicate an unlawful termination under art47 cl1, such as dismissal for filing a complaint or case against the employer."
     },
     {
      "clause": "fdl33-2021:art29:cl9",
-     "issue": "The facts show zero unused annual leave days, so no cash equivalent for unused annual leave is indicated; the 60 days are unpaid absence, not annual leave, and are excluded from the gratuity service calculation."
+     "issue": "The facts show unused_leave_days is 0, so no cash equivalent of an unused annual leave balance is due on termination under art29 cl9 and cr1-2022 art19 cl2; the 60 days the worker mentions were unpaid absence, which affects the gratuity service calculation under art51 cl4 rather than annual leave compensation."
     },
     {
      "clause": "cr1-2022:art19:cl2",
-     "issue": "The facts show zero unused annual leave days, so no cash equivalent for unused annual leave is indicated; the 60 days are unpaid absence, not annual leave, and are excluded from the gratuity service calculation."
+     "issue": "The facts show unused_leave_days is 0, so no cash equivalent of an unused annual leave balance is due on termination under art29 cl9 and cr1-2022 art19 cl2; the 60 days the worker mentions were unpaid absence, which affects the gratuity service calculation under art51 cl4 rather than annual leave compensation."
     },
     {
      "clause": "fdl33-2021:art51:cl4",
-     "issue": "The facts show zero unused annual leave days, so no cash equivalent for unused annual leave is indicated; the 60 days are unpaid absence, not annual leave, and are excluded from the gratuity service calculation."
+     "issue": "The facts show unused_leave_days is 0, so no cash equivalent of an unused annual leave balance is due on termination under art29 cl9 and cr1-2022 art19 cl2; the 60 days the worker mentions were unpaid absence, which affects the gratuity service calculation under art51 cl4 rather than annual leave compensation."
     }
    ],
    "violation_cited": [
-    true,
-    true,
-    true,
-    true,
-    true,
     true,
     true,
     true,
@@ -2516,11 +2502,6 @@
     true,
     true,
     true,
-    true,
-    true,
-    false,
-    false,
-    false,
     false,
     false,
     false,
@@ -2528,10 +2509,10 @@
    ],
    "not_covered": [],
    "unsure": false,
-   "critic": "pass",
-   "revised": false,
+   "critic": "revise",
+   "revised": true,
    "writer_failed": false,
-   "headline": "آپ کو گریچویٹی ملنی چاہیے کیونکہ آپ نے ایک سال سے زیادہ کام کیا۔",
+   "headline": "آپ کو گریچویٹی ملنی چاہیے کیونکہ آپ نے ایک سال سے زیادہ کام کیا ہے۔",
    "calculator_exact": true
   },
   "N-19": {

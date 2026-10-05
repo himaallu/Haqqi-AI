@@ -493,6 +493,9 @@ data sent to them for training, which would break the PRD's "no training on user
       - p95 latency 32 s on Gemini (production), 292 s on K2.
       The README table matches `summarize()` of that file. Open items are in `eval/CHANGELOG.md`: K2 still flags
       notice breaches in N-11/N-12/N-18 (a code guard is a possible fix), and 6 Writer rejections on K2.
+      *5 Oct, your call: notice code guard.* `drop_ruled_out_notice` drops Art. 43 when the full notice was served
+      (post-2022 contracts). The 5 affected cases were re-run on K2, and supported citations went from 93% to
+      **96%**. **Open question for you:** does Art. 65(6)'s longer notice apply to pre-2022 contracts like N-12?
 
 ## Sprint 8 — Production polish (PRD Block 8)
 
