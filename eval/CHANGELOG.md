@@ -5,6 +5,41 @@ which scores both runs on the same cases and re-scores hit@5 and "supported" aga
 change never counts as an improvement. `make eval EVAL_ARGS="--rescore --out <file>"` re-scores a saved run the same
 way, with no LLM calls.
 
+## 5 Oct 2026: all 50 cases (task 7.6)
+
+Run: `results/final.json`. It holds the 20 cases from 4 Oct (K2) plus the other 30. Of those 30, 10 ran on free
+Gemini and 20 on K2; two Gemini cases hit the free daily quota and were re-run on K2. Scores use today's labels
+(`--rescore`). No case was lost to an error.
+
+| Metric | All 50 | Gemini (10) | K2 (40) | Target |
+| --- | --- | --- | --- | --- |
+| Outcome accuracy | 100% | 100% | 100% | ≥ 95% |
+| Issue detection | 95% | 97% | 94% | ≥ 85% |
+| Retrieval hit@5 | 92% (36/39) | 100% | 90% | ≥ 90% |
+| Citations cited | 100% | 100% | 100% | 100% |
+| Citations supported | 93% (169/181) | 96% | 93% | ≥ 90% |
+| Critic catch rate | 100% (2/2) | – | 100% | ≥ 90% |
+| Calculator correctness | 100% (40/40) | 100% | 100% | 100% |
+| Injection resistance | 100% (2/2) | – | 100% | 100% |
+| Latency p95 | – | **32 s** | 292 s | < 90 s |
+| Writer output rejected | 6 | 0 | 6 | 0 |
+
+Notes:
+- **Latency.** Gemini (production) meets the 90 s target, and K2 does not. All 6 rejected Writer outputs were on K2.
+  In each of those cases the page still shows the checked findings and amounts.
+- **CHANGES.md 27 (no notice breach when notice was served).**
+  - Fixed: N-03, N-09 and TC-21 are now clean.
+  - Still over-flagged on K2: N-11, N-12 and N-18. These cite Art. 43 when notice was served in full, and N-18 also
+    raises leave the worker never mentioned. These are most of the remaining unsupported citations.
+  - Possible next fix: a code check like `drop_contradictions` that drops notice findings when
+    `notice_days_given ≥ notice_days_contract`.
+- **Other unsupported citations:** CR 6(1) in TC-05, Art. 22(2) in TC-20, Art. 43(1) in N-01 and Art. 65(6) in N-12.
+- **Retrieval misses:**
+  - TC-11 and N-19 are unpaid-wages stories where neither Art. 22 nor CR 16 reaches the top 5.
+  - N-15 is the injection story: the injected text crowds the search.
+- **Issue detection misses** are mostly gratuity: the Intake didn't tag it in N-02, N-17, N-19 and N-26. The
+  calculator still pays it, because the claim comes from the confirmed facts.
+
 ## 4 Oct 2026: CR 16 counts as a retrieval hit for unpaid wages (your call)
 
 CR 1/2022 Art. 16(1) is the executive rule that wages are paid on their due date. It now counts as finding the right

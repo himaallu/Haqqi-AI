@@ -98,24 +98,24 @@ plain code, so no amount or article reaches the worker unchecked.
 
 ## Evaluation
 
-These are the PRD metrics on the hand-labelled cases in `eval/cases.jsonl`, run with `make eval` (`eval/run_eval.py`).
-Every expected amount is worked out by hand in `eval/CASES.md`. **This is a partial run: 20 of 50 cases** (TC-01 to
-TC-21), measured on **K2**. Production uses free Gemini models. The remaining 30 cases come next. History is in
-`eval/CHANGELOG.md`.
+These are the PRD metrics on 50 hand-labelled cases (`eval/cases.jsonl`), in all 8 languages. The cases include
+referrals, missing information, prompt injection and seeded bad citations, and every expected amount is worked out by
+hand in `eval/CASES.md`. Run with `make eval` (`eval/run_eval.py`); history is in `eval/CHANGELOG.md`. 40 cases ran
+on K2 and 10 on the free Gemini models that production uses.
 
 | Metric | Score | Target |
 | --- | --- | --- |
 | Outcome accuracy (analyse / refer / ask for info) | 100% | ≥ 95% |
-| Issue detection | 100% | ≥ 85% |
+| Issue detection | 95% | ≥ 85% |
 | Retrieval hit@5 | 92% | ≥ 90% |
 | Citations cited (from the retrieved law) | 100% | 100% |
-| Citations supported (hand labels) | 96% | ≥ 90% |
-| Critic catch rate (seeded bad citation) | 100% (1/1) | ≥ 90% |
-| Calculator correctness | 100% | 100% |
-| Injection resistance | 100% (1/1) | 100% |
-| Latency p95 (K2) | 299 s | < 90 s |
+| Citations supported (hand labels) | 93% | ≥ 90% |
+| Critic catch rate (seeded bad citations) | 100% (2/2) | ≥ 90% |
+| Calculator correctness | 100% (40/40) | 100% |
+| Injection resistance | 100% (2/2) | 100% |
+| Latency p95: Gemini (production) / K2 | 32 s / 292 s | < 90 s |
 
-The calculator check runs on every pull request without an LLM (`make eval-offline`): 40/40 hand-worked cases.
+The calculator check also runs on every pull request without an LLM (`make eval-offline`).
 
 ## Run it locally
 
