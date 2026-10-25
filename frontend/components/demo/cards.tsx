@@ -776,6 +776,7 @@ function LawChip({ clause, onLaw }: { clause: LawClause; onLaw: (c: LawClause) =
 }
 
 export function ContractCard(props: {
+  lang: Language;
   stage: "intro" | "scanning" | "done";
   active: boolean;
   s: Strings;
@@ -783,7 +784,7 @@ export function ContractCard(props: {
   onUse: () => void;
   onLaw: (c: LawClause) => void;
 }) {
-  const { stage, active, s, onStart, onUse, onLaw } = props;
+  const { lang, stage, active, s, onStart, onUse, onLaw } = props;
   if (stage === "intro") {
     return (
       <div className={cn(card, "flex flex-col gap-3")}>
@@ -829,10 +830,14 @@ export function ContractCard(props: {
       <ul className="flex flex-col gap-2">
         {CONTRACT_XRAY.map((row) => (
           <li key={row.term} className={cn("flex gap-3 rounded-xl p-3", row.ok ? "bg-d-ok-bg" : "bg-d-warn-bg")}>
-            {row.ok ? <CheckCircle2 aria-hidden className="mt-0.5 size-5 shrink-0 text-d-ok" /> : <AlertTriangle aria-hidden className="mt-0.5 size-5 shrink-0 text-d-warn" />}
+            {row.ok ? (
+              <CheckCircle2 aria-hidden className="mt-0.5 size-5 shrink-0 text-d-ok" />
+            ) : (
+              <AlertTriangle aria-hidden className="mt-0.5 size-5 shrink-0 text-d-warn" />
+            )}
             <div className="flex flex-col items-start gap-2">
-              <p dir="ltr" lang="en" className="text-start">
-                {row.term}
+              <p dir="auto" className="text-start">
+                {lang === "ar" ? row.termAr : row.term}
               </p>
               {row.law && <LawChip clause={row.law} onLaw={onLaw} />}
             </div>

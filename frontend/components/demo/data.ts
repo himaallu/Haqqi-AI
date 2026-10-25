@@ -82,7 +82,12 @@ export const STARTERS: Record<"en" | "hi" | "ur" | "ar", string[]> = {
   ],
 };
 
-type Prepared = { keys: string[]; reply: Omit<AskReply, "kind" | "safety" | "contacts"> };
+type Prepared = {
+  keys: string[];
+  reply: Omit<AskReply, "kind" | "safety" | "contacts">;
+  /** Arabic text of the same answer (today's demo languages are English and Arabic). */
+  ar: { headline: string; answer: string };
+};
 
 /** English keywords plus the main Hindi/Urdu words of the starter questions. */
 export const PREPARED: Prepared[] = [
@@ -95,6 +100,10 @@ export const PREPARED: Prepared[] = [
       citations: [LAW.art22_2],
       suggest_case: true,
     },
+    ar: {
+      headline: "يجب على صاحب العمل أن يدفع راتبك في موعده.",
+      answer: "ينص القانون على دفع الأجور في مواعيد استحقاقها، عبر النظام الذي تعتمده الوزارة. إذا تأخر راتبك، يمكنك إبلاغ وزارة الموارد البشرية والتوطين. ولدى الوزارة شكوى رواتب سرية، فلا يُخبَر صاحب العمل بمن قدّمها.",
+    },
   },
   {
     keys: ["passport", "documents", "पासपोर्ट", "پاسپورٹ", "جواز"],
@@ -104,6 +113,10 @@ export const PREPARED: Prepared[] = [
         "The law says your employer must not keep your official documents. Ask for your passport back, in writing if you can. If they refuse, call MOHRE on 80084.",
       citations: [LAW.art13_2],
       suggest_case: true,
+    },
+    ar: {
+      headline: "لا. لا يجوز لشركتك الاحتفاظ بجواز سفرك.",
+      answer: "ينص القانون على ألا يحتفظ صاحب العمل بالوثائق الرسمية للعامل. اطلب جوازك، كتابةً إن أمكن. وإذا رفضوا، اتصل بالوزارة على 80084.",
     },
   },
   {
@@ -115,6 +128,10 @@ export const PREPARED: Prepared[] = [
       citations: [LAW.art6_4],
       suggest_case: true,
     },
+    ar: {
+      headline: "لا. لا يجوز لصاحب العمل أن يُحمّلك تكاليف استقدامك.",
+      answer: "يمنع القانون تحميل العامل رسوم وتكاليف الاستقدام والتشغيل، بشكل مباشر أو غير مباشر، مثل الخصم من راتبك. احتفظ بأي إيصالات أو رسائل وأبلغ الوزارة.",
+    },
   },
   {
     keys: ["overtime", "extra hours", "hours", "ओवरटाइम", "اوور ٹائم", "الإضافي"],
@@ -124,6 +141,10 @@ export const PREPARED: Prepared[] = [
         "Normal hours are at most 8 a day or 48 a week. Extra hours are paid at your basic hourly pay plus at least 25%, and overtime between 10 pm and 4 am at plus at least 50% (shift workers excluded).",
       citations: [LAW.art17_1, LAW.art19_2],
       suggest_case: false,
+    },
+    ar: {
+      headline: "يُدفع العمل الإضافي بأجرك الأساسي للساعة مع زيادة لا تقل عن 25%.",
+      answer: "ساعات العمل العادية لا تزيد على 8 ساعات يومياً أو 48 ساعة أسبوعياً. تُدفع الساعات الإضافية بأجرك الأساسي للساعة مع زيادة لا تقل عن 25%، والعمل الإضافي بين 10 مساءً و4 صباحاً بزيادة لا تقل عن 50% (باستثناء عمال الورديات).",
     },
   },
   {
@@ -135,6 +156,10 @@ export const PREPARED: Prepared[] = [
       citations: [LAW.art9_1],
       suggest_case: false,
     },
+    ar: {
+      headline: "لا تزيد فترة التجربة على 6 أشهر.",
+      answer: "يجوز لصاحب العمل أن يضعك تحت التجربة مدة لا تزيد على 6 أشهر من أول يوم عمل. ولإنهاء عملك خلال التجربة، يجب أن يُخطرك كتابةً قبل 14 يوماً على الأقل.",
+    },
   },
   {
     keys: ["notice", "resign", "quit", "fired", "नोटिस", "نوٹس", "الإنذار"],
@@ -144,6 +169,10 @@ export const PREPARED: Prepared[] = [
         "Either side can end the contract with written notice. If one side does not give the notice, it must pay the other side the wage for the notice period, or the part that was missed.",
       citations: [LAW.art43_1, LAW.art43_3],
       suggest_case: true,
+    },
+    ar: {
+      headline: "مدة الإنذار هي ما ينص عليه عقدك: 30 يوماً على الأقل و90 يوماً على الأكثر.",
+      answer: "يجوز لأي طرف إنهاء العقد بإنذار كتابي. وإذا لم يلتزم أحد الطرفين بالإنذار، عليه أن يدفع للطرف الآخر أجر مدة الإنذار أو الجزء الذي لم يُنفَّذ منها.",
     },
   },
   {
@@ -155,6 +184,10 @@ export const PREPARED: Prepared[] = [
       citations: [LAW.art51_2, LAW.art51_6],
       suggest_case: true,
     },
+    ar: {
+      headline: "بعد سنة من العمل، تستحق مكافأة نهاية الخدمة على أساس أجرك الأساسي.",
+      answer: "عن كل سنة من السنوات الخمس الأولى: أجر 21 يوماً. وعن كل سنة بعدها: أجر 30 يوماً. ولا يزيد المجموع على أجر سنتين. أخبرني بتواريخ عملك وراتبك وسأحسبها لك.",
+    },
   },
   {
     keys: ["sick", "ill", "hospital", "medical", "बीमार", "بیمار", "مريض", "مرضية"],
@@ -164,6 +197,10 @@ export const PREPARED: Prepared[] = [
         "Tell your employer within 3 working days and give a medical report. The first 15 days are on full pay, the next 30 days on half pay, and the rest unpaid. During probation, sick leave is unpaid.",
       citations: [LAW.art31_3],
       suggest_case: false,
+    },
+    ar: {
+      headline: "بعد فترة التجربة، يحق لك إجازة مرضية حتى 90 يوماً في السنة.",
+      answer: "أبلغ صاحب العمل خلال 3 أيام عمل وقدّم تقريراً طبياً. أول 15 يوماً بأجر كامل، ثم 30 يوماً بنصف الأجر، والباقي بدون أجر. وخلال فترة التجربة تكون الإجازة المرضية بدون أجر.",
     },
   },
   {
@@ -175,6 +212,10 @@ export const PREPARED: Prepared[] = [
       citations: [LAW.cr27_1],
       suggest_case: false,
     },
+    ar: {
+      headline: "في حالات كثيرة نعم، مثل انتهاء عقدك.",
+      answer: "يمكنك الانتقال إلى صاحب عمل آخر عند انتهاء عقدك دون تجديد، أو عند إنهائه بالطرق التي يسمح بها القانون. ويمكن للوزارة أن تخبرك بما ينطبق عليك تحديداً.",
+    },
   },
   {
     keys: ["contract", "language", "copy", "arabic"],
@@ -184,6 +225,10 @@ export const PREPARED: Prepared[] = [
         "Your employer must give you your own copy of the contract. It must be in Arabic, plus another language you understand, and both must say the same thing.",
       citations: [LAW.art8_1, LAW.art66_2],
       suggest_case: false,
+    },
+    ar: {
+      headline: "يجب أن يكون عقدك بالعربية وبلغة تفهمها.",
+      answer: "يجب أن يسلّمك صاحب العمل نسخة من العقد. ويجب أن يكون بالعربية ومعها لغة أخرى تفهمها، وأن يتطابق النصان.",
     },
   },
 ];
@@ -281,18 +326,18 @@ export const EXAMPLE_ANALYSIS: Analysis = {
   unsure: false,
 };
 
-export type XrayRow = { ok: boolean; term: string; law: LawClause | null };
+export type XrayRow = { ok: boolean; term: string; termAr: string; law: LawClause | null };
 
 /** Scripted contract X-ray of a synthetic sample contract. */
 export const CONTRACT_XRAY: XrayRow[] = [
-  { ok: true, term: "Job: cashier. Basic salary 2,000 and total 3,000 a month.", law: null },
-  { ok: false, term: "Hours: 9 a day, 6 days a week (54 a week). The normal maximum is 8 a day or 48 a week; extra hours must be paid as overtime.", law: LAW.art17_1 },
-  { ok: true, term: "Probation: 6 months. That is the legal maximum.", law: LAW.art9_1 },
-  { ok: false, term: "Notice: 120 days. The law allows 30 to 90 days.", law: LAW.art43_1 },
-  { ok: true, term: "Annual leave: 30 days a year.", law: LAW.art29_1 },
-  { ok: false, term: "Visa costs are taken from your salary. Your employer cannot charge you recruitment costs.", law: LAW.art6_4 },
-  { ok: false, term: "The company keeps your passport \"for safekeeping\". This is not allowed.", law: LAW.art13_2 },
-  { ok: false, term: "The contract is only in English. It must be in Arabic plus a language you understand.", law: LAW.art66_2 },
+  { ok: true, term: "Job: cashier. Basic salary 2,000 and total 3,000 a month.", termAr: "الوظيفة: أمين صندوق. الراتب الأساسي 2,000 والإجمالي 3,000 شهرياً.", law: null },
+  { ok: false, term: "Hours: 9 a day, 6 days a week (54 a week). The normal maximum is 8 a day or 48 a week; extra hours must be paid as overtime.", termAr: "ساعات العمل: 9 يومياً، 6 أيام في الأسبوع (54 ساعة). الحد العادي 8 ساعات يومياً أو 48 أسبوعياً، والساعات الزائدة عمل إضافي مدفوع.", law: LAW.art17_1 },
+  { ok: true, term: "Probation: 6 months. That is the legal maximum.", termAr: "فترة التجربة: 6 أشهر، وهي الحد الأقصى القانوني.", law: LAW.art9_1 },
+  { ok: false, term: "Notice: 120 days. The law allows 30 to 90 days.", termAr: "مدة الإنذار: 120 يوماً. يسمح القانون بما بين 30 و90 يوماً.", law: LAW.art43_1 },
+  { ok: true, term: "Annual leave: 30 days a year.", termAr: "الإجازة السنوية: 30 يوماً في السنة.", law: LAW.art29_1 },
+  { ok: false, term: "Visa costs are taken from your salary. Your employer cannot charge you recruitment costs.", termAr: "تُخصم تكاليف التأشيرة من راتبك. لا يجوز لصاحب العمل تحميلك تكاليف الاستقدام.", law: LAW.art6_4 },
+  { ok: false, term: "The company keeps your passport \"for safekeeping\". This is not allowed.", termAr: "تحتفظ الشركة بجواز سفرك «للحفظ». هذا غير مسموح.", law: LAW.art13_2 },
+  { ok: false, term: "The contract is only in English. It must be in Arabic plus a language you understand.", termAr: "العقد بالإنجليزية فقط. يجب أن يكون بالعربية مع لغة تفهمها.", law: LAW.art66_2 },
 ];
 
 /** What the sample contract tells the case flow (answers the worker doesn't need to give again). */
@@ -302,3 +347,33 @@ export const CONTRACT_PREFILL: Record<string, string> = {
   basic_wage_aed: "2000",
   start_date: "2024-06-01",
 };
+
+/** The example case in Arabic: same facts, figures and law; Arabic text where the live app writes in the worker's language. */
+export const EXAMPLE_ANALYSIS_AR: Analysis = {
+  ...EXAMPLE_ANALYSIS,
+  claim: EXAMPLE_ANALYSIS.claim.map((line, i) => ({ ...line, item: ["بدل الإنذار", "مكافأة نهاية الخدمة"][i] ?? line.item })),
+  documents_to_gather: [
+    "عقدك أو عرض العمل",
+    "كشوف الحساب البنكي أو قسائم الراتب",
+    "أي رسالة عن إنهاء عملك",
+    "نسخة من بطاقة العمل أو الهوية الإماراتية",
+  ],
+  writer: {
+    headline: "أُنهي عملك دون إنذار. يحق لك بدل الإنذار ومكافأة نهاية الخدمة.",
+    explanation:
+      "أنهى صاحب العمل عملك في اليوم نفسه، دون الإنذار المنصوص عليه في عقدك وهو 30 يوماً. وينص القانون على أن يدفع لك في هذه الحالة أجر مدة الإنذار.\nوقد عملت أكثر من سنتين، لذلك تستحق أيضاً مكافأة نهاية الخدمة.",
+    amount_lines: ["أجرك عن مدة الإنذار التي لم تحصل عليها، وهي 30 يوماً.", "أجر 21 يوماً من راتبك الأساسي عن كل سنة عملتها."],
+    checklist: [
+      "اطلب من صاحب العمل كتابةً بدل الإنذار ومكافأة نهاية الخدمة.",
+      "إذا لم يدفع، قدّم شكوى إلى الوزارة (التطبيق أو الموقع أو 80084).",
+      "يجب دفع مستحقات نهاية الخدمة خلال 14 يوماً من آخر يوم عمل.",
+    ],
+    letter_facts_ar: EXAMPLE_ANALYSIS.writer?.letter_facts_ar ?? "",
+    letter_facts_translation: "",
+  },
+};
+
+/** The prepared content for a language: Arabic where written, English otherwise. */
+export function preparedReply(item: Prepared, lang: string): Prepared["reply"] {
+  return lang === "ar" ? { ...item.reply, ...item.ar } : item.reply;
+}

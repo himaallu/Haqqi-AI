@@ -1,6 +1,6 @@
 import { describe, expect, it } from "vitest";
 
-import { PREPARED } from "./data";
+import { EXAMPLE_ANALYSIS_AR, PREPARED, preparedReply } from "./data";
 import {
   citationLabel,
   display,
@@ -44,6 +44,8 @@ describe("demo logic", () => {
   it("spots danger words", () => {
     expect(isDanger("My supervisor beats us and locked us in the room.")).toBe(true);
     expect(isDanger("My salary is late")).toBe(false);
+    expect(isDanger("المشرف يضربنا وأغلق علينا الغرفة")).toBe(true);
+    expect(isDanger("راتبي متأخر")).toBe(false);
   });
 
   it("reads amounts typed on Arabic, Urdu and Hindi keyboards", () => {
@@ -51,6 +53,16 @@ describe("demo logic", () => {
     expect(parseAmount("۲,۰۰۰ درہم")).toBe("2000");
     expect(parseAmount("३०००")).toBe("3000");
     expect(parseAmount("zero")).toBeNull();
+  });
+
+  it("has every prepared answer in Arabic", () => {
+    for (const item of PREPARED) {
+      const ar = preparedReply(item, "ar");
+      expect(ar.headline).toMatch(/[\u0600-\u06FF]/);
+      expect(ar.citations).toEqual(item.reply.citations);
+    }
+    expect(preparedReply(PREPARED[0], "en").headline).toBe(PREPARED[0].reply.headline);
+    expect(EXAMPLE_ANALYSIS_AR.total_aed).toBe("6229.59");
   });
 
   it("labels articles", () => {

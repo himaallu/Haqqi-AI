@@ -25,10 +25,12 @@ log = logging.getLogger(__name__)
 Kind = Literal["answer", "unsure", "off_topic"]
 
 # Code also checks for danger words, so the emergency card doesn't depend on the model alone.
-# English only for now; the model's `safety` flag covers the other languages.
+# English and Arabic (the demo's languages); the model's `safety` flag covers the others.
 DANGER = re.compile(
     r"\b(beat(?:s|ing|en)?|hit(?:s|ting)? me|locked (?:in|up)|lock(?:s|ed)? me|no food|no water|"
-    r"traffick\w*|forced to work|sexual(?:ly)?|rape\w*|threaten\w*|kill)\b",
+    r"traffick\w*|forced to work|sexual(?:ly)?|rape\w*|threaten\w*|kill)\b"
+    r"|يضرب|ضرب|حبس|محبوس|أغلق\s*علي|اتجار|تحرش|اعتداء|يهدد|تهديد|بدون\s*طعام|بلا\s*طعام"
+    r"|بدون\s*ماء|بلا\s*ماء|العمل\s*القسري",
     re.IGNORECASE,
 )
 

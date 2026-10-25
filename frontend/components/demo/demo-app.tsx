@@ -32,9 +32,11 @@ import {
   DANGER_EXAMPLE,
   EMERGENCY_CONTACTS,
   EXAMPLE_ANALYSIS,
+  EXAMPLE_ANALYSIS_AR,
   EXAMPLE_FACTS,
   MOHRE_CONTACTS,
   PREPARED,
+  preparedReply,
   STARTERS,
 } from "./data";
 import {
@@ -269,7 +271,7 @@ export function DemoApp() {
         const match = matchPrepared(text, PREPARED);
         if (match) {
           if (missed) out.push({ t: "say", text: s.liveMissed });
-          out.push({ t: "answer", reply: { kind: "answer", safety: false, contacts: MOHRE_CONTACTS, ...match.reply }, question });
+          out.push({ t: "answer", reply: { kind: "answer", safety: false, contacts: MOHRE_CONTACTS, ...preparedReply(match, lang) }, question });
         } else {
           out.push({ t: "notice", kind: "preparedOnly" });
         }
@@ -451,7 +453,7 @@ export function DemoApp() {
         update(progressId, { stages: order.slice(0, i + 1) } as Partial<Msg>);
       }
       setMessages((cur) => cur.filter((m) => m.id !== progressId));
-      push({ t: "result", analysis: EXAMPLE_ANALYSIS, caseId: null, stillEmployed: false });
+      push({ t: "result", analysis: lang === "ar" ? EXAMPLE_ANALYSIS_AR : EXAMPLE_ANALYSIS, caseId: null, stillEmployed: false });
       setFlow({ kind: "idle" });
       return;
     }
@@ -477,7 +479,7 @@ export function DemoApp() {
     const stillEmployed = known.termination === "still_employed";
     setPendingCase({ caseId, stillEmployed });
     await runAnalysis(caseId, stillEmployed);
-  }, [flow, push, runAnalysis, s.badFacts, update]);
+  }, [flow, lang, push, runAnalysis, s.badFacts, update]);
 
   // Contract door
 
@@ -838,15 +840,20 @@ export function DemoApp() {
   );
 }
 
+// Today's demo languages. The others are built (UI text, voice, answers) but wait for a native review.
+const DEMO_LANGUAGES: Language[] = ["en", "ar"];
+
 function LanguagePicker({ onPick }: { onPick: (l: Language) => void }) {
   return (
     <div className="flex flex-1 flex-col gap-4 overflow-y-auto px-4 py-8">
       <p className="text-3xl font-semibold text-d-primary">
         Haqqi <span lang="ar">حقّي</span>
       </p>
-      <p className="text-d-muted">Choose your language · अपनी भाषा चुनें · اپنی زبان منتخب کریں</p>
+      <p className="text-d-muted">
+        Choose your language · <span lang="ar">اختر لغتك</span>
+      </p>
       <ul className="flex flex-col gap-2">
-        {LANGUAGES.map((l) => (
+        {LANGUAGES.filter((l) => DEMO_LANGUAGES.includes(l.code)).map((l) => (
           <li key={l.code}>
             <button
               type="button"
@@ -866,6 +873,12 @@ function LanguagePicker({ onPick }: { onPick: (l: Language) => void }) {
           </li>
         ))}
       </ul>
+      <p className="mt-2 text-sm text-d-muted">
+        Coming next:{" "}
+        {LANGUAGES.filter((l) => !DEMO_LANGUAGES.includes(l.code))
+          .map((l) => l.native)
+          .join(" · ")}
+      </p>
     </div>
   );
 }
@@ -1068,6 +1081,7 @@ function MessageView(p: ViewProps) {
     case "contract":
       return (
         <ContractCard
+          lang={p.lang}
           stage={m.stage}
           active={p.active}
           s={s}

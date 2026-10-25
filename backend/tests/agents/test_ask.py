@@ -104,4 +104,8 @@ def test_danger_words_raise_safety_even_if_the_model_does_not() -> None:
 
     assert run_ask(llm, "My supervisor beats me and they locked us in.", "en", LAW).safety
     llm = FakeLLM({"ask": [answer(safety=False)]})
+    assert run_ask(llm, "المشرف يضربنا وأغلق علينا الغرفة", "ar", LAW).safety
+    llm = FakeLLM({"ask": [answer(safety=False)]})
     assert not run_ask(llm, QUESTION, "en", LAW).safety
+    llm = FakeLLM({"ask": [answer(safety=False)]})
+    assert not run_ask(llm, "هل يمكن لشركتي الاحتفاظ بجواز سفري؟", "ar", LAW).safety
