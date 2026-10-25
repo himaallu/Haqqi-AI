@@ -93,16 +93,25 @@ def _main_llm() -> LLMClient:
     return LLMClient.from_settings(get_settings(), on_success=count_gemini_call)
 
 
+DEMO_TIMEOUT_S = 40.0  # Gemini Flash took up to 35 s for a long Writer reply (task 3.10)
+DEMO_PARK_ON_TIMEOUT_S = 900.0
+
+
 @cache
 def demo_llm() -> LLMClient:
     """The pitch demo's client: free Gemini models only, no K2.
 
     K2 makes a case take minutes, which doesn't work on stage. When the free quota is used up the
     demo gets a quota error at once and shows its prepared examples (docs/demo/TEST_SCRIPT.md).
+    A free model that hangs (seen live on 25 Oct: two 90 s timeouts made one answer take 184 s)
+    is given up after 40 s and skipped for 15 minutes, so the next model answers.
     """
     providers = providers_from_settings(get_settings())
     return LLMClient(
-        [p for p in providers if p.name.startswith("gemini:")], on_success=count_gemini_call
+        [p for p in providers if p.name.startswith("gemini:")],
+        on_success=count_gemini_call,
+        timeout_s=DEMO_TIMEOUT_S,
+        park_on_timeout_s=DEMO_PARK_ON_TIMEOUT_S,
     )
 
 

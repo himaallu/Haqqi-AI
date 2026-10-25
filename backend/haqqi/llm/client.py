@@ -128,6 +128,7 @@ def _short_error(exc: Exception) -> str:
 class _Retry:
     wait_s: float
     rate_limited: bool = False
+    parked: bool = False  # timed out and parked: go straight to the next provider
 
 
 PREVIOUS_LIMIT = 4000  # characters of the rejected reply quoted back
@@ -168,10 +169,16 @@ class LLMClient:
         http: httpx.Client | None = None,
         sleep: Callable[[float], None] = time.sleep,
         on_success: Callable[[Provider], None] | None = None,
+        timeout_s: float = TIMEOUT_S,
+        park_on_timeout_s: float = 0.0,
     ) -> None:
         self._providers = [p for p in providers if p.api_key and p.api_key.get_secret_value()]
         self._on_success = on_success  # e.g. counting free-tier calls (haqqi/usage.py)
-        self._http = http or httpx.Client(timeout=TIMEOUT_S)
+        self._timeout_s = timeout_s
+        # > 0: a model that times out is skipped for this long instead of costing a second wait
+        # (the demo's free models sometimes hang; one hang on stage is enough).
+        self._park_on_timeout_s = park_on_timeout_s
+        self._http = http or httpx.Client(timeout=timeout_s)
         self._sleep = sleep
         self._lock = threading.Lock()
         self._last_call = 0.0
@@ -227,6 +234,8 @@ class LLMClient:
                 if isinstance(outcome, str):
                     return outcome
                 all_rate_limited = all_rate_limited and outcome.rate_limited
+                if outcome.parked:
+                    break
                 if outcome.rate_limited and provider is not last:
                     break  # another provider (or model quota) may be free: don't wait this one out
                 if attempt == 1:
@@ -270,11 +279,15 @@ class LLMClient:
                     "temperature": 0,
                     **provider.extra,
                 },
-                timeout=TIMEOUT_S,
+                timeout=self._timeout_s,
             )
         except httpx.HTTPError as exc:
             log.warning("llm %s: %s %s", stage, provider.name, type(exc).__name__)
             traced(type(exc).__name__)
+            if isinstance(exc, httpx.TimeoutException) and self._park_on_timeout_s > 0:
+                self._parked_until[provider.name] = time.monotonic() + self._park_on_timeout_s
+                log.warning("llm %s: %s timed out, parked", stage, provider.name)
+                return _Retry(0.0, parked=True)
             return _Retry(1.0)
         latency = time.perf_counter() - started
         if resp.status_code == 429:

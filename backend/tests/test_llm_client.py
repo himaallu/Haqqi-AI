@@ -331,6 +331,48 @@ def test_a_timeout_is_not_a_quota_error() -> None:
     assert not err.value.quota
 
 
+def test_a_timed_out_model_is_parked_and_the_next_one_answers_at_once() -> None:
+    calls: list[str] = []
+
+    def handler(request: httpx.Request) -> httpx.Response:
+        model = json.loads(request.content)["model"]
+        calls.append(model)
+        if model == "slow":
+            raise httpx.ReadTimeout("hung")
+        return reply('{"verdict": "pass", "score": 1}')
+
+    slow = Provider("gemini:slow", "https://g.test/v1", "slow", SecretStr("a"))
+    fast = Provider("gemini:fast", "https://g.test/v1", "fast", SecretStr("a"))
+    client = LLMClient(
+        [slow, fast],
+        http=httpx.Client(transport=httpx.MockTransport(handler)),
+        sleep=_no_sleep,
+        park_on_timeout_s=900,
+    )
+    assert client.complete("ask", ASK, Verdict).score == 1
+    assert calls == ["slow", "fast"]  # no second wait on the hung model
+    assert client.is_parked(slow)
+    assert client.complete("ask", ASK, Verdict).score == 1
+    assert calls == ["slow", "fast", "fast"]  # skipped while parked
+
+
+def test_without_park_on_timeout_a_timeout_is_retried_once() -> None:
+    calls: list[str] = []
+
+    def handler(request: httpx.Request) -> httpx.Response:
+        calls.append("k2")
+        raise httpx.ReadTimeout("slow")
+
+    k2 = Provider("k2", "https://k2.test/v1", "m", SecretStr("a"))
+    client = LLMClient(
+        [k2], http=httpx.Client(transport=httpx.MockTransport(handler)), sleep=_no_sleep
+    )
+    with pytest.raises(LLMUnavailable):
+        client.complete("ask", ASK, Verdict)
+    assert calls == ["k2", "k2"]
+    assert not client.is_parked(k2)
+
+
 def test_no_provider_means_no_capacity() -> None:
     assert not LLMClient([]).has_capacity()
 
