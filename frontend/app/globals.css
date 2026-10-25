@@ -95,3 +95,77 @@ input[type="date"] {
 input[type="date"]::-webkit-date-and-time-value {
   text-align: start;
 }
+
+/* Pitch demo (/demo): its own calm teal-and-sand palette, scoped so the main app is unchanged. */
+.demo {
+  --d-primary: #0f5c5a;
+  --d-on-primary: #ffffff;
+  --d-primary-soft: #e3f0ee;
+  --d-bg: #f7f2ea;
+  --d-card: #ffffff;
+  --d-ink: #1b2626;
+  --d-muted: #5e6b6a;
+  --d-line: #e5ddd0;
+  --d-warn-bg: #fff4d6;
+  --d-warn: #7a5300;
+  --d-danger: #b42318;
+  --d-danger-bg: #fdecea;
+  --d-ok: #1e7b4c;
+  --d-ok-bg: #e6f4ec;
+  --d-me: #0f5c5a;
+  --d-on-me: #ffffff;
+}
+
+@media (prefers-color-scheme: dark) {
+  .demo {
+    --d-primary: #4fb3a9;
+    --d-on-primary: #0f1716;
+    --d-primary-soft: #18302e;
+    --d-bg: #0f1716;
+    --d-card: #172221;
+    --d-ink: #eef3f2;
+    --d-muted: #a3b1af;
+    --d-line: #263533;
+    --d-warn-bg: #3a2f12;
+    --d-warn: #f3d58a;
+    --d-danger: #ff8a7a;
+    --d-danger-bg: #3b1714;
+    --d-ok: #6fd3a0;
+    --d-ok-bg: #14301f;
+    --d-me: #1f6f6b;
+    --d-on-me: #ffffff;
+  }
+}
+
+@theme inline {
+  --color-d-primary: var(--d-primary);
+  --color-d-on-primary: var(--d-on-primary);
+  --color-d-primary-soft: var(--d-primary-soft);
+  --color-d-bg: var(--d-bg);
+  --color-d-card: var(--d-card);
+  --color-d-ink: var(--d-ink);
+  --color-d-muted: var(--d-muted);
+  --color-d-line: var(--d-line);
+  --color-d-warn-bg: var(--d-warn-bg);
+  --color-d-warn: var(--d-warn);
+  --color-d-danger: var(--d-danger);
+  --color-d-danger-bg: var(--d-danger-bg);
+  --color-d-ok: var(--d-ok);
+  --color-d-ok-bg: var(--d-ok-bg);
+  --color-d-me: var(--d-me);
+  --color-d-on-me: var(--d-on-me);
+}
+
+@keyframes demo-in {
+  from { opacity: 0; transform: translateY(6px); }
+  to { opacity: 1; transform: none; }
+}
+@keyframes demo-scan {
+  from { transform: translateY(-100%); }
+  to { transform: translateY(900%); }
+}
+.demo-in { animation: demo-in 160ms ease-out both; }
+.demo-scan { animation: demo-scan 1.2s ease-in-out infinite alternate; }
+@media (prefers-reduced-motion: reduce) {
+  .demo-in, .demo-scan { animation: none; }
+}

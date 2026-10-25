@@ -1,6 +1,7 @@
 # Haqqi pitch demo on Lovable
 
-For the Sheraa ideathon. Lovable builds the screens; the answers come from the real Haqqi backend on Render
+For the Sheraa ideathon. **25 Oct: the demo is built in this repo at `/demo` (`frontend/components/demo/`); this prompt
+pack is kept in case you want a Lovable version too.** Lovable builds the screens; the answers come from the real Haqqi backend on Render
 (`POST /v1/demo/ask` for questions, the normal `/v1/cases` endpoints for a case). The Gemini key stays on Render.
 
 ## How to use this
