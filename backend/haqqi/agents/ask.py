@@ -17,7 +17,7 @@ from pydantic import BaseModel, ConfigDict
 from haqqi.agents.messages import ask_messages
 from haqqi.agents.writer import ARABIC_DIGITS, GROUPED, MONEY
 from haqqi.llm.client import Completer, correction
-from haqqi.models import Language
+from haqqi.models import IssueType, Language
 from haqqi.rag.retrieve import RetrievedChunk
 
 log = logging.getLogger(__name__)
@@ -33,6 +33,75 @@ DANGER = re.compile(
     r"|بدون\s*ماء|بلا\s*ماء|العمل\s*القسري",
     re.IGNORECASE,
 )
+
+
+# Law Pack topics a question is about, from its words (English, Arabic, Hindi, Urdu). Search alone
+# often misses the key article for a question in Arabic (Art. 13(2) for "جواز"), the same gap the
+# retrieval probe found on 2 Oct; the topic adds its Law Pack articles and English search terms,
+# as the Intake's issue types do for a case. Matching is plain substring search, no LLM call.
+TOPIC_WORDS: dict[IssueType, tuple[str, ...]] = {
+    "unpaid_wages": (
+        "salary",
+        "wage",
+        "not paid",
+        "unpaid",
+        "راتب",
+        "رواتب",
+        "أجر",
+        "الأجور",
+        "तनख्वाह",
+        "तनख़्वाह",
+        "वेतन",
+        "تنخواہ",
+    ),
+    "illegal_deduction": ("deduct", "cut my salary", "خصم", "يخصم", "कटौती", "کٹوتی"),
+    "termination": (
+        "fired",
+        "terminat",
+        "dismiss",
+        "ended my job",
+        "فصل",
+        "إنهاء",
+        "أنهى",
+        "निकाल",
+        "برطرف",
+    ),
+    "notice_pay": ("notice", "resign", "إنذار", "استقال", "نوٹس", "नोटिस", "इस्तीफ", "استعفی"),
+    "gratuity": (
+        "gratuity",
+        "end of service",
+        "end-of-service",
+        "مكافأة",
+        "نهاية الخدمة",
+        "ग्रेच्युटी",
+        "گریجویٹی",
+    ),
+    "leave": ("annual leave", "vacation", "holiday", "إجازة", "छुट्टी", "چھٹی"),
+    "overtime": (
+        "overtime",
+        "extra hours",
+        "working hours",
+        "إضافي",
+        "ساعات العمل",
+        "ओवरटाइम",
+        "اوور ٹائم",
+    ),
+    "document_retention": (
+        "passport",
+        "documents",
+        "emirates id",
+        "جواز",
+        "وثائق",
+        "الهوية",
+        "पासपोर्ट",
+        "پاسپورٹ",
+    ),
+}
+
+
+def topics_in(question: str) -> list[IssueType]:
+    text = question.lower()
+    return [topic for topic, words in TOPIC_WORDS.items() if any(w in text for w in words)]
 
 
 class AskReply(BaseModel):

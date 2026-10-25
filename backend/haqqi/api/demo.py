@@ -17,7 +17,7 @@ from fastapi import APIRouter, Depends, HTTPException
 from pydantic import AfterValidator, BaseModel, ConfigDict, Field
 
 from haqqi import tracing
-from haqqi.agents.ask import Kind, run_ask
+from haqqi.agents.ask import Kind, run_ask, topics_in
 from haqqi.agents.messages import clause_ref
 from haqqi.api.cases import DbUrl, EmbedderDep, Llm, _llm_http_error, demo_llm, usage_store
 from haqqi.config import get_settings
@@ -131,7 +131,7 @@ def get_search(embedder: EmbedderDep, db_url: DbUrl) -> Search:
 
 def _search(db_url: str, embedder: Embedder, text: str) -> list[RetrievedChunk]:
     with psycopg.connect(db_url) as conn:
-        return retrieve(conn, text, embedder, load_law_pack())
+        return retrieve(conn, text, embedder, load_law_pack(), topics_in(text))
 
 
 @router.post("/ask")
