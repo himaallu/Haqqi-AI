@@ -1,6 +1,6 @@
 """The demo's Ask door: citations and money are checked in code, as in the case pipeline."""
 
-from haqqi.agents.ask import AskReply, run_ask
+from haqqi.agents.ask import AskReply, run_ask, topics_in
 from haqqi.core.untrusted import CLOSE, OPEN
 from haqqi.rag.retrieve import RetrievedChunk
 from tests.agents.fakes import FakeLLM
@@ -109,3 +109,13 @@ def test_danger_words_raise_safety_even_if_the_model_does_not() -> None:
     assert not run_ask(llm, QUESTION, "en", LAW).safety
     llm = FakeLLM({"ask": [answer(safety=False)]})
     assert not run_ask(llm, "هل يمكن لشركتي الاحتفاظ بجواز سفري؟", "ar", LAW).safety
+
+
+def test_topics_are_found_in_english_arabic_hindi_and_urdu() -> None:
+    assert topics_in("Can my company keep my passport?") == ["document_retention"]
+    assert topics_in("هل يمكن لشركتي الاحتفاظ بجواز سفري؟") == ["document_retention"]
+    assert topics_in("راتبي متأخر") == ["unpaid_wages"]
+    assert topics_in("मेरी तनख्वाह नहीं मिली") == ["unpaid_wages"]
+    assert topics_in("کیا کمپنی میرا پاسپورٹ رکھ سکتی ہے؟") == ["document_retention"]
+    assert topics_in("كم مدة الإنذار التي يجب أن أعطيها؟") == ["notice_pay"]
+    assert topics_in("How do I renew my tourist visa?") == []
