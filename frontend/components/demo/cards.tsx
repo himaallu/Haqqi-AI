@@ -515,7 +515,7 @@ export function FactsCard(props: {
 
 const STAGES = ["retrieving", "calculating", "analysing", "critiquing", "writing"] as const;
 
-export function ProgressCard({ stages, s }: { stages: string[]; s: Strings }) {
+export function ProgressCard({ stages, slow, s }: { stages: string[]; slow: boolean; s: Strings }) {
   const shown = STAGES.filter((st) => st !== "critiquing" || stages.includes("critiquing") || stages.includes("writing"));
   const current = stages[stages.length - 1];
   return (
@@ -536,6 +536,7 @@ export function ProgressCard({ stages, s }: { stages: string[]; s: Strings }) {
           </p>
         );
       })}
+      {slow && <p className="mt-1 rounded-xl bg-d-warn-bg px-3 py-2 text-sm text-d-warn">{s.slowCase}</p>}
     </div>
   );
 }

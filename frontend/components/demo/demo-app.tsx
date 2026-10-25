@@ -63,7 +63,7 @@ type Msg = { id: number } & (
   | { t: "emergency" }
   | { t: "question"; field: Field; step: number; steps: number }
   | { t: "facts"; known: Known; example: boolean }
-  | { t: "progress"; stages: string[] }
+  | { t: "progress"; stages: string[]; slow?: boolean }
   | { t: "failed"; retry: "analysis" | "story" }
   | { t: "result"; analysis: Analysis; caseId: string | null; stillEmployed: boolean }
   | { t: "referral"; text: string }
@@ -83,7 +83,11 @@ const STORE = "haqqi-demo-v1";
 // gratuity, sick leave.
 const STARTER_ICONS = ["💰", "🛂", "💸", "⏰", "🧪", "📅", "🎁", "🤒"];
 const THEME = "haqqi-demo-theme";
-const ASK_TIMEOUT_MS = 45_000;
+// Long enough for the backup model: when Gemini's free quota is used up, the backend falls back to K2,
+// whose calls take 5-77 s (docs/IMPLEMENTATION_PLAN.md flag 18). Only after this does the demo use a prepared answer.
+const ASK_TIMEOUT_MS = 150_000;
+const CASE_TIMEOUT_MS = 180_000;
+const SLOW_AFTER_MS = 15_000;
 
 function timeout<T>(promise: Promise<T>, ms: number): Promise<T> {
   return Promise.race([promise, new Promise<T>((_, reject) => setTimeout(() => reject(new Error("timeout")), ms))]);
@@ -222,13 +226,16 @@ export function DemoApp() {
   const ask = useCallback(
     async (text: string, question = text) => {
       if (!lang) return;
-      push({ t: "typing", label: s.searching });
+      const typingId = push({ t: "typing", label: s.searching });
       let reply: AskReply | null = null;
       if (!offline) {
+        const slow = setTimeout(() => update(typingId, { label: s.slow } as Partial<Msg>), SLOW_AFTER_MS);
         try {
           reply = await demoAsk(lang, text);
         } catch {
           reply = null;
+        } finally {
+          clearTimeout(slow);
         }
       }
       if (!reply) {
@@ -246,7 +253,7 @@ export function DemoApp() {
       if (readAloud && reply.kind === "answer") speak(`${reply.headline} ${reply.answer}`, lang);
       else if (readAloud) speak(reply.kind === "off_topic" ? s.offTopic : s.unsure, lang);
     },
-    [lang, offline, push, readAloud, s.offTopic, s.searching, s.unsure],
+    [lang, offline, push, readAloud, s.offTopic, s.searching, s.slow, s.unsure, update],
   );
 
   // Case door
@@ -281,20 +288,23 @@ export function DemoApp() {
     async (story: string, prefill: Known) => {
       if (!lang) return;
       setFlow({ kind: "busy" });
-      push({ t: "typing", label: s.reading });
+      const typingId = push({ t: "typing", label: s.reading });
       if (offline) {
         showExample();
         return;
       }
       let view: CaseView;
+      const slow = setTimeout(() => update(typingId, { label: s.slow } as Partial<Msg>), SLOW_AFTER_MS);
       try {
-        view = await timeout(createCase({ language: lang, story }), 60_000);
+        view = await timeout(createCase({ language: lang, story }), CASE_TIMEOUT_MS);
       } catch {
+        clearTimeout(slow);
         dropTyping();
         setFlow({ kind: "idle" });
         push({ t: "failed", retry: "story" });
         return;
       }
+      clearTimeout(slow);
       if (view.status === "out_of_scope") {
         setFlow({ kind: "idle" });
         push({ t: "referral", text: view.referral ?? "" });
@@ -303,7 +313,7 @@ export function DemoApp() {
       const known = { ...knownFromExtracted(view.extracted), ...prefill };
       askNext(view.id, known, { ...prefill });
     },
-    [askNext, dropTyping, lang, offline, push, s.reading, showExample],
+    [askNext, dropTyping, lang, offline, push, s.reading, s.slow, showExample, update],
   );
 
   const startCase = useCallback(
@@ -348,6 +358,8 @@ export function DemoApp() {
       const progressId = push({ t: "progress", stages: [] });
       const stages: string[] = [];
       let finished = false;
+      // A case is 4-6 model calls: about 15-30 s on Gemini, 2-3 minutes on the K2 backup.
+      const slow = setTimeout(() => update(progressId, { slow: true } as Partial<Msg>), 45_000);
       try {
         await analyzeCase(caseId, ({ event, data }) => {
           if (event === "done") {
@@ -368,6 +380,7 @@ export function DemoApp() {
         setMessages((cur) => cur.filter((m) => m.id !== progressId));
         push({ t: "failed", retry: "analysis" });
       }
+      clearTimeout(slow);
       setFlow({ kind: "idle" });
     },
     [push, update],
@@ -933,7 +946,7 @@ function MessageView(p: ViewProps) {
         />
       );
     case "progress":
-      return <ProgressCard stages={m.stages} s={s} />;
+      return <ProgressCard stages={m.stages} slow={m.slow ?? false} s={s} />;
     case "failed":
       return (
         <div className={cn(card, "flex flex-col gap-3")}>

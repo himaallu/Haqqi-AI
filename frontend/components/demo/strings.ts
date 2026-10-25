@@ -8,6 +8,8 @@ import type { Language } from "@/lib/types";
 export type UiLang = "en" | "hi" | "ur" | "ar";
 
 const en = {
+  slow: "This is taking longer than usual. I may be using my backup assistant, which is slower. Please wait.",
+  slowCase: "Still checking. The backup assistant can take 2 to 3 minutes. Please keep this page open.",
   simpler: "🤔 Explain more simply",
   whatNow: "➡️ What should I do now?",
   callMohre: "☎️ Call MOHRE",
@@ -149,6 +151,8 @@ const en = {
 export type Strings = typeof en;
 
 const hi: Partial<Strings> = {
+  slow: "इसमें सामान्य से ज़्यादा समय लग रहा है। शायद मैं अपना दूसरा सहायक इस्तेमाल कर रहा हूँ, जो धीमा है। कृपया इंतज़ार कीजिए।",
+  slowCase: "अभी जाँच चल रही है। दूसरे सहायक को 2 से 3 मिनट लग सकते हैं। कृपया यह पेज खुला रखें।",
   simpler: "🤔 और आसान शब्दों में बताइए",
   whatNow: "➡️ अब मैं क्या करूँ?",
   callMohre: "☎️ MOHRE को कॉल करें",
@@ -215,6 +219,8 @@ const hi: Partial<Strings> = {
 };
 
 const ur: Partial<Strings> = {
+  slow: "اس میں معمول سے زیادہ وقت لگ رہا ہے۔ شاید میں اپنا دوسرا معاون استعمال کر رہا ہوں، جو سست ہے۔ براہ کرم انتظار کریں۔",
+  slowCase: "ابھی جانچ جاری ہے۔ دوسرے معاون کو 2 سے 3 منٹ لگ سکتے ہیں۔ براہ کرم یہ صفحہ کھلا رکھیں۔",
   simpler: "🤔 اور آسان الفاظ میں بتائیں",
   whatNow: "➡️ اب میں کیا کروں؟",
   callMohre: "☎️ MOHRE کو کال کریں",
@@ -281,6 +287,8 @@ const ur: Partial<Strings> = {
 };
 
 const ar: Partial<Strings> = {
+  slow: "يستغرق هذا وقتاً أطول من المعتاد. ربما أستخدم المساعد الاحتياطي، وهو أبطأ. انتظر من فضلك.",
+  slowCase: "ما زال الفحص جارياً. قد يستغرق المساعد الاحتياطي من دقيقتين إلى ثلاث. أبقِ هذه الصفحة مفتوحة.",
   simpler: "🤔 اشرح بكلمات أبسط",
   whatNow: "➡️ ماذا أفعل الآن؟",
   callMohre: "☎️ اتصل بالوزارة",
