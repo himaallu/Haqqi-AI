@@ -22,7 +22,7 @@ from typing import Annotated, Any, Literal
 from uuid import UUID
 
 import psycopg
-from fastapi import APIRouter, Depends, HTTPException
+from fastapi import APIRouter, Depends, Header, HTTPException
 from fastapi.responses import Response, StreamingResponse
 from psycopg.types.json import Jsonb
 from pydantic import BaseModel, ValidationError
@@ -33,7 +33,13 @@ from haqqi.agents.pipeline import Search, analyze_case
 from haqqi.api.schemas import ComplaintRequest, CreateCaseRequest
 from haqqi.config import get_settings
 from haqqi.core.routing import MISSING_FIELDS, Referral, RouteDecision, route_case
-from haqqi.llm.client import Completer, LLMClient, LLMError, LLMUnavailable
+from haqqi.llm.client import (
+    Completer,
+    LLMClient,
+    LLMError,
+    LLMUnavailable,
+    providers_from_settings,
+)
 from haqqi.models import Analysis, CaseFacts, ExtractedFacts, IssueType
 from haqqi.pdf.letter import Identity, LetterError, build_letter, render_pdf
 from haqqi.rag.embed import Embedder, get_embedder
@@ -66,8 +72,23 @@ class CaseView(BaseModel):
 
 
 @cache
-def get_llm() -> Completer:
+def _main_llm() -> LLMClient:
     return LLMClient.from_settings(get_settings())
+
+
+@cache
+def demo_llm() -> LLMClient:
+    """The pitch demo's client: free Gemini models only, no K2.
+
+    K2 makes a case take minutes, which doesn't work on stage. When the free quota is used up the
+    demo gets a quota error at once and shows its prepared examples (docs/demo/TEST_SCRIPT.md).
+    """
+    providers = providers_from_settings(get_settings())
+    return LLMClient([p for p in providers if p.name.startswith("gemini:")])
+
+
+def get_llm(x_haqqi_demo: Annotated[str | None, Header()] = None) -> Completer:
+    return demo_llm() if x_haqqi_demo == "1" else _main_llm()
 
 
 @cache
@@ -329,6 +350,10 @@ def _sse_event(name: str, data: str) -> str:
 
 
 def _user_message(exc: LLMError) -> str:
+    if isinstance(exc, LLMUnavailable) and exc.quota:
+        return (
+            "The assistant is busy: the free AI quota is used up for now. Please try again later."
+        )
     if isinstance(exc, LLMUnavailable):
         return "The assistant is busy or offline. Please try again in a few minutes."
     return "The assistant gave an answer we could not check. Please try again."

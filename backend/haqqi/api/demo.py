@@ -1,6 +1,9 @@
 """Pitch-demo API (docs/demo/LOVABLE_PROMPT.md): the Ask door over the real law index.
 
-POST /v1/demo/ask  question + language → a short cited answer, "unsure" or "off_topic"
+POST /v1/demo/ask     question + language → a short cited answer, "unsure" or "off_topic"
+GET  /v1/demo/status  whether live AI answers are available (false once the free quota is used up)
+
+The demo page sends `X-Haqqi-Demo: 1`, so its LLM calls use the free Gemini models only (no K2).
 
 Nothing is stored and the question is never logged. Cases use the normal /v1/cases endpoints.
 """
@@ -16,7 +19,7 @@ from pydantic import AfterValidator, BaseModel, ConfigDict, Field
 from haqqi import tracing
 from haqqi.agents.ask import Kind, run_ask
 from haqqi.agents.messages import clause_ref
-from haqqi.api.cases import DbUrl, EmbedderDep, Llm, _llm_http_error
+from haqqi.api.cases import DbUrl, EmbedderDep, Llm, _llm_http_error, demo_llm
 from haqqi.core.untrusted import clean_text
 from haqqi.llm.client import LLMError
 from haqqi.models import Language
@@ -73,6 +76,15 @@ class AskResponse(BaseModel):
     suggest_case: bool
     safety: bool
     contacts: list[Contact]  # emergency numbers first when safety is true
+
+
+class DemoStatus(BaseModel):
+    live: bool  # false: no Gemini key, or every free model is over its daily quota
+
+
+@router.get("/status")
+def status() -> DemoStatus:
+    return DemoStatus(live=demo_llm().has_capacity())
 
 
 def get_search(embedder: EmbedderDep, db_url: DbUrl) -> Search:

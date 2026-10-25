@@ -43,7 +43,15 @@ class LLMError(Exception):
 
 
 class LLMUnavailable(LLMError):
-    """No provider answered (timeouts, 5xx, rate limits). Show "try again later"."""
+    """No provider answered (timeouts, 5xx, rate limits). Show "try again later".
+
+    `quota` is true when every provider turned us away for its rate limit or quota, so the pitch
+    demo can switch to its prepared examples instead of retrying.
+    """
+
+    def __init__(self, message: str, *, quota: bool = False) -> None:
+        super().__init__(message)
+        self.quota = quota
 
 
 class LLMOutputError(LLMError):
@@ -171,6 +179,11 @@ class LLMClient:
     def from_settings(cls, settings: Settings) -> "LLMClient":
         return cls(providers_from_settings(settings))
 
+    def has_capacity(self) -> bool:
+        """False when no provider is configured or every one is parked over its daily quota."""
+        now = time.monotonic()
+        return any(self._parked_until.get(p.name, 0.0) <= now for p in self._providers)
+
     def complete[T: BaseModel](self, stage: str, messages: Sequence[Message], schema: type[T]) -> T:
         """Chat call parsed into `schema`; one correction retry on bad output."""
         convo = list(messages)
@@ -192,19 +205,26 @@ class LLMClient:
         now = time.monotonic()
         available = [p for p in self._providers if self._parked_until.get(p.name, 0.0) <= now]
         if not available:
-            raise LLMUnavailable(f"{stage}: every provider is over its quota, try again later")
+            raise LLMUnavailable(
+                f"{stage}: every provider is over its quota, try again later", quota=True
+            )
         last = available[-1]
+        all_rate_limited = True
         for provider in available:
             for attempt in (1, 2):
                 outcome = self._post(stage, provider, messages)
                 if isinstance(outcome, str):
                     return outcome
+                all_rate_limited = all_rate_limited and outcome.rate_limited
                 if outcome.rate_limited and provider is not last:
                     break  # another provider (or model quota) may be free: don't wait this one out
                 if attempt == 1:
                     self._sleep(outcome.wait_s)
             log.warning("llm %s: provider %s unavailable", stage, provider.name)
-        raise LLMUnavailable(f"{stage}: the language model is not responding, try again later")
+        raise LLMUnavailable(
+            f"{stage}: the language model is not responding, try again later",
+            quota=all_rate_limited,
+        )
 
     def _post(self, stage: str, provider: Provider, messages: Sequence[Message]) -> str | _Retry:
         """The reply text, or how long to wait before retrying."""

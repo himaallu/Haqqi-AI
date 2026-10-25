@@ -296,3 +296,40 @@ def test_a_provider_error_message_is_logged(caplog: pytest.LogCaptureFixture) ->
     with pytest.raises(LLMUnavailable, match="HTTP 400"):
         client.complete("writer", ASK, Verdict)
     assert "thinking field" in caplog.text
+
+
+def test_quota_errors_are_marked_and_capacity_drops_when_every_model_is_parked() -> None:
+    def handler(request: httpx.Request) -> httpx.Response:
+        return httpx.Response(429, json=[DAILY_QUOTA])
+
+    settings = Settings(_env_file=None, gemini_api_key="g")
+    gemini_only = [p for p in providers_from_settings(settings) if p.name.startswith("gemini:")]
+    client = LLMClient(
+        gemini_only, http=httpx.Client(transport=httpx.MockTransport(handler)), sleep=_no_sleep
+    )
+    assert client.has_capacity()
+
+    with pytest.raises(LLMUnavailable) as first:
+        client.complete("ask", ASK, Verdict)
+    assert first.value.quota
+    assert not client.has_capacity()  # every free model parked over its daily quota
+    with pytest.raises(LLMUnavailable) as second:
+        client.complete("ask", ASK, Verdict)
+    assert second.value.quota
+
+
+def test_a_timeout_is_not_a_quota_error() -> None:
+    def handler(request: httpx.Request) -> httpx.Response:
+        raise httpx.ReadTimeout("slow")
+
+    k2 = Provider("k2", "https://k2.test/v1", "m", SecretStr("a"))
+    client = LLMClient(
+        [k2], http=httpx.Client(transport=httpx.MockTransport(handler)), sleep=_no_sleep
+    )
+    with pytest.raises(LLMUnavailable) as err:
+        client.complete("ask", ASK, Verdict)
+    assert not err.value.quota
+
+
+def test_no_provider_means_no_capacity() -> None:
+    assert not LLMClient([]).has_capacity()

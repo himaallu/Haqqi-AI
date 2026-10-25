@@ -58,7 +58,7 @@ type Msg = { id: number } & (
   | { t: "say"; text: string; note?: string }
   | { t: "typing"; label: string }
   | { t: "answer"; reply: AskReply; question: string }
-  | { t: "notice"; kind: "unsure" | "offTopic" }
+  | { t: "notice"; kind: "unsure" | "offTopic" | "preparedOnly" }
   | { t: "offer"; seed: string }
   | { t: "emergency" }
   | { t: "question"; field: Field; step: number; steps: number }
@@ -83,11 +83,23 @@ const STORE = "haqqi-demo-v1";
 // gratuity, sick leave.
 const STARTER_ICONS = ["💰", "🛂", "💸", "⏰", "🧪", "📅", "🎁", "🤒"];
 const THEME = "haqqi-demo-theme";
-// Long enough for the backup model: when Gemini's free quota is used up, the backend falls back to K2,
-// whose calls take 5-77 s (docs/IMPLEMENTATION_PLAN.md flag 18). Only after this does the demo use a prepared answer.
-const ASK_TIMEOUT_MS = 150_000;
-const CASE_TIMEOUT_MS = 180_000;
+// The demo runs on the free Gemini quota only (the backend skips K2 for requests with X-Haqqi-Demo, because a K2 case
+// takes minutes). Once the quota is used up, or the live AI doesn't answer in time, the demo shows its prepared,
+// law-checked examples instead, so there is always something to show (docs/demo/TEST_SCRIPT.md).
+const ASK_TIMEOUT_MS = 45_000;
+const CASE_TIMEOUT_MS = 75_000; // reading a story; the first call after idle also wakes the server (~1 min)
+const ANALYSIS_TIMEOUT_MS = 120_000;
 const SLOW_AFTER_MS = 15_000;
+
+/** fetch for the demo: marks requests so the backend uses the free Gemini models only. */
+const demoFetch: typeof fetch = (input, init) =>
+  fetch(input, { ...init, headers: { ...(init?.headers as Record<string, string> | undefined), "X-Haqqi-Demo": "1" } });
+
+/** True when the backend says the free AI quota is used up (HTTP 503 or an SSE error naming the quota). */
+function isQuotaError(err: unknown): boolean {
+  if (err instanceof ApiError) return err.status === 503 && /quota/i.test(String(err.detail));
+  return err instanceof Error && /quota/i.test(err.message);
+}
 
 function timeout<T>(promise: Promise<T>, ms: number): Promise<T> {
   return Promise.race([promise, new Promise<T>((_, reject) => setTimeout(() => reject(new Error("timeout")), ms))]);
@@ -97,14 +109,17 @@ async function demoAsk(language: Language, question: string): Promise<AskReply> 
   const controller = new AbortController();
   const timer = setTimeout(() => controller.abort(), ASK_TIMEOUT_MS);
   try {
-    const resp = await fetch(apiUrl("/v1/demo/ask"), {
+    const resp = await demoFetch(apiUrl("/v1/demo/ask"), {
       method: "POST",
       headers: { "Content-Type": "application/json" },
       body: JSON.stringify({ language, question }),
       signal: controller.signal,
       cache: "no-store",
     });
-    if (!resp.ok) throw new ApiError(resp.status, null);
+    if (!resp.ok) {
+      const detail = await resp.json().then((b: { detail?: unknown }) => b.detail ?? null, () => null);
+      throw new ApiError(resp.status, detail);
+    }
     return (await resp.json()) as AskReply;
   } finally {
     clearTimeout(timer);
@@ -149,7 +164,7 @@ export function DemoApp() {
   const [sheet, setSheet] = useState<LawClause | null>(null);
   const [awake, setAwake] = useState<"waking" | "up" | "down">("waking");
   const [forcedDemo, setForcedDemo] = useState(false);
-  const [usedFallback, setUsedFallback] = useState(false);
+  const [quotaOut, setQuotaOut] = useState(false);
   const [menu, setMenu] = useState(false);
   const [large, setLarge] = useState(false);
   const [helper, setHelper] = useState(false);
@@ -171,14 +186,21 @@ export function DemoApp() {
 
   const s = strings(lang ?? "en");
   const info = languageInfo(lang ?? "en");
-  const offline = forcedDemo || awake === "down";
+  // Prepared examples instead of live AI: chosen by the presenter, server unreachable, or free quota used up.
+  const prepared: "forced" | "quota" | "down" | null = forcedDemo ? "forced" : quotaOut ? "quota" : awake === "down" ? "down" : null;
+  const offline = prepared !== null;
 
   useEffect(() => {
     let live = true;
-    timeout(fetchHealth(), 60_000).then(
-      () => live && setAwake("up"),
-      () => live && setAwake("down"),
-    );
+    timeout(fetchHealth(), 60_000)
+      .then(async () => {
+        if (!live) return;
+        setAwake("up");
+        const resp = await demoFetch(apiUrl("/v1/demo/status"), { cache: "no-store" });
+        const status = (await resp.json()) as { live: boolean };
+        if (live && !status.live) setQuotaOut(true);
+      })
+      .catch(() => live && setAwake("down"));
     return () => {
       live = false;
     };
@@ -228,24 +250,32 @@ export function DemoApp() {
       if (!lang) return;
       const typingId = push({ t: "typing", label: s.searching });
       let reply: AskReply | null = null;
+      let missed = false;
       if (!offline) {
         const slow = setTimeout(() => update(typingId, { label: s.slow } as Partial<Msg>), SLOW_AFTER_MS);
         try {
           reply = await demoAsk(lang, text);
-        } catch {
+        } catch (err) {
           reply = null;
+          if (isQuotaError(err)) setQuotaOut(true);
+          else missed = true;
         } finally {
           clearTimeout(slow);
         }
       }
-      if (!reply) {
-        setUsedFallback(true);
-        const match = matchPrepared(text, PREPARED);
-        reply = match
-          ? { kind: "answer", safety: false, contacts: MOHRE_CONTACTS, ...match.reply }
-          : { kind: "unsure", headline: "", answer: "", citations: [], suggest_case: false, safety: false, contacts: MOHRE_CONTACTS };
-      }
       const out: NewMsg[] = [];
+      if (!reply) {
+        // Prepared, law-checked answers: always something to show, clearly labelled as such.
+        const match = matchPrepared(text, PREPARED);
+        if (match) {
+          if (missed) out.push({ t: "say", text: s.liveMissed });
+          out.push({ t: "answer", reply: { kind: "answer", safety: false, contacts: MOHRE_CONTACTS, ...match.reply }, question });
+        } else {
+          out.push({ t: "notice", kind: "preparedOnly" });
+        }
+        push(...out);
+        return;
+      }
       if (reply.safety && !isDanger(text)) out.push({ t: "emergency" });
       if (reply.kind === "answer") out.push({ t: "answer", reply, question });
       else out.push({ t: "notice", kind: reply.kind === "off_topic" ? "offTopic" : "unsure" });
@@ -253,7 +283,7 @@ export function DemoApp() {
       if (readAloud && reply.kind === "answer") speak(`${reply.headline} ${reply.answer}`, lang);
       else if (readAloud) speak(reply.kind === "off_topic" ? s.offTopic : s.unsure, lang);
     },
-    [lang, offline, push, readAloud, s.offTopic, s.searching, s.slow, s.unsure, update],
+    [lang, offline, push, readAloud, s.liveMissed, s.offTopic, s.searching, s.slow, s.unsure, update],
   );
 
   // Case door
@@ -276,7 +306,6 @@ export function DemoApp() {
   );
 
   const showExample = useCallback(() => {
-    setUsedFallback(true);
     const msgId = push(
       { t: "say", text: s.exampleTag, note: "Ayesha (illustrative)" },
       { t: "facts", known: EXAMPLE_FACTS, example: true },
@@ -296,10 +325,16 @@ export function DemoApp() {
       let view: CaseView;
       const slow = setTimeout(() => update(typingId, { label: s.slow } as Partial<Msg>), SLOW_AFTER_MS);
       try {
-        view = await timeout(createCase({ language: lang, story }), CASE_TIMEOUT_MS);
-      } catch {
+        view = await timeout(createCase({ language: lang, story }, demoFetch), CASE_TIMEOUT_MS);
+      } catch (err) {
         clearTimeout(slow);
         dropTyping();
+        if (isQuotaError(err)) {
+          setQuotaOut(true);
+          push({ t: "say", text: s.quotaCase });
+          showExample();
+          return;
+        }
         setFlow({ kind: "idle" });
         push({ t: "failed", retry: "story" });
         return;
@@ -313,7 +348,7 @@ export function DemoApp() {
       const known = { ...knownFromExtracted(view.extracted), ...prefill };
       askNext(view.id, known, { ...prefill });
     },
-    [askNext, dropTyping, lang, offline, push, s.reading, s.slow, showExample, update],
+    [askNext, dropTyping, lang, offline, push, s.quotaCase, s.reading, s.slow, showExample, update],
   );
 
   const startCase = useCallback(
@@ -359,9 +394,14 @@ export function DemoApp() {
       const stages: string[] = [];
       let finished = false;
       // A case is 4-6 model calls: about 15-30 s on Gemini, 2-3 minutes on the K2 backup.
-      const slow = setTimeout(() => update(progressId, { slow: true } as Partial<Msg>), 45_000);
+      const slow = setTimeout(() => update(progressId, { slow: true } as Partial<Msg>), 30_000);
+      const controller = new AbortController();
+      const watchdog = setTimeout(() => controller.abort(), ANALYSIS_TIMEOUT_MS);
+      let quota = false;
       try {
-        await analyzeCase(caseId, ({ event, data }) => {
+        await analyzeCase(
+          caseId,
+          ({ event, data }) => {
           if (event === "done") {
             finished = true;
             const analysis = JSON.parse(data) as Analysis;
@@ -369,21 +409,31 @@ export function DemoApp() {
             if (!analysis.in_scope) push({ t: "referral", text: analysis.referral ?? "" });
             else push({ t: "result", analysis, caseId, stillEmployed });
           } else if (event === "error") {
-            throw new Error("analysis error");
+            throw new Error(data);
           } else {
             stages.push(event);
             update(progressId, { stages: [...stages] } as Partial<Msg>);
           }
-        });
+          },
+          controller.signal,
+          demoFetch,
+        );
         if (!finished) throw new Error("stream ended");
-      } catch {
+      } catch (err) {
         setMessages((cur) => cur.filter((m) => m.id !== progressId));
-        push({ t: "failed", retry: "analysis" });
+        quota = isQuotaError(err);
+        if (!quota) push({ t: "failed", retry: "analysis" });
       }
       clearTimeout(slow);
+      clearTimeout(watchdog);
       setFlow({ kind: "idle" });
+      if (quota) {
+        setQuotaOut(true);
+        push({ t: "say", text: s.quotaCase });
+        showExample();
+      }
     },
-    [push, update],
+    [push, s.quotaCase, showExample, update],
   );
 
   const [pendingCase, setPendingCase] = useState<{ caseId: string; stillEmployed: boolean } | null>(null);
@@ -562,7 +612,7 @@ export function DemoApp() {
                   {s.waking}
                 </span>
               )}
-              {(offline || usedFallback) && <span className="rounded-full bg-d-line px-2 py-1 text-xs text-d-muted">{s.demoMode}</span>}
+              {offline && <span className="rounded-full bg-d-warn-bg px-2 py-1 text-xs text-d-warn">{s.demoMode}</span>}
               <button type="button" onClick={() => setLang(null)} className="rounded-full p-2 text-xl" aria-label="Language">
                 {info.flag}
               </button>
@@ -577,6 +627,11 @@ export function DemoApp() {
               </button>
             </div>
           </header>
+          {prepared && (
+            <p role="status" className="border-b border-d-line bg-d-warn-bg px-4 py-2 text-sm leading-snug text-d-warn">
+              {prepared === "quota" ? s.quotaBanner : prepared === "down" ? s.offlineBanner : s.forcedBanner}
+            </p>
+          )}
           {menu && (
             <div className="absolute end-3 top-14 z-20 flex w-60 flex-col gap-1 rounded-2xl border border-d-line bg-d-card p-2 shadow-lg">
               <label className="flex min-h-11 items-center justify-between gap-2 px-3">
@@ -712,6 +767,8 @@ export function DemoApp() {
                 animate={m.id >= sessionFloor}
                 offline={offline}
                 onFollow={(kind, label) => m.t === "answer" && follow(kind, label, m)}
+                starters={starters}
+                onStarter={(q) => send(q)}
                 onDoors={{ ask: () => document.getElementById("demo-input")?.focus(), contract: openContract, problem: () => startCase() }}
               />
               </div>
@@ -756,10 +813,24 @@ export function DemoApp() {
           <li>📄 A formal Arabic complaint, ready for MOHRE</li>
         </ul>
         {presenter && (
-          <p className="rounded-xl border border-d-line p-3 text-sm text-d-muted">
-            Presenter keys: 1 passport · 2 Ayesha · 3 contract · 4 danger · R reset · tap logo ×5 = demo mode
-            {forcedDemo ? " (on)" : ""}
-          </p>
+          <div className="flex flex-col gap-2 rounded-xl border border-d-line p-3 text-sm text-d-muted">
+            <p className={cn("font-semibold", offline ? "text-d-warn" : "text-d-ok")}>
+              {prepared === "quota"
+                ? "⚠️ Live AI: today's free quota is used up. Showing prepared examples."
+                : prepared === "down"
+                  ? "⚠️ Live AI: server not reachable. Showing prepared examples."
+                  : prepared === "forced"
+                    ? "Prepared examples (forced by presenter)."
+                    : awake === "waking"
+                      ? "⏳ Live AI: waking the server…"
+                      : "✅ Live AI: available"}
+            </p>
+            <p>
+              Runs on a free AI quota (about 80 AI calls a day; a question uses 1, a case 4–6). Beyond it, Haqqi shows
+              prepared, law-checked examples, so the demo never stops. Resets around midday UAE time.
+            </p>
+            <p>Keys: 1 passport · 2 Ayesha · 3 contract · 4 danger · R reset · tap logo ×5 = prepared examples on/off</p>
+          </div>
         )}
       </aside>
       {phone}
@@ -846,6 +917,8 @@ type ViewProps = {
   animate: boolean;
   offline: boolean;
   onFollow: (kind: FollowUp, label: string) => void;
+  starters: string[];
+  onStarter: (q: string) => void;
   onDoors: { ask: () => void; contract: () => void; problem: () => void };
 };
 
@@ -897,8 +970,26 @@ function MessageView(p: ViewProps) {
     case "notice":
       return (
         <div className={cn(card, "flex flex-col gap-3")}>
-          <p>{m.kind === "unsure" ? s.unsure : s.offTopic}</p>
-          {m.kind === "unsure" ? (
+          <p>{m.kind === "unsure" ? s.unsure : m.kind === "preparedOnly" ? s.preparedOnly : s.offTopic}</p>
+          {m.kind === "preparedOnly" ? (
+            <>
+              <div className="flex flex-wrap gap-2">
+                {p.starters.map((q) => (
+                  <button key={q} type="button" onClick={() => p.onStarter(q)} className="min-h-11 rounded-full border border-d-primary/40 bg-d-primary-soft px-4 py-2 text-start text-sm">
+                    {q}
+                  </button>
+                ))}
+              </div>
+              <div className="flex flex-wrap gap-2 border-t border-d-line pt-3">
+                <button type="button" className={ghostBtn} onClick={p.onDoors.problem}>
+                  {s.doorProblem}
+                </button>
+                <button type="button" className={ghostBtn} onClick={p.onDoors.contract}>
+                  {s.doorContract}
+                </button>
+              </div>
+            </>
+          ) : m.kind === "unsure" ? (
             <ContactButtons contacts={MOHRE_CONTACTS} />
           ) : (
             <div className="flex flex-wrap gap-2">

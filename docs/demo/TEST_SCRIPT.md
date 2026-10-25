@@ -1,5 +1,27 @@
 # Demo test script: English, Hindi, Arabic
 
+## The free AI quota, and what happens beyond it
+
+The demo's live answers run on **Google Gemini's free tier only**: about **80 AI calls a day** across 4 models
+(a question or follow-up uses 1, a case 4–6), and about 30 a minute. The quota resets around **midday UAE time**.
+The demo never uses the slower K2 backup (a K2 case takes 2–3 minutes); the main app at `/[lang]` still does.
+
+**Beyond the quota the demo switches to deterministic, prepared content, so there is always something to show:**
+- A yellow banner says so: "Today's free AI limit is used up. You're seeing prepared example answers, checked
+  against the law…", and the top bar shows **Prepared examples**.
+- Questions get the 10 prepared answers (official law text, English only); any other question lists them to tap.
+- "Something went wrong" runs the **example case** (Ayesha: notice pay 3,000.00 + gratuity 3,229.59 =
+  **AED 6,229.59**). If the quota runs out in the middle of a real case, the example case takes over, with a note.
+- The contract X-ray is always the scripted sample.
+- One slow or failed answer (not the quota) gets a prepared answer with "The live AI didn't answer in time", and the
+  next question tries live AI again.
+- The same happens when the server can't be reached ("Haqqi can't reach its server right now…").
+- **Presenter:** with `?presenter=1` the side panel shows "✅ Live AI: available" or "⚠️ … free quota is used up".
+  Tapping the logo 5 times forces prepared examples on or off: use it if the venue Wi-Fi is bad.
+
+**Pitch-day rule:** do your live rehearsals on earlier days. On the day, one question and one case is enough
+(about 6 calls); if you present before midday UAE time, you are using what's left of the previous day's quota.
+
 Run these on https://haqqi-ai.vercel.app/demo, on your phone and on the laptop you'll present from. Open the page
 a minute before you start (the backend sleeps). Each case test uses 4–6 free Gemini requests and each question uses 1,
 so spread the tests over the days before the pitch (about 20 requests per model per day).
@@ -50,10 +72,8 @@ every finding has an article chip that opens the law text, and no amount appears
 
 ## Also check once
 
-- **The K2 backup is set up:** open https://haqqi-api.onrender.com/healthz. `llm` should list the Gemini models and
-  then `k2`. If `k2` is missing, add `K2_API_KEY` in Render → haqqi-api → Environment, or there is no fallback once
-  the free Gemini quota is used up. When the backup answers, the demo says "This is taking longer than usual…" after
-  15 s and waits (up to 150 s for a question, 3 minutes for reading a story) instead of switching to a prepared answer.
+- **Live AI status:** open https://haqqi-api.onrender.com/v1/demo/status: `{"live": true}` means the free Gemini quota
+  still has room. `/healthz` lists the configured models under `llm`.
 - Phone in dark mode: the demo stays light. Menu → "Dark mode" switches it; the choice is remembered.
 - Menu → "Delete my chat", then reload: no "Continue your chat?" prompt.
 - Reload mid-conversation: "Continue your chat?" brings it back.

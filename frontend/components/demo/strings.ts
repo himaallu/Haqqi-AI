@@ -8,8 +8,15 @@ import type { Language } from "@/lib/types";
 export type UiLang = "en" | "hi" | "ur" | "ar";
 
 const en = {
-  slow: "This is taking longer than usual. I may be using my backup assistant, which is slower. Please wait.",
-  slowCase: "Still checking. The backup assistant can take 2 to 3 minutes. Please keep this page open.",
+  demoMode: "Prepared examples",
+  slow: "This is taking longer than usual. Please wait.",
+  slowCase: "Still checking. This can take up to a minute.",
+  quotaBanner: "Today's free AI limit is used up. You're seeing prepared example answers, checked against the law. Live answers come back after the daily reset (around midday UAE time).",
+  offlineBanner: "Haqqi can't reach its server right now. You're seeing prepared example answers, checked against the law.",
+  forcedBanner: "Showing prepared example answers, checked against the law.",
+  preparedOnly: "In this demo I can show prepared answers to these questions:",
+  liveMissed: "The live AI didn't answer in time, so here is a prepared answer.",
+  quotaCase: "The free AI limit was reached while checking your case. Here is an example case that shows every step:",
   simpler: "🤔 Explain more simply",
   whatNow: "➡️ What should I do now?",
   callMohre: "☎️ Call MOHRE",
@@ -48,7 +55,6 @@ const en = {
   searching: "Searching the law…",
   offer: "It sounds like this may be happening to you. Want me to check your situation and what you may be owed?",
   waking: "Waking up Haqqi…",
-  demoMode: "Demo mode",
   resume: "Continue your chat?",
   resumeYes: "Continue",
   resumeNo: "Start new",
@@ -151,8 +157,15 @@ const en = {
 export type Strings = typeof en;
 
 const hi: Partial<Strings> = {
-  slow: "इसमें सामान्य से ज़्यादा समय लग रहा है। शायद मैं अपना दूसरा सहायक इस्तेमाल कर रहा हूँ, जो धीमा है। कृपया इंतज़ार कीजिए।",
-  slowCase: "अभी जाँच चल रही है। दूसरे सहायक को 2 से 3 मिनट लग सकते हैं। कृपया यह पेज खुला रखें।",
+  demoMode: "तैयार उदाहरण",
+  slow: "इसमें सामान्य से ज़्यादा समय लग रहा है। कृपया इंतज़ार कीजिए।",
+  slowCase: "अभी जाँच चल रही है। इसमें एक मिनट तक लग सकता है।",
+  quotaBanner: "आज की मुफ़्त AI सीमा पूरी हो गई है। आप पहले से तैयार उदाहरण जवाब देख रहे हैं, जो कानून से जाँचे गए हैं। लाइव जवाब रोज़ के रीसेट के बाद (UAE समय लगभग दोपहर) फिर मिलेंगे।",
+  offlineBanner: "हक़्क़ी अभी अपने सर्वर से नहीं जुड़ पा रहा। आप पहले से तैयार उदाहरण जवाब देख रहे हैं, जो कानून से जाँचे गए हैं।",
+  forcedBanner: "पहले से तैयार उदाहरण जवाब दिखाए जा रहे हैं, जो कानून से जाँचे गए हैं।",
+  preparedOnly: "इस डेमो में मैं इन सवालों के तैयार जवाब दिखा सकता हूँ:",
+  liveMissed: "लाइव AI ने समय पर जवाब नहीं दिया, इसलिए यह तैयार जवाब है।",
+  quotaCase: "आपका केस जाँचते समय मुफ़्त AI सीमा पूरी हो गई। यह एक उदाहरण केस है जो हर कदम दिखाता है:",
   simpler: "🤔 और आसान शब्दों में बताइए",
   whatNow: "➡️ अब मैं क्या करूँ?",
   callMohre: "☎️ MOHRE को कॉल करें",
@@ -219,8 +232,15 @@ const hi: Partial<Strings> = {
 };
 
 const ur: Partial<Strings> = {
-  slow: "اس میں معمول سے زیادہ وقت لگ رہا ہے۔ شاید میں اپنا دوسرا معاون استعمال کر رہا ہوں، جو سست ہے۔ براہ کرم انتظار کریں۔",
-  slowCase: "ابھی جانچ جاری ہے۔ دوسرے معاون کو 2 سے 3 منٹ لگ سکتے ہیں۔ براہ کرم یہ صفحہ کھلا رکھیں۔",
+  demoMode: "تیار مثالیں",
+  slow: "اس میں معمول سے زیادہ وقت لگ رہا ہے۔ براہ کرم انتظار کریں۔",
+  slowCase: "ابھی جانچ جاری ہے۔ اس میں ایک منٹ تک لگ سکتا ہے۔",
+  quotaBanner: "آج کی مفت AI حد پوری ہو گئی ہے۔ آپ پہلے سے تیار مثالی جواب دیکھ رہے ہیں، جو قانون سے جانچے گئے ہیں۔ لائیو جواب روزانہ ری سیٹ کے بعد (UAE وقت تقریباً دوپہر) دوبارہ ملیں گے۔",
+  offlineBanner: "حقی ابھی اپنے سرور سے نہیں جڑ پا رہا۔ آپ پہلے سے تیار مثالی جواب دیکھ رہے ہیں، جو قانون سے جانچے گئے ہیں۔",
+  forcedBanner: "پہلے سے تیار مثالی جواب دکھائے جا رہے ہیں، جو قانون سے جانچے گئے ہیں۔",
+  preparedOnly: "اس ڈیمو میں میں ان سوالوں کے تیار جواب دکھا سکتا ہوں:",
+  liveMissed: "لائیو AI نے وقت پر جواب نہیں دیا، اس لیے یہ تیار جواب ہے۔",
+  quotaCase: "آپ کا کیس جانچتے وقت مفت AI حد پوری ہو گئی۔ یہ ایک مثالی کیس ہے جو ہر قدم دکھاتا ہے:",
   simpler: "🤔 اور آسان الفاظ میں بتائیں",
   whatNow: "➡️ اب میں کیا کروں؟",
   callMohre: "☎️ MOHRE کو کال کریں",
@@ -287,8 +307,15 @@ const ur: Partial<Strings> = {
 };
 
 const ar: Partial<Strings> = {
-  slow: "يستغرق هذا وقتاً أطول من المعتاد. ربما أستخدم المساعد الاحتياطي، وهو أبطأ. انتظر من فضلك.",
-  slowCase: "ما زال الفحص جارياً. قد يستغرق المساعد الاحتياطي من دقيقتين إلى ثلاث. أبقِ هذه الصفحة مفتوحة.",
+  demoMode: "أمثلة جاهزة",
+  slow: "يستغرق هذا وقتاً أطول من المعتاد. انتظر من فضلك.",
+  slowCase: "ما زال الفحص جارياً. قد يستغرق ذلك حتى دقيقة.",
+  quotaBanner: "انتهى الحد المجاني للذكاء الاصطناعي لهذا اليوم. تشاهد الآن إجابات أمثلة جاهزة، تمت مراجعتها وفق القانون. تعود الإجابات المباشرة بعد التجديد اليومي (نحو الظهر بتوقيت الإمارات).",
+  offlineBanner: "لا يستطيع حقّي الوصول إلى خادمه الآن. تشاهد إجابات أمثلة جاهزة، تمت مراجعتها وفق القانون.",
+  forcedBanner: "تُعرض إجابات أمثلة جاهزة، تمت مراجعتها وفق القانون.",
+  preparedOnly: "في هذا العرض أستطيع إظهار إجابات جاهزة لهذه الأسئلة:",
+  liveMissed: "لم يُجب الذكاء الاصطناعي المباشر في الوقت المناسب، لذا هذه إجابة جاهزة.",
+  quotaCase: "انتهى الحد المجاني للذكاء الاصطناعي أثناء فحص حالتك. هذه حالة مثال توضح كل خطوة:",
   simpler: "🤔 اشرح بكلمات أبسط",
   whatNow: "➡️ ماذا أفعل الآن؟",
   callMohre: "☎️ اتصل بالوزارة",
@@ -327,7 +354,6 @@ const ar: Partial<Strings> = {
   searching: "أبحث في القانون…",
   offer: "يبدو أن هذا يحدث معك. هل تريد أن أفحص حالتك وما قد يكون مستحقاً لك؟",
   waking: "جارٍ تشغيل حقّي…",
-  demoMode: "وضع العرض",
   resume: "هل تريد متابعة المحادثة؟",
   resumeYes: "متابعة",
   resumeNo: "محادثة جديدة",
