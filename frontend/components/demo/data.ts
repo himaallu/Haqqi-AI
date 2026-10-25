@@ -45,7 +45,7 @@ export const EMERGENCY_CONTACTS = [
   { label: "Human trafficking hotline (800 SAVE)", number: "8007283" },
 ];
 
-export const STARTERS: Record<"en" | "hi" | "ur", string[]> = {
+export const STARTERS: Record<"en" | "hi" | "ur" | "ar", string[]> = {
   en: [
     "My salary is late",
     "Can my company keep my passport?",
@@ -72,6 +72,14 @@ export const STARTERS: Record<"en" | "hi" | "ur", string[]> = {
     "پروبیشن کتنا لمبا ہو سکتا ہے؟",
     "مجھے کتنا نوٹس دینا ہوگا؟",
   ],
+  ar: [
+    "راتبي متأخر",
+    "هل يمكن لشركتي الاحتفاظ بجواز سفري؟",
+    "دفعت مالاً للحصول على هذا العمل",
+    "كم أجر العمل الإضافي؟",
+    "كم مدة فترة التجربة؟",
+    "كم مدة الإنذار التي يجب أن أعطيها؟",
+  ],
 };
 
 type Prepared = { keys: string[]; reply: Omit<AskReply, "kind" | "safety" | "contacts"> };
@@ -79,7 +87,7 @@ type Prepared = { keys: string[]; reply: Omit<AskReply, "kind" | "safety" | "con
 /** English keywords plus the main Hindi/Urdu words of the starter questions. */
 export const PREPARED: Prepared[] = [
   {
-    keys: ["salary", "late", "not paid", "unpaid", "wage", "तनख़्वाह", "तनख्वाह", "تنخواہ"],
+    keys: ["salary", "late", "not paid", "unpaid", "wage", "तनख़्वाह", "तनख्वाह", "تنخواہ", "راتب"],
     reply: {
       headline: "Your employer must pay your salary on time.",
       answer:
@@ -89,7 +97,7 @@ export const PREPARED: Prepared[] = [
     },
   },
   {
-    keys: ["passport", "documents", "पासपोर्ट", "پاسپورٹ"],
+    keys: ["passport", "documents", "पासपोर्ट", "پاسپورٹ", "جواز"],
     reply: {
       headline: "No. Your company cannot keep your passport.",
       answer:
@@ -99,7 +107,7 @@ export const PREPARED: Prepared[] = [
     },
   },
   {
-    keys: ["fee", "recruitment", "visa cost", "agent", "paid money", "पैसे दिए", "پیسے دیے"],
+    keys: ["fee", "recruitment", "visa cost", "agent", "paid money", "पैसे दिए", "پیسے دیے", "دفعت مالاً"],
     reply: {
       headline: "No. Your employer cannot make you pay for your recruitment.",
       answer:
@@ -109,7 +117,7 @@ export const PREPARED: Prepared[] = [
     },
   },
   {
-    keys: ["overtime", "extra hours", "hours", "ओवरटाइम", "اوور ٹائم"],
+    keys: ["overtime", "extra hours", "hours", "ओवरटाइम", "اوور ٹائم", "الإضافي"],
     reply: {
       headline: "Overtime is paid at your basic hourly pay plus at least 25%.",
       answer:
@@ -119,7 +127,7 @@ export const PREPARED: Prepared[] = [
     },
   },
   {
-    keys: ["probation", "trial", "प्रोबेशन", "پروبیشن"],
+    keys: ["probation", "trial", "प्रोबेशन", "پروبیشن", "التجربة"],
     reply: {
       headline: "Probation can be at most 6 months.",
       answer:
@@ -129,7 +137,7 @@ export const PREPARED: Prepared[] = [
     },
   },
   {
-    keys: ["notice", "resign", "quit", "fired", "नोटिस", "نوٹس"],
+    keys: ["notice", "resign", "quit", "fired", "नोटिस", "نوٹس", "الإنذار"],
     reply: {
       headline: "Notice is what your contract says: at least 30 days, at most 90.",
       answer:
@@ -139,7 +147,7 @@ export const PREPARED: Prepared[] = [
     },
   },
   {
-    keys: ["gratuity", "end of service", "ग्रेच्युटी", "گریجویٹی"],
+    keys: ["gratuity", "end of service", "ग्रेच्युटी", "گریجویٹی", "مكافأة نهاية الخدمة"],
     reply: {
       headline: "After 1 year, you get gratuity based on your basic pay.",
       answer:
@@ -149,7 +157,7 @@ export const PREPARED: Prepared[] = [
     },
   },
   {
-    keys: ["sick", "ill", "hospital", "medical", "बीमार", "بیمار"],
+    keys: ["sick", "ill", "hospital", "medical", "बीमार", "بیمار", "مريض", "مرضية"],
     reply: {
       headline: "After probation, you can get up to 90 days of sick leave a year.",
       answer:

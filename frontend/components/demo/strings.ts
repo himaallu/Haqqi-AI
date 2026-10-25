@@ -1,11 +1,11 @@
 /**
- * UI text for the pitch demo (docs/demo/LOVABLE_PROMPT.md). English, plus Hindi and Urdu drafts for native
+ * UI text for the pitch demo (docs/demo/LOVABLE_PROMPT.md). English, plus Hindi, Urdu and Arabic drafts for native
  * review; the other languages use English UI but still get answers in their own language from the API.
  */
 
 import type { Language } from "@/lib/types";
 
-export type UiLang = "en" | "hi" | "ur";
+export type UiLang = "en" | "hi" | "ur" | "ar";
 
 const en = {
   greeting: "Hi, I'm Haqqi. I help workers in the UAE understand their rights at work.",
@@ -131,6 +131,7 @@ const en = {
   useDetails: "Use these details to check my case",
   close: "Close",
   law: "The law",
+  darkMode: "Dark mode",
 };
 
 export type Strings = typeof en;
@@ -243,10 +244,132 @@ const ur: Partial<Strings> = {
   retry: "دوبارہ کوشش کریں",
 };
 
-const CATALOGS: Record<UiLang, Partial<Strings>> = { en, hi, ur };
+const ar: Partial<Strings> = {
+  greeting: "مرحباً، أنا حقّي. أساعد العمال في الإمارات على فهم حقوقهم في العمل.",
+  placeholder: "أخبرني بما حدث، أو اطرح سؤالاً",
+  doorAsk: "لدي سؤال",
+  doorContract: "اشرح لي عقدي",
+  doorProblem: "حدثت مشكلة في العمل",
+  peopleAsk: "أسئلة شائعة",
+  listening: "أستمع…",
+  listen: "استمع",
+  stop: "إيقاف",
+  checkCase: "افحص حالتي",
+  notNow: "ليس الآن",
+  notSure: "لست متأكداً",
+  unsure: "لست متأكداً من هذا. يمكن لوزارة الموارد البشرية والتوطين المساعدة: اتصل على 80084 أو راسلهم عبر واتساب.",
+  offTopic: "أستطيع المساعدة فقط في أمور العمل وحقوق العمال في الإمارات.",
+  privacy: "من فضلك لا تكتب اسمك أو رقم هاتفك أو جواز سفرك أو هويتك.",
+  understood: "هذا ما فهمته",
+  confirm: "نعم، افحص حالتي",
+  deleteChat: "احذف المحادثة",
+  deleted: "تم الحذف.",
+  danger: "هل أنت في خطر؟ اطلب المساعدة الآن.",
+  disclaimer: "معلومات قانونية وليست استشارة قانونية. القرار للوزارة. اتصل على 80084.",
+  tellStory: "أخبرني بما حدث بكلماتك. يمكنك التحدث أو الكتابة.",
+  reading: "أقرأ ما كتبته…",
+  searching: "أبحث في القانون…",
+  offer: "يبدو أن هذا يحدث معك. هل تريد أن أفحص حالتك وما قد يكون مستحقاً لك؟",
+  waking: "جارٍ تشغيل حقّي…",
+  demoMode: "وضع العرض",
+  resume: "هل تريد متابعة المحادثة؟",
+  resumeYes: "متابعة",
+  resumeNo: "محادثة جديدة",
+  largeText: "خط كبير",
+  helper: "أساعد شخصاً آخر",
+  fix: "تصحيح",
+  share: "مشاركة عبر واتساب",
+  next: "التالي",
+  edit: "تغيير",
+  tapAnswer: "من فضلك اختر إجابة أو اكتب رقماً.",
+  busy: "المساعد مشغول. حاول مرة أخرى.",
+  retry: "حاول مرة أخرى",
+  example: "شاهد مثالاً",
+  badFacts: "بعض البيانات غير متوافقة. تحقق من التواريخ والراتب.",
+  micDenied: "الميكروفون محظور. يمكنك الكتابة بدلاً من ذلك.",
+  micNone: "التسجيل الصوتي غير مدعوم في هذا المتصفح. يمكنك الكتابة.",
+  heardNothing: "لم أسمع جيداً. حاول مرة أخرى أو اكتب.",
+  qZone: "هل شركتك في منطقة حرة (مثل JAFZA أو DMCC)؟",
+  zoneMainland: "لا، ليست في منطقة حرة",
+  zoneFree: "نعم، منطقة حرة",
+  zoneHint: "انظر إلى تأشيرتك أو بطاقة العمل: يظهر اسم المنطقة الحرة هناك.",
+  qWorker: "لمن تعمل؟",
+  workerCompany: "شركة",
+  workerHome: "أسرة، في منزلها",
+  qEmirate: "في أي إمارة تعمل؟",
+  qTermination: "هل ما زلت تعمل هناك؟",
+  termStill: "نعم، ما زلت أعمل هناك",
+  termEmployer: "أنهوا عملي",
+  termResigned: "استقلت",
+  qStart: "متى بدأت هذا العمل؟",
+  qEnd: "ما آخر يوم عمل لك؟",
+  qTotal: "كم راتبك الشهري الإجمالي بالدرهم؟",
+  qBasic: "وكم راتبك الأساسي المكتوب في العقد؟",
+  month: "الشهر",
+  year: "السنة",
+  day: "اليوم (اختياري)",
+  fEmirate: "الإمارة",
+  fWorker: "جهة العمل",
+  fZone: "المنطقة الحرة",
+  fStart: "تاريخ البدء",
+  fEnd: "آخر يوم",
+  fTotal: "الراتب الإجمالي",
+  fBasic: "الراتب الأساسي",
+  fHappened: "ماذا حدث",
+  fNoticeContract: "الإنذار في العقد",
+  fNoticeGiven: "الإنذار المُعطى",
+  days: "يوماً",
+  stretrieving: "البحث في القانون",
+  stcalculating: "حساب المستحقات",
+  stanalysing: "فحص حقوقك",
+  stcritiquing: "مراجعة ثانية",
+  strevising: "تصحيح تفصيل",
+  stwriting: "الكتابة بلغتك",
+  found: "هذا ما وجدته",
+  rights: "حقوقك",
+  possible: "مشكلات محتملة",
+  inEnglish: "معروض بالإنجليزية",
+  owed: "ما قد يكون مستحقاً لك",
+  total: "الإجمالي",
+  calcNote: "كل مبلغ من آلة حاسبة، وليس من الذكاء الاصطناعي.",
+  notCalculated: "لم يُحسب",
+  youOwe: "قد تكون مديناً لصاحب العمل",
+  aboveLimit: "أكثر من 50,000 درهم: تحيل الوزارة القضية إلى المحكمة.",
+  notSureCase: "حقّي غير متأكد من حالتك. يمكن للوزارة أن تخبرك بالمزيد.",
+  nextSteps: "الخطوات التالية",
+  confidential:
+    "لدى الوزارة شكوى رواتب سرية: لا يُخبَر صاحب العمل بمن قدّمها. استخدم تطبيق الوزارة أو اتصل على 80084.",
+  documents: "مستندات احتفظ بها",
+  complaint: "شكواك بالعربية، جاهزة للوزارة",
+  getComplaint: "احصل على شكواي (PDF)",
+  saveShare: "حفظ أو مشاركة PDF",
+  preparing: "جارٍ التحضير…",
+  idName: "اسمك (اختياري)",
+  idCard: "رقم بطاقة العمل (اختياري)",
+  idEmployer: "صاحب العمل (اختياري)",
+  idNote: "يُطبع في الرسالة فقط. لا يُحفظ أبداً.",
+  strong: "قوي",
+  likely: "مرجّح",
+  maybe: "محتمل",
+  exampleTag: "حالة مثال",
+  referral: "تخضع هذه الحالة لقواعد مختلفة",
+  contractIntro: "صوّر كل صفحة من عقدك. غطِّ رقم جوازك وهويتك أولاً، أو سأخفيهما أنا.",
+  takePhoto: "التقط صورة",
+  pasteText: "الصق النص",
+  sample: "استخدم عقداً نموذجياً",
+  scanning: "أقرأ عقدك…",
+  xray: "عقدك بكلمات بسيطة",
+  sampleTag: "عرض: عقد نموذجي",
+  useDetails: "استخدم هذه البيانات لفحص حالتي",
+  close: "إغلاق",
+  law: "القانون",
+  darkMode: "الوضع الداكن",
+};
+
+const CATALOGS: Record<UiLang, Partial<Strings>> = { en, hi, ur, ar };
 
 export function uiLang(lang: Language): UiLang {
-  return lang === "hi" || lang === "ur" ? lang : "en";
+  return lang === "hi" || lang === "ur" || lang === "ar" ? lang : "en";
 }
 
 /** Strings for `lang`, falling back to English for anything not translated. */

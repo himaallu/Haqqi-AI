@@ -12,7 +12,7 @@ import {
   patchBody,
   shortRef,
 } from "./logic";
-import { strings } from "./strings";
+import { strings, uiLang } from "./strings";
 
 describe("demo logic", () => {
   it("asks only for what the story didn't answer, in order", () => {
@@ -37,6 +37,7 @@ describe("demo logic", () => {
   it("matches a prepared answer by keywords in any of the three languages", () => {
     expect(matchPrepared("Can my company keep my passport?", PREPARED)?.reply.citations[0].chunk_id).toBe("fdl33-2021:art13:cl2");
     expect(matchPrepared("کیا کمپنی میرا پاسپورٹ رکھ سکتی ہے؟", PREPARED)?.reply.headline).toContain("passport");
+    expect(matchPrepared("هل يمكن لشركتي الاحتفاظ بجواز سفري؟", PREPARED)?.reply.citations[0].chunk_id).toBe("fdl33-2021:art13:cl2");
     expect(matchPrepared("what is the weather", PREPARED)).toBeNull();
   });
 
@@ -55,6 +56,13 @@ describe("demo logic", () => {
   it("labels articles", () => {
     expect(shortRef("Art. 27(1), Cabinet Resolution No. 1 of 2022")).toBe("CR Art. 27(1)");
     expect(citationLabel({ chunk_id: "fdl33-2021:art53", law_id: "fdl33-2021", article_no: 53, clause_no: null, quote: "" })).toBe("Art. 53");
+  });
+
+  it("has Arabic, Hindi and Urdu UI text and falls back to English for the rest", () => {
+    expect(uiLang("ar")).toBe("ar");
+    expect(strings("ar").confirm).toBe("نعم، افحص حالتي");
+    expect(strings("ml").confirm).toBe(strings("en").confirm);
+    expect(strings("hi").darkMode).toBe("Dark mode");
   });
 
   it("shows facts in plain words", () => {

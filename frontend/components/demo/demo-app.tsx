@@ -77,6 +77,7 @@ type Flow =
   | { kind: "busy" };
 
 const STORE = "haqqi-demo-v1";
+const THEME = "haqqi-demo-theme";
 const ASK_TIMEOUT_MS = 45_000;
 
 function timeout<T>(promise: Promise<T>, ms: number): Promise<T> {
@@ -143,6 +144,13 @@ export function DemoApp() {
   const [menu, setMenu] = useState(false);
   const [large, setLarge] = useState(false);
   const [helper, setHelper] = useState(false);
+  const [dark, setDark] = useState(() => {
+    try {
+      return localStorage.getItem(THEME) === "dark";
+    } catch {
+      return false;
+    }
+  });
   const [toast, setToast] = useState<string | null>(null);
   const [presenter] = useState(() => new URLSearchParams(window.location.search).has("presenter"));
   const nextId = useRef(1);
@@ -538,6 +546,22 @@ export function DemoApp() {
                 {s.helper}
                 <input type="checkbox" checked={helper} onChange={(e) => setHelper(e.target.checked)} className="size-5 accent-d-primary" />
               </label>
+              <label className="flex min-h-11 items-center justify-between gap-2 px-3">
+                {s.darkMode}
+                <input
+                  type="checkbox"
+                  checked={dark}
+                  onChange={(e) => {
+                    setDark(e.target.checked);
+                    try {
+                      localStorage.setItem(THEME, e.target.checked ? "dark" : "light");
+                    } catch {
+                      // the choice just won't be remembered
+                    }
+                  }}
+                  className="size-5 accent-d-primary"
+                />
+              </label>
               <button
                 type="button"
                 className="min-h-11 rounded-xl px-3 text-start text-d-danger hover:bg-d-danger-bg"
@@ -665,7 +689,7 @@ export function DemoApp() {
   );
 
   return (
-    <div className="demo min-h-dvh bg-d-bg text-d-ink lg:flex lg:items-center lg:justify-center lg:gap-16 lg:p-8">
+    <div data-theme={dark ? "dark" : "light"} className="demo min-h-dvh bg-d-bg text-d-ink lg:flex lg:items-center lg:justify-center lg:gap-16 lg:p-8">
       <aside className="hidden max-w-sm flex-col gap-6 lg:flex">
         <p className="text-4xl font-semibold text-d-primary">
           Haqqi <span lang="ar">حقّي</span>
