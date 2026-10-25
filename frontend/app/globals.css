@@ -114,27 +114,28 @@ input[type="date"]::-webkit-date-and-time-value {
   --d-ok-bg: #e6f4ec;
   --d-me: #0f5c5a;
   --d-on-me: #ffffff;
+  color-scheme: light;
 }
 
-@media (prefers-color-scheme: dark) {
-  .demo {
-    --d-primary: #4fb3a9;
-    --d-on-primary: #0f1716;
-    --d-primary-soft: #18302e;
-    --d-bg: #0f1716;
-    --d-card: #172221;
-    --d-ink: #eef3f2;
-    --d-muted: #a3b1af;
-    --d-line: #263533;
-    --d-warn-bg: #3a2f12;
-    --d-warn: #f3d58a;
-    --d-danger: #ff8a7a;
-    --d-danger-bg: #3b1714;
-    --d-ok: #6fd3a0;
-    --d-ok-bg: #14301f;
-    --d-me: #1f6f6b;
-    --d-on-me: #ffffff;
-  }
+/* Light by default, whatever the phone's setting (a pitch shows the same on every screen); dark only when chosen. */
+.demo[data-theme="dark"] {
+  color-scheme: dark;
+  --d-primary: #4fb3a9;
+  --d-on-primary: #0f1716;
+  --d-primary-soft: #18302e;
+  --d-bg: #0f1716;
+  --d-card: #172221;
+  --d-ink: #eef3f2;
+  --d-muted: #a3b1af;
+  --d-line: #263533;
+  --d-warn-bg: #3a2f12;
+  --d-warn: #f3d58a;
+  --d-danger: #ff8a7a;
+  --d-danger-bg: #3b1714;
+  --d-ok: #6fd3a0;
+  --d-ok-bg: #14301f;
+  --d-me: #1f6f6b;
+  --d-on-me: #ffffff;
 }
 
 @theme inline {
