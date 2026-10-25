@@ -30,6 +30,7 @@ export const LAW = {
   art31_3: clause("fdl33-2021:art31:cl3", "Sick Leave", "After the Probation Period, the Worker may receive a sick leave of no more than (90) ninety consecutive or intermittent days per year, provided that it shall be calculated as follows: a. The first fifteen (15) days with full pay. b. The following thirty (30) days with half pay. c. The following period shall be unpaid."),
   art43_1: clause("fdl33-2021:art43:cl1", "Employment Contract Termination Warning", "Either party to the employment contract may terminate the contract for any legitimate reason, provided that the other party is notified in writing, and commits to work within the warning period agreed upon in the contract, provided that the period is not less than thirty (30) days and not more than ninety (90) days."),
   art43_3: clause("fdl33-2021:art43:cl3", "Employment Contract Termination Warning", "The party who does not abide by the warning period must pay the other party a compensation called a warning allowance, even if the failure to warn does not result in harm to the other party. Such compensation shall be equal to the Worker's wage for the entire warning period or the remaining part of it."),
+  art53: clause("fdl33-2021:art53", "Payment of Worker's Entitlement at the End of the Contract", "The Employer shall pay the Worker, within fourteen (14) days as of the date of the end of the contract, his wages and all other entitlements stipulated in this Decree by law and the resolutions issued in implementation thereof, the contract or the Establishment's Articles of Association."),
   art51_2: clause("fdl33-2021:art51:cl2", "End-of-Service Gratuity for Full-Time Workers", "The foreign full-time Worker, who has completed one or more years of continuous service, is entitled to an end-of-service gratuity upon the end of his service, calculated according to the basic wage, as follows: a. The wage of twenty-one (21) days for each year of the first five years of service. b. The wage of thirty (30) days for each year in excess of that."),
   art51_6: clause("fdl33-2021:art51:cl6", "End-of-Service Gratuity for Full-Time Workers", "The foregoing is provided that the total end-of-service gratuity for the foreign Worker does not exceed two years' wage."),
   art66_2: clause("fdl33-2021:art66:cl2", "Adopted Language", "The Employer is obligated to use Arabic in concluding contracts with Workers, and in writing and publishing instructions and circulars that he is obligated to issue; provided that, besides Arabic, another language understood by the non-Arabic speaking Worker shall be used, and the text in the other language shall match the Arabic text, and in the event case of dispute, the Arabic text shall prevail."),
@@ -235,7 +236,7 @@ export const PREPARED: Prepared[] = [
 
 /** The pitch story (illustrative persona, not a real person). */
 export const AYESHA_STORY =
-  "I worked as a cashier in a supermarket in Abu Dhabi from 1 June 2024. On 20 September my manager told me my job ends today. They gave me no notice. My contract says 30 days' notice. My basic salary is 2,000 dirhams and my total salary is 3,000.";
+  "I worked as a cashier in a supermarket in Abu Dhabi, not in a free zone, from 1 June 2024. On 20 September my manager told me my job ends today. They gave me no notice. My contract says 30 days' notice. My basic salary is 2,000 dirhams and my total salary is 3,000.";
 
 export const DANGER_EXAMPLE = "My supervisor beats us and locked us in the room.";
 
@@ -377,3 +378,221 @@ export const EXAMPLE_ANALYSIS_AR: Analysis = {
 export function preparedReply(item: Prepared, lang: string): Prepared["reply"] {
   return lang === "ar" ? { ...item.reply, ...item.ar } : item.reply;
 }
+
+type Bilingual = { en: string; ar: string };
+
+/** A sample situation people can try from the home screen: a full story, and its own prepared result for when live AI
+ * isn't available. Figures are the backend calculator's output for these facts (eval cases TC-02, TC-23/TC-01, TC-03). */
+export type Situation = {
+  id: "fired" | "unpaid" | "gratuity";
+  icon: string;
+  title: Bilingual;
+  blurb: Bilingual;
+  story: Bilingual;
+  facts: Record<string, string>;
+  stillEmployed: boolean;
+  analysis: { en: Analysis; ar: Analysis };
+};
+
+const UNPAID: Analysis = {
+  ...EXAMPLE_ANALYSIS,
+  violations: [
+    { issue: "Two months of wages have not been paid on their due dates.", article: cite(LAW.art22_2), confidence: "high" },
+  ],
+  claim: [
+    { item: "Unpaid wages", amount_aed: "5000.00", formula: "2 month(s) × AED 2,500.00 total monthly wage", article: cite(LAW.art22_2), note: "" },
+  ],
+  total_aed: "5000.00",
+  documents_to_gather: [
+    "Bank statements showing the missing salary",
+    "Your contract or offer letter",
+    "Any message from your employer about the salary",
+    "A copy of your labour card or Emirates ID",
+  ],
+  writer: {
+    headline: "Your employer owes you 2 months of salary.",
+    explanation:
+      "Your employer has not paid your salary for 2 months. The law says wages must be paid on their due dates.\nYou can report this to MOHRE while you keep working.",
+    amount_lines: ["Your total salary for the 2 unpaid months."],
+    checklist: [
+      "Keep proof that you are working (attendance, messages).",
+      "If the salary still doesn't come, file a formal complaint with MOHRE (app, website or 80084).",
+    ],
+    letter_facts_ar:
+      "أعمل مساعداً في شركة مقاولات في دبي منذ 1 مارس 2024، وما زلت على رأس عملي. لم يدفع صاحب العمل راتبي عن الشهرين الأخيرين رغم مطالبتي به.",
+    letter_facts_translation: "",
+  },
+};
+
+const GRATUITY: Analysis = {
+  ...EXAMPLE_ANALYSIS,
+  violations: [
+    { issue: "More than 6 years of service: end-of-service gratuity is due and has not been paid.", article: cite(LAW.art51_2), confidence: "high" },
+    { issue: "End-of-service dues must be paid within 14 days of the end of the contract.", article: cite(LAW.art53), confidence: "high" },
+  ],
+  claim: [
+    {
+      item: "End-of-service gratuity",
+      amount_aed: "16056.85",
+      formula:
+        "2,222 service days ÷ 365 = 6.0877 years; 5.0000 × 21 + 1.0877 × 30 = 137.6301 days × AED 116.67 daily basic wage (AED 3,500.00 ÷ 30) = AED 16,056.85",
+      article: cite(LAW.art51_2),
+      note: "",
+    },
+  ],
+  total_aed: "16056.85",
+  documents_to_gather: [
+    "Your contract or offer letter",
+    "Your resignation letter and the date it was accepted",
+    "Bank statements or salary slips",
+    "A copy of your labour card or Emirates ID",
+  ],
+  writer: {
+    headline: "You are owed your end-of-service gratuity.",
+    explanation:
+      "You worked at the hotel for more than 6 years and resigned with proper notice, so you are owed end-of-service gratuity: 21 days of basic pay for each of the first 5 years, and 30 days for each year after that.\nThe law says it must be paid within 14 days of your last day.",
+    amount_lines: ["Your gratuity for just over 6 years of work."],
+    checklist: [
+      "Ask the hotel in writing for your gratuity.",
+      "If it is not paid, file a complaint with MOHRE (app, website or 80084).",
+    ],
+    letter_facts_ar:
+      "عملت في فندق في دبي من 1 أغسطس 2020 حتى 31 أغسطس 2026، واستقلت بعد أن قدّمت إنذاراً مدته 30 يوماً وفق عقدي. ولم يدفع الفندق مكافأة نهاية الخدمة المستحقة لي حتى الآن.",
+    letter_facts_translation: "",
+  },
+};
+
+function arabic(a: Analysis, items: string[], writer: Omit<NonNullable<Analysis["writer"]>, "letter_facts_ar" | "letter_facts_translation">, documents: string[]): Analysis {
+  return {
+    ...a,
+    claim: a.claim.map((line, i) => ({ ...line, item: items[i] ?? line.item })),
+    documents_to_gather: documents,
+    writer: { ...writer, letter_facts_ar: a.writer?.letter_facts_ar ?? "", letter_facts_translation: "" },
+  };
+}
+
+export const SITUATIONS: Situation[] = [
+  {
+    id: "fired",
+    icon: "🚪",
+    title: { en: "Fired without notice", ar: "فُصلت دون إنذار" },
+    blurb: { en: "Ayesha, cashier, Abu Dhabi", ar: "عائشة، أمينة صندوق، أبوظبي" },
+    story: {
+      en: AYESHA_STORY,
+      ar: "عملت أمينة صندوق في سوبرماركت في أبوظبي، ليس في منطقة حرة، منذ 1 يونيو 2024. في 20 سبتمبر أخبرني المدير أن عملي ينتهي اليوم، دون أي إنذار. عقدي ينص على إنذار 30 يوماً. راتبي الأساسي 2,000 درهم وراتبي الإجمالي 3,000 درهم.",
+    },
+    facts: EXAMPLE_FACTS,
+    stillEmployed: false,
+    analysis: { en: EXAMPLE_ANALYSIS, ar: EXAMPLE_ANALYSIS_AR },
+  },
+  {
+    id: "unpaid",
+    icon: "💰",
+    title: { en: "Salary not paid for 2 months", ar: "لم أستلم راتبي منذ شهرين" },
+    blurb: { en: "Still working, construction, Dubai", ar: "ما زال يعمل، مقاولات، دبي" },
+    story: {
+      en: "I work as a helper at a construction company in Dubai, not in a free zone, since 1 March 2024. I have not been paid for the last 2 months. My basic salary is 1,800 dirhams and my total salary is 2,500. I still work there.",
+      ar: "أعمل مساعداً في شركة مقاولات في دبي، ليست في منطقة حرة، منذ 1 مارس 2024. لم أستلم راتبي عن آخر شهرين. راتبي الأساسي 1,800 درهم وراتبي الإجمالي 2,500 درهم. ما زلت أعمل في الشركة.",
+    },
+    facts: {
+      termination: "still_employed",
+      emirate: "dubai",
+      worker_type: "private_sector",
+      zone: "mainland",
+      start_date: "2024-03-01",
+      total_wage_aed: "2500",
+      basic_wage_aed: "1800",
+    },
+    stillEmployed: true,
+    analysis: {
+      en: UNPAID,
+      ar: arabic(
+        UNPAID,
+        ["الأجور غير المدفوعة"],
+        {
+          headline: "يدين لك صاحب العمل براتب شهرين.",
+          explanation:
+            "لم يدفع صاحب العمل راتبك منذ شهرين. وينص القانون على دفع الأجور في مواعيد استحقاقها.\nيمكنك إبلاغ الوزارة وأنت مستمر في عملك.",
+          amount_lines: ["راتبك الإجمالي عن الشهرين غير المدفوعين."],
+          checklist: [
+            "احتفظ بما يثبت أنك تعمل (الحضور، الرسائل).",
+            "إذا لم يصل الراتب، قدّم شكوى رسمية إلى الوزارة (التطبيق أو الموقع أو 80084).",
+          ],
+        },
+        ["كشوف الحساب البنكي التي تُظهر الراتب المفقود", "عقدك أو عرض العمل", "أي رسالة من صاحب العمل عن الراتب", "نسخة من بطاقة العمل أو الهوية الإماراتية"],
+      ),
+    },
+  },
+  {
+    id: "gratuity",
+    icon: "🎁",
+    title: { en: "Resigned, gratuity not paid", ar: "استقلت ولم أستلم المكافأة" },
+    blurb: { en: "6 years at a hotel, Dubai", ar: "6 سنوات في فندق، دبي" },
+    story: {
+      en: "I worked at a hotel in Dubai, not in a free zone, from 1 August 2020 to 31 August 2026. I resigned and gave 30 days' notice, as my contract says. My basic salary was 3,500 dirhams and my total salary 5,000. The hotel has not paid my end-of-service gratuity.",
+      ar: "عملت في فندق في دبي، ليس في منطقة حرة، من 1 أغسطس 2020 حتى 31 أغسطس 2026. استقلت وأعطيت إنذاراً مدته 30 يوماً كما ينص عقدي. كان راتبي الأساسي 3,500 درهم وراتبي الإجمالي 5,000 درهم. لم يدفع الفندق مكافأة نهاية الخدمة.",
+    },
+    facts: {
+      termination: "resigned",
+      emirate: "dubai",
+      worker_type: "private_sector",
+      zone: "mainland",
+      start_date: "2020-08-01",
+      end_date: "2026-08-31",
+      total_wage_aed: "5000",
+      basic_wage_aed: "3500",
+      notice_days_contract: "30",
+      notice_days_given: "30",
+    },
+    stillEmployed: false,
+    analysis: {
+      en: GRATUITY,
+      ar: arabic(
+        GRATUITY,
+        ["مكافأة نهاية الخدمة"],
+        {
+          headline: "يحق لك مكافأة نهاية الخدمة.",
+          explanation:
+            "عملت في الفندق أكثر من 6 سنوات واستقلت مع إنذار صحيح، لذلك تستحق مكافأة نهاية الخدمة: أجر 21 يوماً من راتبك الأساسي عن كل سنة من السنوات الخمس الأولى، وأجر 30 يوماً عن كل سنة بعدها.\nوينص القانون على دفعها خلال 14 يوماً من آخر يوم عمل.",
+          amount_lines: ["مكافأتك عن أكثر من 6 سنوات من العمل."],
+          checklist: ["اطلب من الفندق كتابةً مكافأة نهاية الخدمة.", "إذا لم تُدفع، قدّم شكوى إلى الوزارة (التطبيق أو الموقع أو 80084)."],
+        },
+        ["عقدك أو عرض العمل", "خطاب استقالتك وتاريخ قبولها", "كشوف الحساب البنكي أو قسائم الراتب", "نسخة من بطاقة العمل أو الهوية الإماراتية"],
+      ),
+    },
+  },
+];
+
+export function situation(id: string | undefined): Situation {
+  return SITUATIONS.find((x) => x.id === id) ?? SITUATIONS[0];
+}
+
+/** The synthetic sample contract (docs/demo/SAMPLE_CONTRACT.md); the X-ray rows above match it line by line. */
+export const SAMPLE_CONTRACT: { en: string[]; ar: string[] } = {
+  en: [
+    "EMPLOYMENT CONTRACT",
+    "Employer: Bright Mart Supermarkets LLC (example), Abu Dhabi (mainland)",
+    "1. Position: Cashier, from 1 June 2024, full-time.",
+    "2. Salary: basic AED 2,000; allowances AED 1,000; total AED 3,000 a month.",
+    "3. Working hours: 9 hours a day, 6 days a week.",
+    "4. Probation: 6 months.",
+    "5. Annual leave: 30 days a year.",
+    "6. Notice: 120 days' written notice by either party.",
+    "7. The visa cost (AED 5,000) is deducted from the employee's salary.",
+    "8. The company keeps the employee's passport for safekeeping.",
+    "9. This contract is written in English only.",
+  ],
+  ar: [
+    "عقد عمل",
+    "صاحب العمل: برايت مارت للسوبرماركت ذ.م.م (مثال)، أبوظبي (البر الرئيسي)",
+    "1. الوظيفة: أمين صندوق، من 1 يونيو 2024، بدوام كامل.",
+    "2. الراتب: أساسي 2,000 درهم؛ بدلات 1,000 درهم؛ الإجمالي 3,000 درهم شهرياً.",
+    "3. ساعات العمل: 9 ساعات يومياً، 6 أيام في الأسبوع.",
+    "4. فترة التجربة: 6 أشهر.",
+    "5. الإجازة السنوية: 30 يوماً في السنة.",
+    "6. الإنذار: 120 يوماً بإنذار كتابي من أي طرف.",
+    "7. تُخصم تكلفة التأشيرة (5,000 درهم) من راتب الموظف.",
+    "8. تحتفظ الشركة بجواز سفر الموظف للحفظ.",
+    "9. هذا العقد مكتوب بالإنجليزية فقط.",
+  ],
+};
