@@ -8,6 +8,7 @@ from fastapi.testclient import TestClient
 from haqqi.agents.ask import AskReply
 from haqqi.api import cases, demo
 from haqqi.api.main import create_app
+from haqqi.llm.client import LLMClient, LLMUnavailable
 from tests.agents.fakes import FakeLLM
 from tests.agents.test_ask import LAW, PASSPORT, answer
 
@@ -93,3 +94,58 @@ def test_cors_regex_admits_the_demo_origin(monkeypatch: pytest.MonkeyPatch) -> N
 
     assert ok.headers.get("access-control-allow-origin") == "https://haqqi-demo.lovable.app"
     assert "access-control-allow-origin" not in other.headers
+
+
+class QuotaLLM:
+    def complete(self, stage: str, messages: object, schema: object) -> object:
+        raise LLMUnavailable("ask: every provider is over its quota", quota=True)
+
+
+def test_quota_used_up_is_a_503_the_demo_can_recognise() -> None:
+    app = create_app()
+    app.dependency_overrides[cases.get_llm] = lambda: QuotaLLM()
+    app.dependency_overrides[demo.get_search] = lambda: lambda _text: LAW
+
+    resp = TestClient(app).post("/v1/demo/ask", json={"language": "en", "question": "passport?"})
+
+    assert resp.status_code == 503
+    assert "quota" in resp.json()["detail"]
+
+
+def test_the_demo_header_selects_the_gemini_only_client(monkeypatch: pytest.MonkeyPatch) -> None:
+    from haqqi.config import get_settings
+
+    monkeypatch.setenv("GEMINI_API_KEY", "g")
+    monkeypatch.setenv("K2_API_KEY", "k")
+    get_settings.cache_clear()
+    cases.demo_llm.cache_clear()
+    cases._main_llm.cache_clear()
+    try:
+        demo_client = cases.get_llm("1")
+        main_client = cases.get_llm(None)
+        live = TestClient(create_app()).get("/v1/demo/status").json()
+    finally:
+        get_settings.cache_clear()
+        cases.demo_llm.cache_clear()
+        cases._main_llm.cache_clear()
+
+    assert demo_client is not main_client
+    assert isinstance(demo_client, LLMClient) and isinstance(main_client, LLMClient)
+    assert [p.name for p in demo_client._providers if p.name == "k2"] == []
+    assert "k2" in [p.name for p in main_client._providers]
+    assert live == {"live": True}
+
+
+def test_status_is_not_live_without_a_gemini_key(monkeypatch: pytest.MonkeyPatch) -> None:
+    from haqqi.config import get_settings
+
+    monkeypatch.delenv("GEMINI_API_KEY", raising=False)
+    get_settings.cache_clear()
+    cases.demo_llm.cache_clear()
+    try:
+        live = TestClient(create_app()).get("/v1/demo/status").json()
+    finally:
+        get_settings.cache_clear()
+        cases.demo_llm.cache_clear()
+
+    assert live == {"live": False}
