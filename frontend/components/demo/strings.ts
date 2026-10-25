@@ -9,6 +9,7 @@ export type UiLang = "en" | "hi" | "ur" | "ar";
 
 const en = {
   tryExample: "Try an example",
+  orTryExample: "Or tap an example to see how it works:",
   sampleContract: "Sample contract",
   sampleContractBlurb: "See what Haqqi finds in a contract",
   checkContract: "Check this contract",
@@ -312,6 +313,7 @@ const ur: Partial<Strings> = {
 
 const ar: Partial<Strings> = {
   tryExample: "جرّب مثالاً",
+  orTryExample: "أو اضغط على مثال لترى كيف يعمل:",
   sampleContract: "عقد نموذجي",
   sampleContractBlurb: "شاهد ما يجده حقّي في العقد",
   checkContract: "افحص هذا العقد",
