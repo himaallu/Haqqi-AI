@@ -70,7 +70,7 @@ type Msg = { id: number } & (
   | { t: "referral"; text: string }
   | { t: "contract"; stage: "intro" | "scanning" | "done" }
   | { t: "contractDoc" }
-  | { t: "examples" }
+  | { t: "examples"; situationsOnly?: boolean }
 );
 type NewMsg = Msg extends infer M ? (M extends Msg ? Omit<M, "id"> : never) : never;
 
@@ -394,9 +394,11 @@ export function DemoApp() {
         return;
       }
       push({ t: "say", text: s.tellStory, note: s.privacy });
+      // The "something went wrong" door: sample situations right where the story is asked for.
+      if (Object.keys(prefill).length === 0) push({ t: "say", text: s.orTryExample }, { t: "examples", situationsOnly: true });
       setFlow({ kind: "story", prefill });
     },
-    [push, s.privacy, s.tellStory, submitStory],
+    [push, s.orTryExample, s.privacy, s.tellStory, submitStory],
   );
 
   // "Try an example": the story appears as the worker's own message, then runs the real case flow.
@@ -998,13 +1000,13 @@ function Door({ icon, label, onClick, tone }: { icon: React.ReactNode; label: st
 function ExamplesGrid(props: {
   lang: Language;
   s: ReturnType<typeof strings>;
-  onContract: () => void;
+  onContract?: () => void; // left out: situations only (the "something went wrong" door)
   onSituation: (id: string) => void;
 }) {
   const { lang, s, onContract, onSituation } = props;
   return (
     <div className="grid grid-cols-2 gap-2">
-      <ExampleCard icon="📄" title={s.sampleContract} blurb={s.sampleContractBlurb} onClick={onContract} />
+      {onContract && <ExampleCard icon="📄" title={s.sampleContract} blurb={s.sampleContractBlurb} onClick={onContract} />}
       {SITUATIONS.map((sit) => (
         <ExampleCard
           key={sit.id}
@@ -1221,7 +1223,14 @@ function MessageView(p: ViewProps) {
         </div>
       );
     case "examples":
-      return <ExamplesGrid lang={p.lang} s={s} onContract={p.onSampleContract} onSituation={p.onSituation} />;
+      return (
+        <ExamplesGrid
+          lang={p.lang}
+          s={s}
+          onContract={m.situationsOnly ? undefined : p.onSampleContract}
+          onSituation={p.onSituation}
+        />
+      );
     case "contractDoc":
       return (
         <div className={cn(card, "flex flex-col gap-3")}>
