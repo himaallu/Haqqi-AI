@@ -67,6 +67,9 @@ CRITIC = CriticReport(
 )
 
 
+AGENTS = ["intake", "analyst", "critic", "revision", "writer", "demo_ask"]
+
+
 def rendered(msgs: list[Message]) -> str:
     return "\n\n".join(f"### {msg.role}\n{msg.content}" for msg in msgs) + "\n"
 
@@ -80,10 +83,11 @@ def all_messages() -> dict[str, list[Message]]:
         "critic": m.critic_messages(FACTS, LAW, calc, ANALYSIS),
         "revision": m.revision_messages(FACTS, LAW, calc, ANALYSIS, CRITIC),
         "writer": m.writer_messages(FACTS, ANALYSIS, calc),
+        "demo_ask": m.ask_messages(STORY, "hi", LAW),
     }
 
 
-@pytest.mark.parametrize("name", ["intake", "analyst", "critic", "revision", "writer"])
+@pytest.mark.parametrize("name", AGENTS)
 def test_prompt_matches_snapshot(name: str) -> None:
     text = rendered(all_messages()[name])
     path = SNAPSHOTS / f"{name}.txt"
@@ -95,7 +99,7 @@ def test_prompt_matches_snapshot(name: str) -> None:
     )
 
 
-@pytest.mark.parametrize("name", ["intake", "analyst", "critic", "revision", "writer"])
+@pytest.mark.parametrize("name", AGENTS)
 def test_worker_text_is_fenced_exactly_once(name: str) -> None:
     user = all_messages()[name][1].content
     assert user.count(OPEN) == 1

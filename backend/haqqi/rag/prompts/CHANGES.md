@@ -114,3 +114,14 @@ below has a reason. The rendered prompts are in `backend/tests/agents/snapshots/
       resignation short of notice (N-09) got Art. 43/47 "violations", and N-18 got a leave finding with 0 unused days
       and no leave complaint. That pulled "citations supported" to 83%.
     **Approved 4 Oct.**
+
+## Pitch demo (25 Oct; **new prompt, for your review**)
+28. **`demo_ask.md`, the Ask door for the Sheraa demo** (`POST /v1/demo/ask`, docs/demo/LOVABLE_PROMPT.md). No n8n
+    equivalent. One call: the worker's question (fenced as usual) plus the law retrieved for it, answered in the
+    worker's language as a one-sentence headline and 2–4 plain sentences, citing LAW ids only. `kind` is
+    `answer`, `unsure` (the law given doesn't clearly answer, or a free zone/DIFC/ADGM/domestic case) or `off_topic`.
+    It also returns `suggest_case` (the worker describes a problem with their own employer) and `safety` (danger).
+    Code, not the model: drops ids that weren't retrieved and turns an answer with none left into `unsure`; rejects any
+    money figure (one retry, then `unsure`); blanks the text of `unsure`/`off_topic` replies, so the app shows its own
+    fixed text; adds an English danger-word check to `safety`; and supplies every phone number (MOHRE 80084 and
+    WhatsApp, police 999, 800 SAVE). Not used by the case pipeline or the eval.

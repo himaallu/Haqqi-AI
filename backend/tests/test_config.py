@@ -19,6 +19,7 @@ def test_settings_load_from_env_example(monkeypatch: pytest.MonkeyPatch) -> None
 
     assert settings.k2_base_url == "https://api.ifm.ai/v1"
     assert settings.cors_origins == ["http://localhost:3000"]
+    assert settings.cors_origin_regex is None  # an empty value means unset, never "match all"
     assert settings.database_url is not None
 
 

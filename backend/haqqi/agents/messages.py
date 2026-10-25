@@ -129,6 +129,13 @@ def revision_messages(
     return [Message("system", system_prompt("revision")), Message("user", user)]
 
 
+def ask_messages(question: str, language: str, law: Sequence[RetrievedChunk]) -> list[Message]:
+    """The Ask door (demo): one question and the law retrieved for it."""
+    user = f"LAW:\n{_law(law)}\n\nQUESTION:\n{wrap_worker_data(question)}"
+    system = system_prompt("demo_ask", language=LANGUAGE_NAMES[language])
+    return [Message("system", system), Message("user", user)]
+
+
 def amount_placeholder(index: int) -> str:
     return f"[[AMOUNT_{index}]]"
 

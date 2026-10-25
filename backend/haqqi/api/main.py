@@ -7,6 +7,7 @@ from fastapi.middleware.cors import CORSMiddleware
 from pydantic import BaseModel
 
 from haqqi.api.cases import router as cases_router
+from haqqi.api.demo import router as demo_router
 from haqqi.api.limits import LimitsMiddleware
 from haqqi.api.transcribe import router as transcribe_router
 from haqqi.config import get_settings
@@ -29,6 +30,7 @@ def create_app() -> FastAPI:
     app.add_middleware(
         CORSMiddleware,
         allow_origins=settings.cors_origins,
+        allow_origin_regex=settings.cors_origin_regex,
         allow_methods=["GET", "POST", "PATCH"],
         allow_headers=["*"],
     )
@@ -41,6 +43,7 @@ def create_app() -> FastAPI:
 
     app.include_router(cases_router)
     app.include_router(transcribe_router)
+    app.include_router(demo_router)
     return app
 
 
