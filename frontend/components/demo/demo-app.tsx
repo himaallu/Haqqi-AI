@@ -23,6 +23,8 @@ import {
   ProgressCard,
   QuestionCard,
   ResultCards,
+  speak,
+  type FollowUp,
 } from "./cards";
 import {
   AYESHA_STORY,
@@ -55,7 +57,7 @@ type Msg = { id: number } & (
   | { t: "me"; text: string; voice?: boolean }
   | { t: "say"; text: string; note?: string }
   | { t: "typing"; label: string }
-  | { t: "answer"; reply: AskReply }
+  | { t: "answer"; reply: AskReply; question: string }
   | { t: "notice"; kind: "unsure" | "offTopic" }
   | { t: "offer"; seed: string }
   | { t: "emergency" }
@@ -77,6 +79,9 @@ type Flow =
   | { kind: "busy" };
 
 const STORE = "haqqi-demo-v1";
+// Pictures for the starter questions, in STARTERS order: salary, passport, fees, overtime, probation, notice,
+// gratuity, sick leave.
+const STARTER_ICONS = ["💰", "🛂", "💸", "⏰", "🧪", "📅", "🎁", "🤒"];
 const THEME = "haqqi-demo-theme";
 const ASK_TIMEOUT_MS = 45_000;
 
@@ -144,6 +149,9 @@ export function DemoApp() {
   const [menu, setMenu] = useState(false);
   const [large, setLarge] = useState(false);
   const [helper, setHelper] = useState(false);
+  const [readAloud, setReadAloud] = useState(false);
+  // Messages from before a resume appear at once; new answers reveal sentence by sentence.
+  const [sessionFloor, setSessionFloor] = useState(1);
   const [dark, setDark] = useState(() => {
     try {
       return localStorage.getItem(THEME) === "dark";
@@ -212,7 +220,7 @@ export function DemoApp() {
   // Ask door
 
   const ask = useCallback(
-    async (text: string) => {
+    async (text: string, question = text) => {
       if (!lang) return;
       push({ t: "typing", label: s.searching });
       let reply: AskReply | null = null;
@@ -232,12 +240,13 @@ export function DemoApp() {
       }
       const out: NewMsg[] = [];
       if (reply.safety && !isDanger(text)) out.push({ t: "emergency" });
-      if (reply.kind === "answer") out.push({ t: "answer", reply });
+      if (reply.kind === "answer") out.push({ t: "answer", reply, question });
       else out.push({ t: "notice", kind: reply.kind === "off_topic" ? "offTopic" : "unsure" });
-      if (reply.suggest_case) out.push({ t: "offer", seed: text });
       push(...out);
+      if (readAloud && reply.kind === "answer") speak(`${reply.headline} ${reply.answer}`, lang);
+      else if (readAloud) speak(reply.kind === "off_topic" ? s.offTopic : s.unsure, lang);
     },
-    [lang, offline, push, s.searching],
+    [lang, offline, push, readAloud, s.offTopic, s.searching, s.unsure],
   );
 
   // Case door
@@ -451,6 +460,25 @@ export function DemoApp() {
     [answer, ask, flow, lang, push, s.tapAnswer, submitStory],
   );
 
+  // Tap-able follow-ups, so the worker doesn't have to type. Each question is answered on its own, so the
+  // follow-up carries the earlier question and answer with it.
+  const follow = useCallback(
+    (kind: FollowUp, label: string, m: { reply: AskReply; question: string }) => {
+      if (kind === "check") {
+        startCase();
+        return;
+      }
+      push({ t: "me", text: label });
+      const said = `${m.reply.headline} ${m.reply.answer}`;
+      const text =
+        kind === "simpler"
+          ? `Please explain this again in very simple words, in 2 or 3 short sentences: "${said}"`
+          : `I asked: "${m.question}". You answered: "${m.reply.headline}". What should I do now? Give me the first steps.`;
+      void ask(text.slice(0, 1000), m.question);
+    },
+    [ask, push, startCase],
+  );
+
   const reset = useCallback(() => {
     setMessages([]);
     setFlow({ kind: "idle" });
@@ -543,6 +571,10 @@ export function DemoApp() {
                 <input type="checkbox" checked={large} onChange={(e) => setLarge(e.target.checked)} className="size-5 accent-d-primary" />
               </label>
               <label className="flex min-h-11 items-center justify-between gap-2 px-3">
+                {s.readAloud}
+                <input type="checkbox" checked={readAloud} onChange={(e) => setReadAloud(e.target.checked)} className="size-5 accent-d-primary" />
+              </label>
+              <label className="flex min-h-11 items-center justify-between gap-2 px-3">
                 {s.helper}
                 <input type="checkbox" checked={helper} onChange={(e) => setHelper(e.target.checked)} className="size-5 accent-d-primary" />
               </label>
@@ -586,6 +618,7 @@ export function DemoApp() {
                     className={primaryBtn}
                     onClick={() => {
                       nextId.current = Math.max(0, ...saved.messages.map((m) => m.id)) + 1;
+                      setSessionFloor(nextId.current);
                       setMessages(saved.messages);
                       setResume(false);
                     }}
@@ -626,8 +659,11 @@ export function DemoApp() {
                 </div>
                 <p className="mt-2 text-sm font-medium text-d-muted">{s.peopleAsk}</p>
                 <div className="flex flex-wrap gap-2">
-                  {starters.map((q) => (
-                    <button key={q} type="button" onClick={() => send(q)} className="min-h-11 rounded-full border border-d-line bg-d-card px-4 py-2 text-start text-sm hover:border-d-primary">
+                  {starters.map((q, i) => (
+                    <button key={q} type="button" onClick={() => send(q)} className="flex min-h-11 items-center gap-2 rounded-full border border-d-line bg-d-card px-4 py-2 text-start text-sm hover:border-d-primary">
+                      <span aria-hidden className="text-lg">
+                        {STARTER_ICONS[i] ?? "❓"}
+                      </span>
                       {q}
                     </button>
                   ))}
@@ -660,6 +696,9 @@ export function DemoApp() {
                   else startCase();
                 }}
                 onExample={showExample}
+                animate={m.id >= sessionFloor}
+                offline={offline}
+                onFollow={(kind, label) => m.t === "answer" && follow(kind, label, m)}
                 onDoors={{ ask: () => document.getElementById("demo-input")?.focus(), contract: openContract, problem: () => startCase() }}
               />
               </div>
@@ -667,6 +706,7 @@ export function DemoApp() {
           </div>
 
           <footer className="border-t border-d-line bg-d-card px-3 pt-2 pb-[max(0.75rem,env(safe-area-inset-bottom))]">
+            {messages.length === 0 && <p className="mb-1 text-center text-sm font-medium text-d-primary">{s.micHint}</p>}
             <p className="mb-2 text-center text-[11px] leading-tight text-d-muted">{s.disclaimer}</p>
             <Composer
               value={input}
@@ -677,6 +717,7 @@ export function DemoApp() {
               lang={lang}
               s={s}
               offline={offline}
+              hint={messages.length === 0}
             />
           </footer>
           {sheet && <LawSheet clause={sheet} onClose={() => setSheet(null)} s={s} />}
@@ -789,6 +830,9 @@ type ViewProps = {
   onContractUse: () => void;
   onRetry: (kind: "analysis" | "story") => void;
   onExample: () => void;
+  animate: boolean;
+  offline: boolean;
+  onFollow: (kind: FollowUp, label: string) => void;
   onDoors: { ask: () => void; contract: () => void; problem: () => void };
 };
 
@@ -825,7 +869,18 @@ function MessageView(p: ViewProps) {
         </HaqqiBubble>
       );
     case "answer":
-      return <AnswerCard reply={m.reply} lang={p.lang} s={s} onLaw={p.onLaw} />;
+      return (
+        <AnswerCard
+          reply={m.reply}
+          lang={p.lang}
+          s={s}
+          active={p.active}
+          animate={p.animate}
+          offline={p.offline}
+          onLaw={p.onLaw}
+          onFollow={p.onFollow}
+        />
+      );
     case "notice":
       return (
         <div className={cn(card, "flex flex-col gap-3")}>
@@ -931,8 +986,9 @@ function Composer(props: {
   lang: Language;
   s: ReturnType<typeof strings>;
   offline: boolean;
+  hint: boolean;
 }) {
-  const { value, onChange, onSend, onCamera, disabled, lang, s, offline } = props;
+  const { value, onChange, onSend, onCamera, disabled, lang, s, offline, hint } = props;
   const [rec, setRec] = useState<RecState>({ kind: "idle" });
   const [error, setError] = useState<string | null>(null);
   const recorder = useRef<MediaRecorder | null>(null);
@@ -1042,9 +1098,10 @@ function Composer(props: {
             type="button"
             onClick={() => void start()}
             disabled={disabled || rec.kind === "sending"}
-            className="flex size-14 shrink-0 items-center justify-center rounded-full bg-d-primary text-d-on-primary shadow-md"
-            aria-label={s.listen}
+            className="relative flex size-14 shrink-0 items-center justify-center rounded-full bg-d-primary text-d-on-primary shadow-md"
+            aria-label={s.micHint}
           >
+            {hint && <span aria-hidden className="absolute inset-0 animate-ping rounded-full bg-d-primary opacity-30 motion-reduce:hidden" />}
             {rec.kind === "sending" ? <Loader2 className="size-6 animate-spin" /> : <Mic className="size-6" />}
           </button>
         )}

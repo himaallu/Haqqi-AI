@@ -5,6 +5,7 @@ import {
   Check,
   CheckCircle2,
   Circle,
+  Download,
   FileText,
   Loader2,
   Pencil,
@@ -15,7 +16,7 @@ import {
   Square,
   X,
 } from "lucide-react";
-import { useState, useSyncExternalStore } from "react";
+import { useEffect, useRef, useState, useSyncExternalStore } from "react";
 
 import { downloadComplaint } from "@/lib/api";
 import { formatAed } from "@/lib/money";
@@ -163,29 +164,132 @@ export function ContactButtons({ contacts, tone = "plain" }: { contacts: Contact
   );
 }
 
+export type FollowUp = "simpler" | "whatNow" | "check";
+
+function sentences(text: string): string[] {
+  return text.match(/[^.!?।۔؟]+[.!?।۔؟]*\s*/g)?.map((t) => t.trim()).filter(Boolean) ?? [text];
+}
+
+/** Shows the answer a sentence at a time, like someone talking, unless the reader prefers less motion. */
+function useReveal(total: number, animate: boolean): number {
+  const still = typeof window !== "undefined" && window.matchMedia?.("(prefers-reduced-motion: reduce)").matches;
+  const [shown, setShown] = useState(animate && !still ? 0 : total);
+  useEffect(() => {
+    if (shown >= total) return;
+    const timer = setTimeout(() => setShown((n) => n + 1), shown === 0 ? 250 : 650);
+    return () => clearTimeout(timer);
+  }, [shown, total]);
+  return shown;
+}
+
 export function AnswerCard(props: {
   reply: AskReply;
   lang: Language;
   s: Strings;
+  active: boolean;
+  animate: boolean;
+  offline: boolean;
   onLaw: (c: LawClause) => void;
+  onFollow: (kind: FollowUp, label: string) => void;
 }) {
-  const { reply, lang, s, onLaw } = props;
+  const { reply, lang, s, active, animate, offline, onLaw, onFollow } = props;
   const refs = reply.citations.map((c) => shortRef(c.ref_en));
+  const parts = sentences(reply.answer);
+  const shown = useReveal(parts.length + 1, animate);
+  const [feedback, setFeedback] = useState<"up" | "down" | null>(null);
+  const done = shown > parts.length;
+  const box = useRef<HTMLDivElement>(null);
+  // Once the answer has finished appearing, bring its follow-up chips into view.
+  useEffect(() => {
+    if (done && active && animate) box.current?.scrollIntoView({ behavior: "smooth", block: "nearest" });
+  }, [done, active, animate]);
   return (
-    <div className={cn(card, "flex flex-col gap-3")}>
-      <p dir="auto" className="text-lg font-semibold leading-snug">{reply.headline}</p>
-      <p dir="auto" className="leading-relaxed">{reply.answer}</p>
-      <div className="flex flex-wrap gap-2">
-        {reply.citations.map((c) => (
-          <ArticleChip key={c.chunk_id} label={shortRef(c.ref_en)} onOpen={() => onLaw(c)} />
-        ))}
+    <div ref={box} className="flex flex-col gap-2">
+      <div className={cn(card, "flex flex-col gap-3")}>
+        <p dir="auto" className="text-lg font-semibold leading-snug">
+          {reply.headline}
+        </p>
+        <p dir="auto" className="leading-relaxed">
+          {parts.slice(0, shown).join(" ")}
+          {!done && <span className="ms-1 inline-block animate-pulse text-d-muted">●●●</span>}
+        </p>
+        {done && (
+          <>
+            <div className="flex flex-wrap gap-2">
+              {reply.citations.map((c) => (
+                <ArticleChip key={c.chunk_id} label={shortRef(c.ref_en)} onOpen={() => onLaw(c)} />
+              ))}
+            </div>
+            <div className="flex flex-wrap items-center gap-4 border-t border-d-line pt-2">
+              <ListenButton text={`${reply.headline} ${reply.answer}`} lang={lang} s={s} />
+              <ShareLink text={`${reply.headline}\n${reply.answer}\n(${refs.join(", ")}) — Haqqi`} s={s} />
+              <span className="ms-auto flex items-center gap-1 text-sm text-d-muted">
+                {feedback ? (
+                  s.thanks
+                ) : (
+                  <>
+                    <span className="me-1">{s.clear}</span>
+                    <button type="button" aria-label="👍" onClick={() => setFeedback("up")} className="rounded-full p-1.5 text-lg hover:bg-d-primary-soft">
+                      👍
+                    </button>
+                    <button type="button" aria-label="👎" onClick={() => setFeedback("down")} className="rounded-full p-1.5 text-lg hover:bg-d-primary-soft">
+                      👎
+                    </button>
+                  </>
+                )}
+              </span>
+            </div>
+          </>
+        )}
       </div>
-      <div className="flex flex-wrap items-center gap-4 border-t border-d-line pt-2">
-        <ListenButton text={`${reply.headline} ${reply.answer}`} lang={lang} s={s} />
-        <ShareLink text={`${reply.headline}\n${reply.answer}\n(${refs.join(", ")}) — Haqqi`} s={s} />
-      </div>
+      {done && active && reply.suggest_case && (
+        <p dir="auto" className="demo-in px-1 text-sm text-d-muted">
+          {s.offer}
+        </p>
+      )}
+      {done && active && (
+        <div className="demo-in flex flex-wrap gap-2">
+          {!offline && (
+            <>
+              <FollowChip label={s.simpler} onClick={() => onFollow("simpler", s.simpler)} />
+              <FollowChip label={s.whatNow} onClick={() => onFollow("whatNow", s.whatNow)} />
+            </>
+          )}
+          {reply.suggest_case && <FollowChip label={`📋 ${s.checkCase}`} onClick={() => onFollow("check", s.checkCase)} strong />}
+          <a href="tel:80084" className="min-h-11 rounded-full border border-d-line bg-d-card px-4 py-2 text-sm">
+            {s.callMohre}
+          </a>
+        </div>
+      )}
     </div>
   );
+}
+
+function FollowChip({ label, onClick, strong }: { label: string; onClick: () => void; strong?: boolean }) {
+  return (
+    <button
+      type="button"
+      onClick={onClick}
+      className={cn(
+        "min-h-11 rounded-full px-4 py-2 text-start text-sm",
+        strong ? "bg-d-primary text-d-on-primary" : "border border-d-primary/40 bg-d-primary-soft text-d-ink",
+      )}
+    >
+      {label}
+    </button>
+  );
+}
+
+/** Reads text aloud in the worker's language, if the phone has a voice for it (the "read answers aloud" setting). */
+export function speak(text: string, lang: Language): void {
+  const voice = voiceFor(lang);
+  if (!voice || !text) return;
+  const utterance = new SpeechSynthesisUtterance(text);
+  utterance.voice = voice;
+  utterance.lang = voice.lang;
+  utterance.rate = 0.95;
+  speechSynthesis.cancel();
+  speechSynthesis.speak(utterance);
 }
 
 export function LawSheet({ clause, onClose, s }: { clause: LawClause; onClose: () => void; s: Strings }) {
@@ -587,24 +691,40 @@ export function ResultCards(props: {
   );
 }
 
+type PdfState = { kind: "idle" | "busy" | "error" } | { kind: "ready"; file: File; note?: string };
+
 function ComplaintCard({ caseId, preview, s }: { caseId: string | null; preview: string; s: Strings }) {
   const [name, setName] = useState("");
   const [card_, setCard] = useState("");
   const [employer, setEmployer] = useState("");
-  const [state, setState] = useState<{ kind: "idle" | "busy" | "error" } | { kind: "ready"; file: File }>({ kind: "idle" });
-  async function prepare() {
+  const [state, setState] = useState<PdfState>({ kind: "idle" });
+  // A changed field means a different letter: make it again.
+  const edit = (set: (v: string) => void) => (e: React.ChangeEvent<HTMLInputElement>) => {
+    set(e.target.value);
+    setState({ kind: "idle" });
+  };
+  async function create() {
     if (!caseId) return;
     setState({ kind: "busy" });
     try {
       const blob = await downloadComplaint(caseId, { name, labour_card: card_, employer });
-      const file = pdfFile(blob, "haqqi-complaint.pdf");
-      if (canShareFile(file)) setState({ kind: "ready", file });
-      else {
-        saveFile(file);
-        setState({ kind: "idle" });
-      }
+      setState({ kind: "ready", file: pdfFile(blob, "haqqi-complaint.pdf") });
     } catch {
       setState({ kind: "error" });
+    }
+  }
+  // Save and share are separate taps on purpose: the share sheet needs a fresh tap after the PDF is made.
+  async function share(file: File) {
+    if (!canShareFile(file)) {
+      saveFile(file);
+      setState({ kind: "ready", file, note: s.shareFallback });
+      return;
+    }
+    try {
+      await shareFile(file);
+    } catch {
+      saveFile(file);
+      setState({ kind: "ready", file, note: s.shareFallback });
     }
   }
   const input = "min-h-12 rounded-xl border border-d-line bg-d-card px-3";
@@ -616,19 +736,30 @@ function ComplaintCard({ caseId, preview, s }: { caseId: string | null; preview:
       </div>
       {caseId && (
         <>
-          <input className={input} placeholder={s.idName} aria-label={s.idName} value={name} onChange={(e) => setName(e.target.value)} />
-          <input className={input} placeholder={s.idCard} aria-label={s.idCard} value={card_} onChange={(e) => setCard(e.target.value)} dir="ltr" />
-          <input className={input} placeholder={s.idEmployer} aria-label={s.idEmployer} value={employer} onChange={(e) => setEmployer(e.target.value)} />
+          <input className={input} placeholder={s.idName} aria-label={s.idName} value={name} onChange={edit(setName)} />
+          <input className={input} placeholder={s.idCard} aria-label={s.idCard} value={card_} onChange={edit(setCard)} dir="ltr" />
+          <input className={input} placeholder={s.idEmployer} aria-label={s.idEmployer} value={employer} onChange={edit(setEmployer)} />
           <p className="text-xs text-d-muted">{s.idNote}</p>
           {state.kind === "ready" ? (
-            <button type="button" className={primaryBtn} onClick={() => void shareFile(state.file).finally(() => setState({ kind: "idle" }))}>
-              <Share2 aria-hidden className="size-4" />
-              {s.saveShare}
-            </button>
+            <div className="flex flex-col gap-2">
+              <p className="flex items-center gap-2 font-medium text-d-ok">
+                <CheckCircle2 aria-hidden className="size-5" />
+                {s.pdfReady}
+              </p>
+              <button type="button" className={primaryBtn} onClick={() => saveFile(state.file)}>
+                <Download aria-hidden className="size-5" />
+                {s.savePdf}
+              </button>
+              <button type="button" className={ghostBtn} onClick={() => void share(state.file)}>
+                <Share2 aria-hidden className="size-5" />
+                {s.sharePdf}
+              </button>
+              {state.note && <p className="text-sm text-d-muted">{state.note}</p>}
+            </div>
           ) : (
-            <button type="button" className={primaryBtn} onClick={() => void prepare()} disabled={state.kind === "busy"}>
+            <button type="button" className={primaryBtn} onClick={() => void create()} disabled={state.kind === "busy"}>
               {state.kind === "busy" ? <Loader2 aria-hidden className="size-4 animate-spin" /> : <FileText aria-hidden className="size-4" />}
-              {state.kind === "busy" ? s.preparing : s.getComplaint}
+              {state.kind === "busy" ? s.preparing : s.createPdf}
             </button>
           )}
           {state.kind === "error" && <p className="text-sm text-d-danger">{s.busy}</p>}

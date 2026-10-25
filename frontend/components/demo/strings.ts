@@ -8,6 +8,18 @@ import type { Language } from "@/lib/types";
 export type UiLang = "en" | "hi" | "ur" | "ar";
 
 const en = {
+  simpler: "🤔 Explain more simply",
+  whatNow: "➡️ What should I do now?",
+  callMohre: "☎️ Call MOHRE",
+  clear: "Was this clear?",
+  thanks: "Thank you!",
+  readAloud: "Read answers aloud",
+  micHint: "🎤 Tap and speak in your language",
+  createPdf: "Create my complaint (PDF)",
+  savePdf: "Save to my phone",
+  sharePdf: "Share (WhatsApp, email…)",
+  pdfReady: "Your complaint is ready.",
+  shareFallback: "Sharing isn't available here, so the PDF was saved.",
   greeting: "Hi, I'm Haqqi. I help workers in the UAE understand their rights at work.",
   placeholder: "Tell me what happened, or ask a question",
   doorAsk: "I have a question",
@@ -137,6 +149,18 @@ const en = {
 export type Strings = typeof en;
 
 const hi: Partial<Strings> = {
+  simpler: "🤔 और आसान शब्दों में बताइए",
+  whatNow: "➡️ अब मैं क्या करूँ?",
+  callMohre: "☎️ MOHRE को कॉल करें",
+  clear: "क्या यह समझ आया?",
+  thanks: "धन्यवाद!",
+  readAloud: "जवाब ज़ोर से पढ़ें",
+  micHint: "🎤 दबाइए और अपनी भाषा में बोलिए",
+  createPdf: "मेरी शिकायत बनाइए (PDF)",
+  savePdf: "फ़ोन में सेव करें",
+  sharePdf: "शेयर करें (WhatsApp…)",
+  pdfReady: "आपकी शिकायत तैयार है।",
+  shareFallback: "यहाँ शेयर नहीं हो सकता, इसलिए PDF सेव कर दी गई।",
   greeting: "नमस्ते, मैं हक़्क़ी हूँ। मैं UAE में काम करने वालों को उनके अधिकार समझने में मदद करता हूँ।",
   placeholder: "बताइए क्या हुआ, या कोई सवाल पूछिए",
   doorAsk: "मेरा एक सवाल है",
@@ -191,6 +215,18 @@ const hi: Partial<Strings> = {
 };
 
 const ur: Partial<Strings> = {
+  simpler: "🤔 اور آسان الفاظ میں بتائیں",
+  whatNow: "➡️ اب میں کیا کروں؟",
+  callMohre: "☎️ MOHRE کو کال کریں",
+  clear: "کیا یہ سمجھ آیا؟",
+  thanks: "شکریہ!",
+  readAloud: "جواب بلند آواز سے پڑھیں",
+  micHint: "🎤 دبائیں اور اپنی زبان میں بولیں",
+  createPdf: "میری شکایت بنائیں (PDF)",
+  savePdf: "فون میں محفوظ کریں",
+  sharePdf: "شیئر کریں (WhatsApp…)",
+  pdfReady: "آپ کی شکایت تیار ہے۔",
+  shareFallback: "یہاں شیئر نہیں ہو سکتا، اس لیے PDF محفوظ کر دی گئی۔",
   greeting: "السلام علیکم، میں حقی ہوں۔ میں UAE میں کام کرنے والوں کو ان کے حقوق سمجھنے میں مدد کرتا ہوں۔",
   placeholder: "بتائیں کیا ہوا، یا کوئی سوال پوچھیں",
   doorAsk: "میرا ایک سوال ہے",
@@ -245,6 +281,18 @@ const ur: Partial<Strings> = {
 };
 
 const ar: Partial<Strings> = {
+  simpler: "🤔 اشرح بكلمات أبسط",
+  whatNow: "➡️ ماذا أفعل الآن؟",
+  callMohre: "☎️ اتصل بالوزارة",
+  clear: "هل كان هذا واضحاً؟",
+  thanks: "شكراً!",
+  readAloud: "اقرأ الإجابات بصوت عالٍ",
+  micHint: "🎤 اضغط وتحدث بلغتك",
+  createPdf: "أنشئ شكواي (PDF)",
+  savePdf: "احفظ على هاتفي",
+  sharePdf: "مشاركة (واتساب…)",
+  pdfReady: "شكواك جاهزة.",
+  shareFallback: "المشاركة غير متاحة هنا، لذلك تم حفظ الملف.",
   greeting: "مرحباً، أنا حقّي. أساعد العمال في الإمارات على فهم حقوقهم في العمل.",
   placeholder: "أخبرني بما حدث، أو اطرح سؤالاً",
   doorAsk: "لدي سؤال",
