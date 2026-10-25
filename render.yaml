@@ -19,6 +19,9 @@ services:
       # Render sets PORT itself; the Dockerfile's CMD listens on it.
       - key: CORS_ORIGINS
         value: '["https://haqqi-ai.vercel.app"]'
+      # Pitch demo on Lovable (docs/demo/LOVABLE_PROMPT.md); set it in the dashboard to your project's domains
+      - key: CORS_ORIGIN_REGEX
+        sync: false
       - key: DATABASE_URL
         sync: false
       - key: LLM_PROVIDER

@@ -36,6 +36,8 @@ RULES = [
     Rule("analyze", "POST", re.compile(CASE + r"/analyze"), 10, 10 * MINUTE),
     Rule("complaint", "POST", re.compile(CASE + r"/complaint"), 20, 10 * MINUTE),
     Rule("transcribe", "POST", re.compile(r"/v1/transcribe"), 20, 10 * MINUTE),
+    # Pitch demo: judges on one venue network share an IP, so a little more room than a case.
+    Rule("demo_ask", "POST", re.compile(r"/v1/demo/ask"), 30, 10 * MINUTE),
     Rule("api", "*", re.compile(r"/v1/.*"), 120, MINUTE),
 ]
 

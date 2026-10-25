@@ -179,6 +179,10 @@ Key choices:
 Sizes assume your earlier pace (S = ~2 h, M = ~4 h, L = ~a day).
 
 ### C0 — Clickable prototype first (S)
+*25 Oct, your choice:* the prototype is built on Lovable for the Sheraa ideathon pitch (docs/demo/LOVABLE_PROMPT.md).
+Its Ask answers come from the new `POST /v1/demo/ask` (real retrieval, citation and money checks in code, CHANGES.md 28);
+its Case door uses the existing `/v1/cases` endpoints. The Contract X-ray is scripted.
+
 - [ ] **C0.1 Mocked chat prototype**: the empty state, Ask, Contract and Case doors, facts card, result cards, with
       canned responses (no backend), in Hindi, Urdu and English.
       Check: tried on a real phone by you and 2–3 workers or a volunteer; notes in `docs/chat_ux_notes.md`. Ports: new.

@@ -42,6 +42,8 @@ class Settings(BaseSettings):
     cloudflare_api_token: SecretStr | None = None
     # Comma-separated in env files (`a,b`); a JSON list also works.
     cors_origins: Annotated[list[str], NoDecode] = ["http://localhost:3000"]
+    # Extra allowed origins as one regex, e.g. the pitch demo's Lovable preview and app domains.
+    cors_origin_regex: str | None = None
     # Shown by /healthz. Render sets RENDER_GIT_COMMIT on every deploy.
     git_sha: str = Field("dev", validation_alias=AliasChoices("GIT_SHA", "RENDER_GIT_COMMIT"))
     # Langfuse tracing of LLM calls (task 8.2): metadata only. Off when the keys are unset.
@@ -50,6 +52,11 @@ class Settings(BaseSettings):
     langfuse_host: str = "https://cloud.langfuse.com"
     # Test-only hooks such as TC-11's seeded bad citation (task 3.9). Never set in production.
     haqqi_test_hooks: bool = False
+
+    @field_validator("cors_origin_regex", mode="before")
+    @classmethod
+    def _empty_regex_is_none(cls, value: object) -> object:
+        return None if isinstance(value, str) and not value.strip() else value
 
     @field_validator("cors_origins", "gemini_fallback_models", mode="before")
     @classmethod
