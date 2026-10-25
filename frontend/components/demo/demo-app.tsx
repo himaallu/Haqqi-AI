@@ -98,7 +98,7 @@ const THEME = "haqqi-demo-theme";
 // The demo runs on the free Gemini quota only (the backend skips K2 for requests with X-Haqqi-Demo, because a K2 case
 // takes minutes). Once the quota is used up, or the live AI doesn't answer in time, the demo shows its prepared,
 // law-checked examples instead, so there is always something to show (docs/demo/TEST_SCRIPT.md).
-const ASK_TIMEOUT_MS = 45_000;
+const ASK_TIMEOUT_MS = 60_000; // the server gives up on a hung model after 40 s and asks the next one
 const CASE_TIMEOUT_MS = 75_000; // reading a story; the first call after idle also wakes the server (~1 min)
 const ANALYSIS_TIMEOUT_MS = 120_000;
 const SLOW_AFTER_MS = 15_000;
@@ -350,6 +350,7 @@ export function DemoApp() {
     async (story: string, prefill: Known, exampleId?: string) => {
       if (!lang) return;
       setFlow({ kind: "busy" });
+      setLiveExample(exampleId); // "See an example case" after a failure opens this one
       const typingId = push({ t: "typing", label: s.reading });
       if (offline) {
         showExample(exampleId);
@@ -379,7 +380,6 @@ export function DemoApp() {
         return;
       }
       const known = { ...knownFromExtracted(view.extracted), ...prefill };
-      setLiveExample(exampleId);
       askNext(view.id, known, { ...prefill });
     },
     [askNext, dropTyping, lang, offline, push, s.quotaCase, s.reading, s.slow, showExample, update],
@@ -829,6 +829,7 @@ export function DemoApp() {
                 }}
                 onRetry={(kind) => {
                   if (kind === "analysis" && pendingCase) void runAnalysis(pendingCase.caseId, pendingCase.stillEmployed);
+                  else if (liveExample) tryExample(liveExample);
                   else startCase();
                 }}
                 onExample={() => showExample(liveExample)}
