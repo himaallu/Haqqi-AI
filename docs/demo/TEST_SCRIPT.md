@@ -1,7 +1,7 @@
 # Demo test script: English, Hindi, Arabic
 
-**Today's demo languages are English and Arabic** (your call, 25 Oct): the picker offers only these two, with the
-other six listed as "coming next". Both have Arabic/English prepared answers, example case and contract X-ray for when
+**Today's demo languages are English and Arabic** (your call, 25 Oct). The other six are in the picker too, marked
+"Coming soon": they open an early preview with a banner saying so. Both have Arabic/English prepared answers, example case and contract X-ray for when
 the free quota is used up. Run the English and Arabic sections first; the Hindi section is for later (to test Hindi
 now, pick it in the main app at `/hi`).
 
@@ -21,6 +21,12 @@ The demo never uses the slower K2 backup (a K2 case takes 2–3 minutes); the ma
 - One slow or failed answer (not the quota) gets a prepared answer with "The live AI didn't answer in time", and the
   next question tries live AI again.
 - The same happens when the server can't be reached ("Haqqi can't reach its server right now…").
+- **Free calls left:** the ☰ menu and the presenter panel show "Free AI calls left today: ≈ N of 80 (estimate)".
+  Haqqi counts its own successful Gemini calls per model and per key, by Google's quota day (midnight US Pacific
+  time, around midday UAE), and refreshes the number after each live answer or case. It can't see calls made with
+  the key elsewhere (eval runs from a laptop). **A new key starts at the full amount:** when you put the new Gemini
+  key in Render (`GEMINI_API_KEY`) before submitting, Render restarts and the count starts again at 80. The raw
+  numbers per model are at https://haqqi-api.onrender.com/v1/demo/status.
 - **Presenter:** with `?presenter=1` the side panel shows "✅ Live AI: available" or "⚠️ … free quota is used up".
   Tapping the logo 5 times forces prepared examples on or off: use it if the venue Wi-Fi is bad.
 

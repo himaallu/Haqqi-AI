@@ -333,3 +333,25 @@ def test_a_timeout_is_not_a_quota_error() -> None:
 
 def test_no_provider_means_no_capacity() -> None:
     assert not LLMClient([]).has_capacity()
+
+
+def test_the_success_hook_sees_each_answered_call_and_never_breaks_one() -> None:
+    seen: list[str] = []
+    replies = iter([httpx.Response(429, headers={"retry-after": "1"}, json={})])
+
+    def handler(request: httpx.Request) -> httpx.Response:
+        return next(replies, reply('{"verdict": "pass", "score": 1}'))
+
+    def hook(provider: Provider) -> None:
+        seen.append(provider.name)
+        raise RuntimeError("database down")
+
+    settings = Settings(_env_file=None, gemini_api_key="g", k2_api_key="k")
+    client = LLMClient(
+        providers_from_settings(settings),
+        http=httpx.Client(transport=httpx.MockTransport(handler)),
+        sleep=_no_sleep,
+        on_success=hook,
+    )
+    assert client.complete("ask", ASK, Verdict).score == 1
+    assert seen == ["gemini:gemini-3.5-flash"]  # the refused call isn't counted
