@@ -8,6 +8,10 @@ import type { Language } from "@/lib/types";
 export type UiLang = "en" | "hi" | "ur" | "ar";
 
 const en = {
+  tryExample: "Try an example",
+  sampleContract: "Sample contract",
+  sampleContractBlurb: "See what Haqqi finds in a contract",
+  checkContract: "Check this contract",
   demoMode: "Prepared examples",
   slow: "This is taking longer than usual. Please wait.",
   slowCase: "Still checking. This can take up to a minute.",
@@ -307,6 +311,10 @@ const ur: Partial<Strings> = {
 };
 
 const ar: Partial<Strings> = {
+  tryExample: "جرّب مثالاً",
+  sampleContract: "عقد نموذجي",
+  sampleContractBlurb: "شاهد ما يجده حقّي في العقد",
+  checkContract: "افحص هذا العقد",
   demoMode: "أمثلة جاهزة",
   slow: "يستغرق هذا وقتاً أطول من المعتاد. انتظر من فضلك.",
   slowCase: "ما زال الفحص جارياً. قد يستغرق ذلك حتى دقيقة.",

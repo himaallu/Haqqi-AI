@@ -27,13 +27,12 @@ import {
   type FollowUp,
 } from "./cards";
 import {
-  AYESHA_STORY,
   CONTRACT_PREFILL,
   DANGER_EXAMPLE,
   EMERGENCY_CONTACTS,
-  EXAMPLE_ANALYSIS,
-  EXAMPLE_ANALYSIS_AR,
-  EXAMPLE_FACTS,
+  SAMPLE_CONTRACT,
+  SITUATIONS,
+  situation,
   MOHRE_CONTACTS,
   PREPARED,
   preparedReply,
@@ -70,14 +69,16 @@ type Msg = { id: number } & (
   | { t: "result"; analysis: Analysis; caseId: string | null; stillEmployed: boolean }
   | { t: "referral"; text: string }
   | { t: "contract"; stage: "intro" | "scanning" | "done" }
+  | { t: "contractDoc" }
+  | { t: "examples" }
 );
 type NewMsg = Msg extends infer M ? (M extends Msg ? Omit<M, "id"> : never) : never;
 
 type Flow =
   | { kind: "idle" }
-  | { kind: "story"; prefill: Known }
+  | { kind: "story"; prefill: Known; exampleId?: string }
   | { kind: "questions"; caseId: string; known: Known; answers: Known; field: Field; msgId: number; returnToFacts: boolean }
-  | { kind: "facts"; caseId: string | null; known: Known; answers: Known; msgId: number }
+  | { kind: "facts"; caseId: string | null; known: Known; answers: Known; msgId: number; exampleId?: string }
   | { kind: "busy" };
 
 const STORE = "haqqi-demo-v1";
@@ -177,6 +178,8 @@ export function DemoApp() {
   const [forcedDemo, setForcedDemo] = useState(false);
   const [quotaOut, setQuotaOut] = useState(false);
   const [quota, setQuota] = useState<DemoStatus | null>(null);
+  // The sample situation behind the current live case, so a quota error mid-case shows its own prepared result.
+  const [liveExample, setLiveExample] = useState<string | undefined>(undefined);
   const [menu, setMenu] = useState(false);
   const [large, setLarge] = useState(false);
   const [helper, setHelper] = useState(false);
@@ -330,21 +333,26 @@ export function DemoApp() {
     [push],
   );
 
-  const showExample = useCallback(() => {
-    const msgId = push(
-      { t: "say", text: s.exampleTag, note: "Ayesha (illustrative)" },
-      { t: "facts", known: EXAMPLE_FACTS, example: true },
-    );
-    setFlow({ kind: "facts", caseId: null, known: EXAMPLE_FACTS, answers: {}, msgId });
-  }, [push, s.exampleTag]);
+  // A sample situation's prepared result (data.ts SITUATIONS): the fallback when live AI isn't available.
+  const showExample = useCallback(
+    (id?: string) => {
+      const sit = situation(id);
+      const msgId = push(
+        { t: "say", text: s.exampleTag, note: `${sit.icon} ${lang === "ar" ? sit.title.ar : sit.title.en} (illustrative)` },
+        { t: "facts", known: sit.facts, example: true },
+      );
+      setFlow({ kind: "facts", caseId: null, known: sit.facts, answers: {}, msgId, exampleId: sit.id });
+    },
+    [lang, push, s.exampleTag],
+  );
 
   const submitStory = useCallback(
-    async (story: string, prefill: Known) => {
+    async (story: string, prefill: Known, exampleId?: string) => {
       if (!lang) return;
       setFlow({ kind: "busy" });
       const typingId = push({ t: "typing", label: s.reading });
       if (offline) {
-        showExample();
+        showExample(exampleId);
         return;
       }
       let view: CaseView;
@@ -357,7 +365,7 @@ export function DemoApp() {
         if (isQuotaError(err)) {
           setQuotaOut(true);
           push({ t: "say", text: s.quotaCase });
-          showExample();
+          showExample(exampleId);
           return;
         }
         setFlow({ kind: "idle" });
@@ -371,6 +379,7 @@ export function DemoApp() {
         return;
       }
       const known = { ...knownFromExtracted(view.extracted), ...prefill };
+      setLiveExample(exampleId);
       askNext(view.id, known, { ...prefill });
     },
     [askNext, dropTyping, lang, offline, push, s.quotaCase, s.reading, s.slow, showExample, update],
@@ -386,6 +395,17 @@ export function DemoApp() {
       setFlow({ kind: "story", prefill });
     },
     [push, s.privacy, s.tellStory, submitStory],
+  );
+
+  // "Try an example": the story appears as the worker's own message, then runs the real case flow.
+  const tryExample = useCallback(
+    (id: string) => {
+      const sit = situation(id);
+      const story = lang === "ar" ? sit.story.ar : sit.story.en;
+      push({ t: "me", text: story });
+      void submitStory(story, {}, sit.id);
+    },
+    [lang, push, submitStory],
   );
 
   const answer = useCallback(
@@ -456,10 +476,10 @@ export function DemoApp() {
       if (quota) {
         setQuotaOut(true);
         push({ t: "say", text: s.quotaCase });
-        showExample();
+        showExample(liveExample);
       }
     },
-    [push, refreshQuota, s.quotaCase, showExample, update],
+    [liveExample, push, refreshQuota, s.quotaCase, showExample, update],
   );
 
   const [pendingCase, setPendingCase] = useState<{ caseId: string; stillEmployed: boolean } | null>(null);
@@ -477,7 +497,8 @@ export function DemoApp() {
         update(progressId, { stages: order.slice(0, i + 1) } as Partial<Msg>);
       }
       setMessages((cur) => cur.filter((m) => m.id !== progressId));
-      push({ t: "result", analysis: lang === "ar" ? EXAMPLE_ANALYSIS_AR : EXAMPLE_ANALYSIS, caseId: null, stillEmployed: false });
+      const sit = situation(flow.exampleId);
+      push({ t: "result", analysis: lang === "ar" ? sit.analysis.ar : sit.analysis.en, caseId: null, stillEmployed: sit.stillEmployed });
       setFlow({ kind: "idle" });
       return;
     }
@@ -509,6 +530,11 @@ export function DemoApp() {
 
   const openContract = useCallback(() => {
     push({ t: "contract", stage: "intro" });
+    setFlow({ kind: "idle" });
+  }, [push]);
+
+  const openSampleContract = useCallback(() => {
+    push({ t: "contractDoc" });
     setFlow({ kind: "idle" });
   }, [push]);
 
@@ -582,13 +608,13 @@ export function DemoApp() {
       if (e.target instanceof HTMLInputElement || e.target instanceof HTMLTextAreaElement || e.target instanceof HTMLSelectElement) return;
       if (e.key === "r" || e.key === "R") reset();
       if (e.key === "1") send(STARTERS.en[1]);
-      if (e.key === "2") startCase(AYESHA_STORY);
+      if (e.key === "2") tryExample("fired");
       if (e.key === "3") openContract();
       if (e.key === "4") send(DANGER_EXAMPLE);
     }
     window.addEventListener("keydown", onKey);
     return () => window.removeEventListener("keydown", onKey);
-  }, [openContract, presenter, reset, send, startCase]);
+  }, [openContract, presenter, reset, send, tryExample]);
 
   function tapLogo() {
     const now = Date.now();
@@ -759,6 +785,8 @@ export function DemoApp() {
                   <Door icon={<FileText className="size-6" />} label={s.doorContract} onClick={openContract} />
                   <Door icon={<AlertTriangle className="size-6" />} label={s.doorProblem} onClick={() => startCase()} tone="warn" />
                 </div>
+                <p className="mt-2 text-sm font-medium text-d-muted">{s.tryExample}</p>
+                <ExamplesGrid lang={lang} s={s} onContract={openSampleContract} onSituation={tryExample} />
                 <p className="mt-2 text-sm font-medium text-d-muted">{s.peopleAsk}</p>
                 <div className="flex flex-wrap gap-2">
                   {starters.map((q, i) => (
@@ -793,11 +821,17 @@ export function DemoApp() {
                 }}
                 onContractStart={scanContract}
                 onContractUse={() => startCase(undefined, CONTRACT_PREFILL)}
+                onSampleContract={openSampleContract}
+                onSituation={tryExample}
+                onCheckSample={() => {
+                  const id = push({ t: "contract", stage: "scanning" });
+                  scanContract(id);
+                }}
                 onRetry={(kind) => {
                   if (kind === "analysis" && pendingCase) void runAnalysis(pendingCase.caseId, pendingCase.stillEmployed);
                   else startCase();
                 }}
-                onExample={showExample}
+                onExample={() => showExample(liveExample)}
                 animate={m.id >= sessionFloor}
                 offline={offline}
                 onFollow={(kind, label) => m.t === "answer" && follow(kind, label, m)}
@@ -810,7 +844,20 @@ export function DemoApp() {
           </div>
 
           <footer className="border-t border-d-line bg-d-card px-3 pt-2 pb-[max(0.75rem,env(safe-area-inset-bottom))]">
-            {messages.length === 0 && <p className="mb-1 text-center text-sm font-medium text-d-primary">{s.micHint}</p>}
+            {messages.length === 0 ? (
+              <p className="mb-1 text-center text-sm font-medium text-d-primary">{s.micHint}</p>
+            ) : (
+              <div className="mb-1 flex justify-center">
+                <button
+                  type="button"
+                  onClick={() => push({ t: "examples" })}
+                  disabled={flow.kind === "busy"}
+                  className="rounded-full border border-d-line px-3 py-1 text-sm text-d-primary hover:bg-d-primary-soft"
+                >
+                  💡 {s.tryExample}
+                </button>
+              </div>
+            )}
             <p className="mb-2 text-center text-[11px] leading-tight text-d-muted">{s.disclaimer}</p>
             <Composer
               value={input}
@@ -943,6 +990,49 @@ function Door({ icon, label, onClick, tone }: { icon: React.ReactNode; label: st
   );
 }
 
+function ExamplesGrid(props: {
+  lang: Language;
+  s: ReturnType<typeof strings>;
+  onContract: () => void;
+  onSituation: (id: string) => void;
+}) {
+  const { lang, s, onContract, onSituation } = props;
+  return (
+    <div className="grid grid-cols-2 gap-2">
+      <ExampleCard icon="📄" title={s.sampleContract} blurb={s.sampleContractBlurb} onClick={onContract} />
+      {SITUATIONS.map((sit) => (
+        <ExampleCard
+          key={sit.id}
+          icon={sit.icon}
+          title={lang === "ar" ? sit.title.ar : sit.title.en}
+          blurb={lang === "ar" ? sit.blurb.ar : sit.blurb.en}
+          onClick={() => onSituation(sit.id)}
+        />
+      ))}
+    </div>
+  );
+}
+
+function ExampleCard({ icon, title, blurb, onClick }: { icon: string; title: string; blurb: string; onClick: () => void }) {
+  return (
+    <button
+      type="button"
+      onClick={onClick}
+      className="demo-in flex min-h-24 flex-col items-start gap-1 rounded-2xl border border-d-line bg-d-card p-3 text-start shadow-sm transition-colors hover:border-d-primary hover:bg-d-primary-soft"
+    >
+      <span aria-hidden className="text-2xl">
+        {icon}
+      </span>
+      <span dir="auto" className="font-medium leading-snug">
+        {title}
+      </span>
+      <span dir="auto" className="text-xs text-d-muted">
+        {blurb}
+      </span>
+    </button>
+  );
+}
+
 function HaqqiBubble({ children }: { children: React.ReactNode }) {
   return (
     <div className="demo-in flex items-start gap-2">
@@ -969,6 +1059,9 @@ type ViewProps = {
   onFix: (text: string) => void;
   onContractStart: (id: number) => void;
   onContractUse: () => void;
+  onCheckSample: () => void;
+  onSampleContract: () => void;
+  onSituation: (id: string) => void;
   onRetry: (kind: "analysis" | "story") => void;
   onExample: () => void;
   animate: boolean;
@@ -1120,6 +1213,26 @@ function MessageView(p: ViewProps) {
             {m.text}
           </p>
           <ContactButtons contacts={MOHRE_CONTACTS} />
+        </div>
+      );
+    case "examples":
+      return <ExamplesGrid lang={p.lang} s={s} onContract={p.onSampleContract} onSituation={p.onSituation} />;
+    case "contractDoc":
+      return (
+        <div className={cn(card, "flex flex-col gap-3")}>
+          <div dir="auto" className="flex flex-col gap-1.5 rounded-xl border border-d-line bg-d-bg p-4 text-sm leading-relaxed shadow-inner">
+            {(p.lang === "ar" ? SAMPLE_CONTRACT.ar : SAMPLE_CONTRACT.en).map((line, i) => (
+              <p key={i} className={i === 0 ? "text-center font-bold tracking-wide" : ""}>
+                {line}
+              </p>
+            ))}
+          </div>
+          <p className="text-xs text-d-muted">{s.sampleTag}</p>
+          {p.active && (
+            <button type="button" className={primaryBtn} onClick={p.onCheckSample}>
+              {s.checkContract}
+            </button>
+          )}
         </div>
       );
     case "contract":

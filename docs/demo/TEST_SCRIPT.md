@@ -43,6 +43,18 @@ the facts card showed: the amount follows the facts.
 **Tick a test only if:** the reply is in the chosen language (law quotes and findings stay in English by design),
 every finding has an article chip that opens the law text, and no amount appears anywhere except the claim card.
 
+## Try-an-example cards (home screen, and "💡 Try an example" above the message box later)
+
+| Card | Expect (live, or prepared when the quota is used up) |
+| --- | --- |
+| 📄 Sample contract | The contract as a document (English or Arabic), then "Check this contract" → the X-ray with 8 rows |
+| 🚪 Fired without notice | Ayesha's story is sent as your message → facts card → **AED 6,229.59** |
+| 💰 Salary not paid for 2 months | Still working, Dubai → **AED 5,000.00**; next steps start with the confidential salary complaint |
+| 🎁 Resigned, gratuity not paid | 6 years at a hotel → **AED 16,056.85** (gratuity, Art. 51 and Art. 53) |
+
+The stories give every fact, so the live AI should ask few or no questions. If the quota runs out mid-case, the card's
+own prepared result appears (not always Ayesha's).
+
 ## English (pick 🇬🇧 English)
 
 | # | Type or tap | Expect |

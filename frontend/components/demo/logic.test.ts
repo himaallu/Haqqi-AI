@@ -1,6 +1,6 @@
 import { describe, expect, it } from "vitest";
 
-import { EXAMPLE_ANALYSIS_AR, PREPARED, preparedReply } from "./data";
+import { EXAMPLE_ANALYSIS_AR, PREPARED, SAMPLE_CONTRACT, SITUATIONS, preparedReply, situation } from "./data";
 import {
   citationLabel,
   display,
@@ -63,6 +63,19 @@ describe("demo logic", () => {
     }
     expect(preparedReply(PREPARED[0], "en").headline).toBe(PREPARED[0].reply.headline);
     expect(EXAMPLE_ANALYSIS_AR.total_aed).toBe("6229.59");
+  });
+
+  it("has sample situations with the calculator's totals, in English and Arabic", () => {
+    const totals = Object.fromEntries(SITUATIONS.map((x) => [x.id, x.analysis.en.total_aed]));
+    expect(totals).toEqual({ fired: "6229.59", unpaid: "5000.00", gratuity: "16056.85" });
+    for (const x of SITUATIONS) {
+      expect(x.analysis.ar.total_aed).toBe(x.analysis.en.total_aed);
+      expect(x.analysis.ar.claim.map((c) => c.amount_aed)).toEqual(x.analysis.en.claim.map((c) => c.amount_aed));
+      expect(x.story.ar).toMatch(/[\u0600-\u06FF]/);
+      expect(x.facts.zone).toBe("mainland");
+    }
+    expect(situation("nope").id).toBe("fired");
+    expect(SAMPLE_CONTRACT.ar).toHaveLength(SAMPLE_CONTRACT.en.length);
   });
 
   it("labels articles", () => {
