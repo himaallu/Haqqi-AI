@@ -28,8 +28,11 @@ export type AskReply = {
 // English only, like the backend's check (haqqi/agents/ask.py); the model's flag covers other languages.
 const DANGER = /\b(beat(s|ing|en)?|hit(s|ting)? me|locked (in|up)|lock(s|ed)? (me|us)|no food|no water|traffick\w*|forced to work|sexual(ly)?|rape\w*|threaten\w*|kill)\b/i;
 
+// Arabic too (today's demo languages are English and Arabic). No \b here: JavaScript's \b only knows ASCII letters.
+const DANGER_AR = /(يضرب|يضربنا|ضربني|ضرب|حبس|محبوس|محبوسين|أغلق\s*علي|اتجار|تحرش|اعتداء|يهدد|تهديد|بدون\s*طعام|بلا\s*طعام|بدون\s*ماء|بلا\s*ماء|العمل\s*القسري)/;
+
 export function isDanger(text: string): boolean {
-  return DANGER.test(text);
+  return DANGER.test(text) || DANGER_AR.test(text);
 }
 
 /** The prepared answer whose keywords best match `text`, or null. */
