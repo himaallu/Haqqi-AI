@@ -12,6 +12,7 @@ from haqqi.api.limits import LimitsMiddleware
 from haqqi.api.transcribe import router as transcribe_router
 from haqqi.config import get_settings
 from haqqi.db import check_db
+from haqqi.llm.client import providers_from_settings
 from haqqi.logs import configure_logging
 
 
@@ -19,6 +20,8 @@ class Health(BaseModel):
     status: Literal["ok"]
     db: Literal["ok", "down"]
     version: str
+    # LLM providers with a key set, in fallback order (names only, never keys): shows K2 is there.
+    llm: list[str]
 
 
 def create_app() -> FastAPI:
@@ -38,8 +41,14 @@ def create_app() -> FastAPI:
     @app.get("/healthz")
     def healthz() -> Health:
         # Liveness stays "ok" even when the DB is down, so the host doesn't restart-loop us.
-        db_ok = check_db(get_settings().database_url)
-        return Health(status="ok", db="ok" if db_ok else "down", version=settings.git_sha)
+        current = get_settings()
+        db_ok = check_db(current.database_url)
+        llm = [
+            p.name
+            for p in providers_from_settings(current)
+            if p.api_key and p.api_key.get_secret_value()
+        ]
+        return Health(status="ok", db="ok" if db_ok else "down", version=settings.git_sha, llm=llm)
 
     app.include_router(cases_router)
     app.include_router(transcribe_router)

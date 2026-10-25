@@ -50,6 +50,10 @@ every finding has an article chip that opens the law text, and no amount appears
 
 ## Also check once
 
+- **The K2 backup is set up:** open https://haqqi-api.onrender.com/healthz. `llm` should list the Gemini models and
+  then `k2`. If `k2` is missing, add `K2_API_KEY` in Render → haqqi-api → Environment, or there is no fallback once
+  the free Gemini quota is used up. When the backup answers, the demo says "This is taking longer than usual…" after
+  15 s and waits (up to 150 s for a question, 3 minutes for reading a story) instead of switching to a prepared answer.
 - Phone in dark mode: the demo stays light. Menu → "Dark mode" switches it; the choice is remembered.
 - Menu → "Delete my chat", then reload: no "Continue your chat?" prompt.
 - Reload mid-conversation: "Continue your chat?" brings it back.
