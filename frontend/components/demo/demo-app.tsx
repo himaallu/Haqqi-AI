@@ -168,7 +168,9 @@ function clearSaved() {
 /** The pitch demo: one conversation with three doors (docs/CHAT_PLAN.md), on the real backend with a fallback. */
 export function DemoApp() {
   const [saved] = useState(loadSaved);
-  const [lang, setLang] = useState<Language | null>(saved?.lang ?? null);
+  // Every visit opens on the language picker, even when a language was saved: the worker (or the next
+  // person at the stand) chooses first. A saved conversation is offered again only in its own language.
+  const [lang, setLang] = useState<Language | null>(null);
   const [messages, setMessages] = useState<Msg[]>([]);
   const [resume, setResume] = useState(Boolean(saved?.messages.length));
   const [flow, setFlow] = useState<Flow>({ kind: "idle" });
@@ -645,6 +647,8 @@ export function DemoApp() {
         <LanguagePicker
           onPick={(l) => {
             setLang(l);
+            if (resume && saved?.lang === l) return; // keep it, so the resume offer can bring it back
+            setResume(false);
             reset();
           }}
         />
