@@ -23,6 +23,8 @@ class Settings(BaseSettings):
         "gemini-3.8-flash",
         "gemini-3.1-flash-lite",
     ]
+    # Free-tier requests per day per Gemini model (flag 18): the demo's "free calls left".
+    gemini_daily_limit_per_model: int = 20
 
     # K2 Horizon hosted API (OpenAI-compatible).
     k2_api_key: SecretStr | None = None

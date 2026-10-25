@@ -167,8 +167,10 @@ class LLMClient:
         providers: Sequence[Provider],
         http: httpx.Client | None = None,
         sleep: Callable[[float], None] = time.sleep,
+        on_success: Callable[[Provider], None] | None = None,
     ) -> None:
         self._providers = [p for p in providers if p.api_key and p.api_key.get_secret_value()]
+        self._on_success = on_success  # e.g. counting free-tier calls (haqqi/usage.py)
         self._http = http or httpx.Client(timeout=TIMEOUT_S)
         self._sleep = sleep
         self._lock = threading.Lock()
@@ -176,8 +178,17 @@ class LLMClient:
         self._parked_until: dict[str, float] = {}  # provider name -> time.monotonic() deadline
 
     @classmethod
-    def from_settings(cls, settings: Settings) -> "LLMClient":
-        return cls(providers_from_settings(settings))
+    def from_settings(
+        cls, settings: Settings, on_success: Callable[[Provider], None] | None = None
+    ) -> "LLMClient":
+        return cls(providers_from_settings(settings), on_success=on_success)
+
+    @property
+    def providers(self) -> list[Provider]:
+        return list(self._providers)
+
+    def is_parked(self, provider: Provider) -> bool:
+        return self._parked_until.get(provider.name, 0.0) > time.monotonic()
 
     def has_capacity(self) -> bool:
         """False when no provider is configured or every one is parked over its daily quota."""
@@ -296,6 +307,11 @@ class LLMClient:
             return _Retry(1.0)
         usage = body.get("usage") or {}
         traced("ok", usage)
+        if self._on_success is not None:
+            try:
+                self._on_success(provider)
+            except Exception:  # counting must never cost the worker an answer
+                log.warning("llm %s: usage hook failed", stage)
         log.info(
             "llm %s: %s ok in %.1fs, tokens in=%s out=%s",
             stage,

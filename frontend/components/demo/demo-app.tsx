@@ -81,6 +81,15 @@ type Flow =
   | { kind: "busy" };
 
 const STORE = "haqqi-demo-v1";
+
+/** GET /v1/demo/status (backend/haqqi/api/demo.py). calls_left is Haqqi's own estimate. */
+type DemoStatus = { live: boolean; calls_left: number | null; calls_limit: number };
+
+async function fetchStatus(): Promise<DemoStatus> {
+  const resp = await demoFetch(apiUrl("/v1/demo/status"), { cache: "no-store" });
+  if (!resp.ok) throw new ApiError(resp.status, null);
+  return (await resp.json()) as DemoStatus;
+}
 // Pictures for the starter questions, in STARTERS order: salary, passport, fees, overtime, probation, notice,
 // gratuity, sick leave.
 const STARTER_ICONS = ["💰", "🛂", "💸", "⏰", "🧪", "📅", "🎁", "🤒"];
@@ -167,6 +176,7 @@ export function DemoApp() {
   const [awake, setAwake] = useState<"waking" | "up" | "down">("waking");
   const [forcedDemo, setForcedDemo] = useState(false);
   const [quotaOut, setQuotaOut] = useState(false);
+  const [quota, setQuota] = useState<DemoStatus | null>(null);
   const [menu, setMenu] = useState(false);
   const [large, setLarge] = useState(false);
   const [helper, setHelper] = useState(false);
@@ -198,14 +208,26 @@ export function DemoApp() {
       .then(async () => {
         if (!live) return;
         setAwake("up");
-        const resp = await demoFetch(apiUrl("/v1/demo/status"), { cache: "no-store" });
-        const status = (await resp.json()) as { live: boolean };
-        if (live && !status.live) setQuotaOut(true);
+        const status = await fetchStatus();
+        if (!live) return;
+        setQuota(status);
+        if (!status.live) setQuotaOut(true);
       })
       .catch(() => live && setAwake("down"));
     return () => {
       live = false;
     };
+  }, []);
+
+  // The free-calls-left estimate, refreshed after each live answer or case. Errors keep the last value.
+  const refreshQuota = useCallback(() => {
+    fetchStatus().then(
+      (status) => {
+        setQuota(status);
+        if (!status.live) setQuotaOut(true);
+      },
+      () => undefined,
+    );
   }, []);
 
   useEffect(() => {
@@ -263,6 +285,7 @@ export function DemoApp() {
           else missed = true;
         } finally {
           clearTimeout(slow);
+          refreshQuota();
         }
       }
       const out: NewMsg[] = [];
@@ -285,7 +308,7 @@ export function DemoApp() {
       if (readAloud && reply.kind === "answer") speak(`${reply.headline} ${reply.answer}`, lang);
       else if (readAloud) speak(reply.kind === "off_topic" ? s.offTopic : s.unsure, lang);
     },
-    [lang, offline, push, readAloud, s.liveMissed, s.offTopic, s.searching, s.slow, s.unsure, update],
+    [lang, offline, push, readAloud, refreshQuota, s.liveMissed, s.offTopic, s.searching, s.slow, s.unsure, update],
   );
 
   // Case door
@@ -410,6 +433,7 @@ export function DemoApp() {
             setMessages((cur) => cur.filter((m) => m.id !== progressId));
             if (!analysis.in_scope) push({ t: "referral", text: analysis.referral ?? "" });
             else push({ t: "result", analysis, caseId, stillEmployed });
+            refreshQuota();
           } else if (event === "error") {
             throw new Error(data);
           } else {
@@ -435,7 +459,7 @@ export function DemoApp() {
         showExample();
       }
     },
-    [push, s.quotaCase, showExample, update],
+    [push, refreshQuota, s.quotaCase, showExample, update],
   );
 
   const [pendingCase, setPendingCase] = useState<{ caseId: string; stillEmployed: boolean } | null>(null);
@@ -634,8 +658,16 @@ export function DemoApp() {
               {prepared === "quota" ? s.quotaBanner : prepared === "down" ? s.offlineBanner : s.forcedBanner}
             </p>
           )}
+          {!DEMO_LANGUAGES.includes(lang) && (
+            <p role="status" lang="en" dir="ltr" className="border-b border-d-line bg-d-primary-soft px-4 py-2 text-sm leading-snug text-d-primary">
+              {info.native} is coming soon: this is an early preview. English and العربية are ready today.
+            </p>
+          )}
           {menu && (
-            <div className="absolute end-3 top-14 z-20 flex w-60 flex-col gap-1 rounded-2xl border border-d-line bg-d-card p-2 shadow-lg">
+            <div className="absolute end-3 top-14 z-20 flex w-64 flex-col gap-1 rounded-2xl border border-d-line bg-d-card p-2 shadow-lg">
+              <p className="rounded-xl bg-d-primary-soft px-3 py-2 text-sm text-d-primary" dir="ltr">
+                {quotaLine(quota, quotaOut)}
+              </p>
               <label className="flex min-h-11 items-center justify-between gap-2 px-3">
                 {s.largeText}
                 <input type="checkbox" checked={large} onChange={(e) => setLarge(e.target.checked)} className="size-5 accent-d-primary" />
@@ -827,9 +859,11 @@ export function DemoApp() {
                       ? "⏳ Live AI: waking the server…"
                       : "✅ Live AI: available"}
             </p>
+            <p className="text-base font-semibold text-d-ink">{quotaLine(quota, quotaOut)}</p>
             <p>
               Runs on a free AI quota (about 80 AI calls a day; a question uses 1, a case 4–6). Beyond it, Haqqi shows
-              prepared, law-checked examples, so the demo never stops. Resets around midday UAE time.
+              prepared, law-checked examples, so the demo never stops. Resets around midday UAE time. The count is
+              Haqqi&apos;s own (calls made with the key elsewhere aren&apos;t seen); a new key starts at the full amount.
             </p>
             <p>Keys: 1 passport · 2 Ayesha · 3 contract · 4 danger · R reset · tap logo ×5 = prepared examples on/off</p>
           </div>
@@ -840,10 +874,44 @@ export function DemoApp() {
   );
 }
 
+/** "≈ 52 of 80 free AI calls left today" (an estimate), for the presenter panel and the menu. */
+function quotaLine(quota: DemoStatus | null, quotaOut: boolean): string {
+  if (quotaOut) return `Free AI calls left today: 0 of ${quota?.calls_limit ?? 80} (prepared examples)`;
+  if (!quota || quota.calls_left === null) return "Free AI calls left today: checking…";
+  return `Free AI calls left today: ≈ ${quota.calls_left} of ${quota.calls_limit} (estimate)`;
+}
+
 // Today's demo languages. The others are built (UI text, voice, answers) but wait for a native review.
 const DEMO_LANGUAGES: Language[] = ["en", "ar"];
 
 function LanguagePicker({ onPick }: { onPick: (l: Language) => void }) {
+  const option = (l: (typeof LANGUAGES)[number], soon: boolean) => (
+    <li key={l.code}>
+      <button
+        type="button"
+        lang={l.code}
+        dir={l.dir}
+        onClick={() => onPick(l.code)}
+        className={cn(
+          "flex min-h-14 w-full items-center gap-3 rounded-2xl border bg-d-card px-4 py-3 text-start text-lg shadow-sm hover:border-d-primary",
+          soon ? "border-dashed border-d-line" : "border-d-line",
+        )}
+      >
+        <span aria-hidden className="text-2xl">
+          {l.flag}
+        </span>
+        <span className="flex min-w-0 flex-1 flex-col items-start">
+          <span className="font-medium">{l.native}</span>
+          {l.native !== l.english && <span className="text-sm text-d-muted">{l.english}</span>}
+          {soon && (
+            <span lang="en" dir="ltr" className="mt-1 rounded-full bg-d-warn-bg px-2 py-0.5 text-xs font-medium text-d-warn">
+              Coming soon
+            </span>
+          )}
+        </span>
+      </button>
+    </li>
+  );
   return (
     <div className="flex flex-1 flex-col gap-4 overflow-y-auto px-4 py-8">
       <p className="text-3xl font-semibold text-d-primary">
@@ -852,33 +920,9 @@ function LanguagePicker({ onPick }: { onPick: (l: Language) => void }) {
       <p className="text-d-muted">
         Choose your language · <span lang="ar">اختر لغتك</span>
       </p>
-      <ul className="flex flex-col gap-2">
-        {LANGUAGES.filter((l) => DEMO_LANGUAGES.includes(l.code)).map((l) => (
-          <li key={l.code}>
-            <button
-              type="button"
-              lang={l.code}
-              dir={l.dir}
-              onClick={() => onPick(l.code)}
-              className="flex min-h-14 w-full items-center gap-3 rounded-2xl border border-d-line bg-d-card px-4 py-3 text-start text-lg shadow-sm hover:border-d-primary"
-            >
-              <span aria-hidden className="text-2xl">
-                {l.flag}
-              </span>
-              <span className="flex flex-col">
-                <span className="font-medium">{l.native}</span>
-                {l.native !== l.english && <span className="text-sm text-d-muted">{l.english}</span>}
-              </span>
-            </button>
-          </li>
-        ))}
-      </ul>
-      <p className="mt-2 text-sm text-d-muted">
-        Coming next:{" "}
-        {LANGUAGES.filter((l) => !DEMO_LANGUAGES.includes(l.code))
-          .map((l) => l.native)
-          .join(" · ")}
-      </p>
+      <ul className="flex flex-col gap-2">{LANGUAGES.filter((l) => DEMO_LANGUAGES.includes(l.code)).map((l) => option(l, false))}</ul>
+      <p className="mt-2 text-sm font-medium text-d-muted">Coming soon · early preview</p>
+      <ul className="grid grid-cols-2 gap-2">{LANGUAGES.filter((l) => !DEMO_LANGUAGES.includes(l.code)).map((l) => option(l, true))}</ul>
     </div>
   );
 }

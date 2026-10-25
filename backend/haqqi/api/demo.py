@@ -19,13 +19,15 @@ from pydantic import AfterValidator, BaseModel, ConfigDict, Field
 from haqqi import tracing
 from haqqi.agents.ask import Kind, run_ask
 from haqqi.agents.messages import clause_ref
-from haqqi.api.cases import DbUrl, EmbedderDep, Llm, _llm_http_error, demo_llm
+from haqqi.api.cases import DbUrl, EmbedderDep, Llm, _llm_http_error, demo_llm, usage_store
+from haqqi.config import get_settings
 from haqqi.core.untrusted import clean_text
 from haqqi.llm.client import LLMError
 from haqqi.models import Language
 from haqqi.rag.embed import Embedder
 from haqqi.rag.lawdata import load_law_pack
 from haqqi.rag.retrieve import RetrievedChunk, retrieve
+from haqqi.usage import key_id
 
 log = logging.getLogger(__name__)
 router = APIRouter(prefix="/v1/demo")
@@ -78,13 +80,49 @@ class AskResponse(BaseModel):
     contacts: list[Contact]  # emergency numbers first when safety is true
 
 
+class ModelQuota(BaseModel):
+    model: str
+    used: int | None  # Haqqi's successful calls today with this key; None if not readable
+    limit: int
+    parked: bool  # Google refused it for its daily quota
+
+
 class DemoStatus(BaseModel):
     live: bool  # false: no Gemini key, or every free model is over its daily quota
+    # Estimate: the daily limits minus Haqqi's own calls today with this key (a new key starts
+    # at the full limit). It can't see calls made with the key outside Haqqi.
+    calls_left: int | None
+    calls_limit: int
+    models: list[ModelQuota]
 
 
 @router.get("/status")
 def status() -> DemoStatus:
-    return DemoStatus(live=demo_llm().has_capacity())
+    client = demo_llm()
+    limit = get_settings().gemini_daily_limit_per_model
+    providers = client.providers
+    store = usage_store()
+    counts = None
+    if providers and store is not None and providers[0].api_key is not None:
+        counts = store.today(key_id(providers[0].api_key.get_secret_value()))
+    models = [
+        ModelQuota(
+            model=p.model,
+            used=None if counts is None else counts.get(p.model, 0),
+            limit=limit,
+            parked=client.is_parked(p),
+        )
+        for p in providers
+    ]
+    left = None
+    if counts is not None:
+        left = sum(0 if m.parked else max(0, m.limit - (m.used or 0)) for m in models)
+    return DemoStatus(
+        live=client.has_capacity(),
+        calls_left=left,
+        calls_limit=limit * len(models),
+        models=models,
+    )
 
 
 def get_search(embedder: EmbedderDep, db_url: DbUrl) -> Search:

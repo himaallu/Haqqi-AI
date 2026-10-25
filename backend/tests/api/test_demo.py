@@ -133,7 +133,7 @@ def test_the_demo_header_selects_the_gemini_only_client(monkeypatch: pytest.Monk
     assert isinstance(demo_client, LLMClient) and isinstance(main_client, LLMClient)
     assert [p.name for p in demo_client._providers if p.name == "k2"] == []
     assert "k2" in [p.name for p in main_client._providers]
-    assert live == {"live": True}
+    assert live["live"] is True
 
 
 def test_status_is_not_live_without_a_gemini_key(monkeypatch: pytest.MonkeyPatch) -> None:
@@ -148,4 +148,63 @@ def test_status_is_not_live_without_a_gemini_key(monkeypatch: pytest.MonkeyPatch
         get_settings.cache_clear()
         cases.demo_llm.cache_clear()
 
-    assert live == {"live": False}
+    assert live["live"] is False
+    assert live["models"] == [] and live["calls_left"] is None
+
+
+class FakeStore:
+    def __init__(self, counts: dict[str, int] | None) -> None:
+        self.counts = counts
+        self.keys: list[str] = []
+
+    def today(self, key: str) -> dict[str, int] | None:
+        self.keys.append(key)
+        return self.counts
+
+
+def test_status_estimates_the_free_calls_left_for_this_key(
+    monkeypatch: pytest.MonkeyPatch,
+) -> None:
+    from haqqi.config import get_settings
+
+    monkeypatch.setenv("GEMINI_API_KEY", "a-new-gemini-key")
+    get_settings.cache_clear()
+    cases.demo_llm.cache_clear()
+    store = FakeStore({"gemini-3-flash-preview": 15, "gemini-3.5-flash": 25})
+    monkeypatch.setattr(demo, "usage_store", lambda: store)
+    try:
+        client = cases.demo_llm()
+        # Google refused this one for its daily quota.
+        client._parked_until["gemini:gemini-3.8-flash"] = float("inf")
+        body = TestClient(create_app()).get("/v1/demo/status").json()
+    finally:
+        get_settings.cache_clear()
+        cases.demo_llm.cache_clear()
+
+    used = {m["model"]: (m["used"], m["parked"]) for m in body["models"]}
+    assert used == {
+        "gemini-3-flash-preview": (15, False),
+        "gemini-3.5-flash": (25, False),
+        "gemini-3.8-flash": (0, True),
+        "gemini-3.1-flash-lite": (0, False),
+    }
+    # 5 left + 0 (over its limit) + 0 (parked) + 20 untouched
+    assert (body["calls_left"], body["calls_limit"]) == (25, 80)
+    assert store.keys and "a-new-gemini-key" not in store.keys[0]  # a fingerprint, not the key
+    assert "a-new-gemini-key" not in str(body)
+
+
+def test_status_without_readable_counts_gives_no_estimate(monkeypatch: pytest.MonkeyPatch) -> None:
+    from haqqi.config import get_settings
+
+    monkeypatch.setenv("GEMINI_API_KEY", "g")
+    get_settings.cache_clear()
+    cases.demo_llm.cache_clear()
+    monkeypatch.setattr(demo, "usage_store", lambda: FakeStore(None))
+    try:
+        body = TestClient(create_app()).get("/v1/demo/status").json()
+    finally:
+        get_settings.cache_clear()
+        cases.demo_llm.cache_clear()
+
+    assert body["live"] is True and body["calls_left"] is None

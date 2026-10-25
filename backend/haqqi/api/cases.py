@@ -38,6 +38,7 @@ from haqqi.llm.client import (
     LLMClient,
     LLMError,
     LLMUnavailable,
+    Provider,
     providers_from_settings,
 )
 from haqqi.models import Analysis, CaseFacts, ExtractedFacts, IssueType
@@ -45,6 +46,7 @@ from haqqi.pdf.letter import Identity, LetterError, build_letter, render_pdf
 from haqqi.rag.embed import Embedder, get_embedder
 from haqqi.rag.lawdata import load_law_pack
 from haqqi.rag.retrieve import RetrievedChunk, retrieve
+from haqqi.usage import UsageStore, key_id
 
 log = logging.getLogger(__name__)
 router = APIRouter(prefix="/v1/cases")
@@ -72,8 +74,23 @@ class CaseView(BaseModel):
 
 
 @cache
+def usage_store() -> UsageStore | None:
+    url = get_settings().database_url
+    return UsageStore(url) if url else None
+
+
+def count_gemini_call(provider: Provider) -> None:
+    """Counts a successful free-tier Gemini call (haqqi/usage.py), off the request's path."""
+    store = usage_store()
+    if store is None or provider.api_key is None or not provider.name.startswith("gemini:"):
+        return
+    key = key_id(provider.api_key.get_secret_value())
+    threading.Thread(target=store.record, args=(key, provider.model), daemon=True).start()
+
+
+@cache
 def _main_llm() -> LLMClient:
-    return LLMClient.from_settings(get_settings())
+    return LLMClient.from_settings(get_settings(), on_success=count_gemini_call)
 
 
 @cache
@@ -84,7 +101,9 @@ def demo_llm() -> LLMClient:
     demo gets a quota error at once and shows its prepared examples (docs/demo/TEST_SCRIPT.md).
     """
     providers = providers_from_settings(get_settings())
-    return LLMClient([p for p in providers if p.name.startswith("gemini:")])
+    return LLMClient(
+        [p for p in providers if p.name.startswith("gemini:")], on_success=count_gemini_call
+    )
 
 
 def get_llm(x_haqqi_demo: Annotated[str | None, Header()] = None) -> Completer:
