@@ -371,6 +371,12 @@ export function DemoApp() {
           showExample(exampleId);
           return;
         }
+        if (exampleId) {
+          // A sample situation never dead-ends: any live failure shows its prepared version.
+          push({ t: "say", text: s.liveMissedCase });
+          showExample(exampleId);
+          return;
+        }
         setFlow({ kind: "idle" });
         push({ t: "failed", retry: "story" });
         return;
@@ -384,7 +390,7 @@ export function DemoApp() {
       const known = { ...knownFromExtracted(view.extracted), ...prefill };
       askNext(view.id, known, { ...prefill });
     },
-    [askNext, dropTyping, lang, offline, push, s.quotaCase, s.reading, s.slow, showExample, update],
+    [askNext, dropTyping, lang, offline, push, s.liveMissedCase, s.quotaCase, s.reading, s.slow, showExample, update],
   );
 
   const startCase = useCallback(
@@ -447,6 +453,7 @@ export function DemoApp() {
       const controller = new AbortController();
       const watchdog = setTimeout(() => controller.abort(), ANALYSIS_TIMEOUT_MS);
       let quota = false;
+      let failed = false;
       try {
         await analyzeCase(
           caseId,
@@ -472,7 +479,8 @@ export function DemoApp() {
       } catch (err) {
         setMessages((cur) => cur.filter((m) => m.id !== progressId));
         quota = isQuotaError(err);
-        if (!quota) push({ t: "failed", retry: "analysis" });
+        if (!quota && !liveExample) push({ t: "failed", retry: "analysis" });
+        failed = true;
       }
       clearTimeout(slow);
       clearTimeout(watchdog);
@@ -481,9 +489,12 @@ export function DemoApp() {
         setQuotaOut(true);
         push({ t: "say", text: s.quotaCase });
         showExample(liveExample);
+      } else if (failed && liveExample) {
+        push({ t: "say", text: s.liveMissedCase });
+        showExample(liveExample);
       }
     },
-    [liveExample, push, refreshQuota, s.quotaCase, showExample, update],
+    [liveExample, push, refreshQuota, s.liveMissedCase, s.quotaCase, showExample, update],
   );
 
   const [pendingCase, setPendingCase] = useState<{ caseId: string; stillEmployed: boolean } | null>(null);
@@ -521,6 +532,11 @@ export function DemoApp() {
         setFlow({ kind: "facts", caseId, known, answers, msgId });
         return;
       }
+      if (liveExample) {
+        push({ t: "say", text: s.liveMissedCase });
+        showExample(liveExample);
+        return;
+      }
       push({ t: "failed", retry: "analysis" });
       setFlow({ kind: "idle" });
       return;
@@ -528,7 +544,7 @@ export function DemoApp() {
     const stillEmployed = known.termination === "still_employed";
     setPendingCase({ caseId, stillEmployed });
     await runAnalysis(caseId, stillEmployed);
-  }, [flow, lang, push, runAnalysis, s.badFacts, update]);
+  }, [flow, lang, liveExample, push, runAnalysis, s.badFacts, s.liveMissedCase, showExample, update]);
 
   // Contract door
 
