@@ -55,6 +55,28 @@ every finding has an article chip that opens the law text, and no amount appears
 The stories give every fact, so the live AI should ask few or no questions. If the quota runs out mid-case, the card's
 own prepared result appears (not always Ayesha's).
 
+## Guided tour (for reviewers opening the link on their own)
+
+Share **https://haqqi-ai.vercel.app/demo?tour=1**: after the language is picked, it always offers a 2-minute tour.
+Without `?tour`, the offer shows on a visitor's first visit only; anyone can start it again from the home screen
+("🧭 New here? Take the 2-minute guided tour") or the menu (☰). A guide card under the header explains each step and
+an orange ring shows what to tap; steps move on by themselves once that happens (English and Arabic text).
+
+| Step | What the reviewer taps | Moves on when |
+| --- | --- | --- |
+| 1 Welcome | Start the tour | (button) |
+| 2 Ask a question | "Can my company keep my passport?" | an answer (or "not sure") appears |
+| 3 The answer | Next | (button) |
+| 4 Check a contract | the Sample contract card | the contract appears |
+| 5 The contract | Check this contract | the check finishes |
+| 6 Every clause checked | Next | (button) |
+| 7 Something went wrong | "Fired without notice" | the facts card appears |
+| 8 The facts | Yes, check my case | the result appears (AED 6,229.59) |
+| 9 Rights and claim | Next | (button) |
+| 10 Wrap-up | Finish | (button) |
+
+The tour uses the live AI when free calls are left; a failed live step falls back to the prepared version.
+
 ## English (pick 🇬🇧 English)
 
 | # | Type or tap | Expect |

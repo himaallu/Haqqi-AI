@@ -114,6 +114,7 @@ input[type="date"]::-webkit-date-and-time-value {
   --d-ok-bg: #e6f4ec;
   --d-me: #0f5c5a;
   --d-on-me: #ffffff;
+  --d-accent: #d98a1f; /* the guided tour's highlight */
   color-scheme: light;
 }
 
@@ -136,6 +137,7 @@ input[type="date"]::-webkit-date-and-time-value {
   --d-ok-bg: #14301f;
   --d-me: #1f6f6b;
   --d-on-me: #ffffff;
+  --d-accent: #e8a23a;
 }
 
 @theme inline {
@@ -155,6 +157,7 @@ input[type="date"]::-webkit-date-and-time-value {
   --color-d-ok-bg: var(--d-ok-bg);
   --color-d-me: var(--d-me);
   --color-d-on-me: var(--d-on-me);
+  --color-d-accent: var(--d-accent);
 }
 
 @keyframes demo-in {

@@ -53,6 +53,8 @@ import {
   type LawClause,
 } from "./logic";
 import { strings, uiLang } from "./strings";
+import { stepDone, TOUR } from "./tour";
+import { TourGuide } from "./tour-guide";
 
 type Msg = { id: number } & (
   | { t: "me"; text: string; voice?: boolean }
@@ -95,6 +97,7 @@ async function fetchStatus(): Promise<DemoStatus> {
 // gratuity, sick leave.
 const STARTER_ICONS = ["💰", "🛂", "💸", "⏰", "🧪", "📅", "🎁", "🤒"];
 const THEME = "haqqi-demo-theme";
+const TOUR_SEEN = "haqqi-demo-tour-seen";
 // The demo runs on the free Gemini quota only (the backend skips K2 for requests with X-Haqqi-Demo, because a K2 case
 // takes minutes). Once the quota is used up, or the live AI doesn't answer in time, the demo shows its prepared,
 // law-checked examples instead, so there is always something to show (docs/demo/TEST_SCRIPT.md).
@@ -197,6 +200,16 @@ export function DemoApp() {
   });
   const [toast, setToast] = useState<string | null>(null);
   const [presenter] = useState(() => new URLSearchParams(window.location.search).has("presenter"));
+  // The guided tour: offered on a first visit (or always with ?tour in the link), and from the home screen and menu.
+  const [tour, setTour] = useState<{ i: number; since: number } | null>(null);
+  const [tourOffer, setTourOffer] = useState(() => {
+    try {
+      return new URLSearchParams(window.location.search).has("tour") || localStorage.getItem(TOUR_SEEN) !== "1";
+    } catch {
+      return true;
+    }
+  });
+  const frame = useRef<HTMLDivElement>(null);
   const nextId = useRef(1);
   const logoTaps = useRef<number[]>([]);
   const scroller = useRef<HTMLDivElement>(null);
@@ -622,6 +635,41 @@ export function DemoApp() {
     clearSaved();
   }, []);
 
+  const goTo = useCallback(
+    (i: number) => {
+      if (i >= TOUR.length) {
+        setTour(null);
+        return;
+      }
+      const step = TOUR[i];
+      const since = nextId.current;
+      if (step.enter === "examples") push({ t: "examples" });
+      if (step.enter === "situations") push({ t: "examples", situationsOnly: true });
+      setTour({ i, since });
+    },
+    [push],
+  );
+
+  const startTour = useCallback(() => {
+    setMenu(false);
+    setTourOffer(false);
+    try {
+      localStorage.setItem(TOUR_SEEN, "1");
+    } catch {
+      // it will just be offered again next time
+    }
+    reset();
+    setResume(false);
+    setTour({ i: 0, since: nextId.current });
+  }, [reset]);
+
+  // A step that waits for something to happen (an answer, the facts card...) moves on shortly after it appears.
+  useEffect(() => {
+    if (!tour || !stepDone(TOUR[tour.i], messages, tour.since)) return;
+    const timer = setTimeout(() => goTo(tour.i + 1), 900);
+    return () => clearTimeout(timer);
+  }, [goTo, messages, tour]);
+
   useEffect(() => {
     if (!presenter) return;
     function onKey(e: KeyboardEvent) {
@@ -657,6 +705,7 @@ export function DemoApp() {
 
   const phone = (
     <div
+      ref={frame}
       lang={lang ?? "en"}
       dir={info.dir}
       className="relative flex h-dvh w-full flex-col overflow-hidden bg-d-bg text-d-ink lg:h-[844px] lg:w-[390px] lg:rounded-[44px] lg:border-[10px] lg:border-[#151a1a] lg:shadow-2xl"
@@ -665,6 +714,7 @@ export function DemoApp() {
         <LanguagePicker
           onPick={(l) => {
             setLang(l);
+            setTour(null);
             if (resume && saved?.lang === l) return; // keep it, so the resume offer can bring it back
             setResume(false);
             reset();
@@ -744,6 +794,9 @@ export function DemoApp() {
                   className="size-5 accent-d-primary"
                 />
               </label>
+              <button type="button" className="min-h-11 rounded-xl px-3 text-start text-d-primary hover:bg-d-primary-soft" onClick={startTour}>
+                {s.tourMenu}
+              </button>
               <button
                 type="button"
                 className="min-h-11 rounded-xl px-3 text-start text-d-danger hover:bg-d-danger-bg"
@@ -802,6 +855,15 @@ export function DemoApp() {
 
             {messages.length === 0 && (
               <>
+                {!tour && (
+                  <button
+                    type="button"
+                    onClick={startTour}
+                    className="flex min-h-11 items-center justify-center rounded-full border-2 border-d-accent bg-d-card px-4 py-2 text-sm font-semibold text-d-ink hover:bg-d-primary-soft"
+                  >
+                    {s.tourHome}
+                  </button>
+                )}
                 <div className="flex flex-col gap-2">
                   <Door icon={<HelpCircle className="size-6" />} label={s.doorAsk} onClick={() => document.getElementById("demo-input")?.focus()} />
                   <Door icon={<FileText className="size-6" />} label={s.doorContract} onClick={openContract} />
@@ -812,7 +874,7 @@ export function DemoApp() {
                 <p className="mt-2 text-sm font-medium text-d-muted">{s.peopleAsk}</p>
                 <div className="flex flex-wrap gap-2">
                   {starters.map((q, i) => (
-                    <button key={q} type="button" onClick={() => send(q)} className="flex min-h-11 items-center gap-2 rounded-full border border-d-line bg-d-card px-4 py-2 text-start text-sm hover:border-d-primary">
+                    <button key={q} type="button" data-tour={`starter-${i}`} onClick={() => send(q)} className="flex min-h-11 items-center gap-2 rounded-full border border-d-line bg-d-card px-4 py-2 text-start text-sm hover:border-d-primary">
                       <span aria-hidden className="text-lg">
                         {STARTER_ICONS[i] ?? "❓"}
                       </span>
@@ -824,7 +886,7 @@ export function DemoApp() {
             )}
 
             {messages.map((m) => (
-              <div key={m.id} data-msg={m.id} className="scroll-mt-3">
+              <div key={m.id} data-msg={m.id} data-type={m.t} className="scroll-mt-3">
               <MessageView
                 m={m}
                 active={m.id === activeId || (m.id === lastId && flow.kind === "idle")}
@@ -897,6 +959,50 @@ export function DemoApp() {
           {sheet && <LawSheet clause={sheet} onClose={() => setSheet(null)} s={s} />}
           {toast && (
             <div className="absolute inset-x-0 bottom-28 z-40 mx-auto w-fit rounded-full bg-d-ink px-4 py-2 text-sm text-d-bg shadow-lg">{toast}</div>
+          )}
+          {tour && (
+            <TourGuide
+              step={TOUR[tour.i]}
+              index={tour.i}
+              total={TOUR.length}
+              lang={uiLang(lang)}
+              waiting={
+                flow.kind === "busy" ||
+                messages.some((m) => m.t === "typing" || m.t === "progress" || (m.t === "contract" && m.stage === "scanning"))
+              }
+              frame={frame}
+              s={s}
+              onNext={() => goTo(tour.i + 1)}
+              onSkip={() => setTour(null)}
+            />
+          )}
+          {tourOffer && !tour && !resume && messages.length === 0 && (
+            <div className="absolute inset-0 z-40 flex items-end bg-black/40 p-3 lg:items-center">
+              <div role="dialog" aria-label={s.tourOfferTitle} className="demo-in flex w-full flex-col gap-3 rounded-3xl bg-d-card p-5 shadow-2xl">
+                <p className="text-3xl" aria-hidden>
+                  🧭
+                </p>
+                <p className="text-lg font-semibold text-d-ink">{s.tourOfferTitle}</p>
+                <p className="text-sm leading-relaxed text-d-ink">{s.tourOfferBody}</p>
+                <button type="button" className={primaryBtn} onClick={startTour}>
+                  {s.tourOfferYes}
+                </button>
+                <button
+                  type="button"
+                  className={ghostBtn}
+                  onClick={() => {
+                    setTourOffer(false);
+                    try {
+                      localStorage.setItem(TOUR_SEEN, "1");
+                    } catch {
+                      // it will just be offered again next time
+                    }
+                  }}
+                >
+                  {s.tourOfferNo}
+                </button>
+              </div>
+            </div>
           )}
         </>
       )}
@@ -1022,10 +1128,11 @@ function ExamplesGrid(props: {
   const { lang, s, onContract, onSituation } = props;
   return (
     <div className="grid grid-cols-2 gap-2">
-      {onContract && <ExampleCard icon="📄" title={s.sampleContract} blurb={s.sampleContractBlurb} onClick={onContract} />}
+      {onContract && <ExampleCard tour="example-contract" icon="📄" title={s.sampleContract} blurb={s.sampleContractBlurb} onClick={onContract} />}
       {SITUATIONS.map((sit) => (
         <ExampleCard
           key={sit.id}
+          tour={`example-${sit.id}`}
           icon={sit.icon}
           title={lang === "ar" ? sit.title.ar : sit.title.en}
           blurb={lang === "ar" ? sit.blurb.ar : sit.blurb.en}
@@ -1036,10 +1143,12 @@ function ExamplesGrid(props: {
   );
 }
 
-function ExampleCard({ icon, title, blurb, onClick }: { icon: string; title: string; blurb: string; onClick: () => void }) {
+function ExampleCard(props: { tour: string; icon: string; title: string; blurb: string; onClick: () => void }) {
+  const { tour, icon, title, blurb, onClick } = props;
   return (
     <button
       type="button"
+      data-tour={tour}
       onClick={onClick}
       className="demo-in flex min-h-24 flex-col items-start gap-1 rounded-2xl border border-d-line bg-d-card p-3 text-start shadow-sm transition-colors hover:border-d-primary hover:bg-d-primary-soft"
     >
@@ -1259,7 +1368,7 @@ function MessageView(p: ViewProps) {
           </div>
           <p className="text-xs text-d-muted">{s.sampleTag}</p>
           {p.active && (
-            <button type="button" className={primaryBtn} onClick={p.onCheckSample}>
+            <button type="button" data-tour="check-contract" className={primaryBtn} onClick={p.onCheckSample}>
               {s.checkContract}
             </button>
           )}
