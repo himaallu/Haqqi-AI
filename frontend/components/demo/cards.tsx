@@ -504,7 +504,7 @@ export function FactsCard(props: {
         ))}
       </dl>
       {active && (
-        <button type="button" className={primaryBtn} onClick={onConfirm} disabled={busy}>
+        <button type="button" data-tour="confirm-facts" className={primaryBtn} onClick={onConfirm} disabled={busy}>
           {busy && <Loader2 aria-hidden className="size-4 animate-spin" />}
           {s.confirm}
         </button>
